@@ -1,0 +1,19 @@
+export function formatCurrency(amount: string, currency: string): string {
+  const value = Number(amount);
+  if (currency === "XOF") {
+    return `CFA ${new Intl.NumberFormat("fr-CI", {
+      maximumFractionDigits: 0,
+    }).format(value)}`;
+  }
+  return `₦${new Intl.NumberFormat("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)}`;
+}
+
+export function formatDate(value: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}

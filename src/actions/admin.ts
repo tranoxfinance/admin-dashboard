@@ -1,0 +1,62 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { adminApi, AdminApiError } from "@/lib/admin-api";
+
+export interface MutationResult {
+  ok: boolean;
+  error?: string;
+}
+
+function describeError(error: unknown): string {
+  if (error instanceof AdminApiError) {
+    return error.errorCode;
+  }
+  return "Could not reach the server. Please try again.";
+}
+
+export async function setUserActiveAction(
+  userId: string,
+  isActive: boolean,
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/users/${userId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ isActive }),
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/users");
+  return { ok: true };
+}
+
+export async function reverseTransactionAction(
+  transactionId: string,
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/transactions/${transactionId}/reverse`, {
+      method: "POST",
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/transactions");
+  return { ok: true };
+}
+
+export async function reviewFlagAction(
+  flagId: string,
+  status: "reviewed" | "dismissed",
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/aml-flags/${flagId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/aml-flags");
+  return { ok: true };
+}
