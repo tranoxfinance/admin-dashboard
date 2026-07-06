@@ -17,3 +17,14 @@ export function formatDate(value: string): string {
     timeStyle: "short",
   }).format(new Date(value));
 }
+
+export function formatVolumeSummary(
+  totals: { currency: string; volume: string }[],
+): string {
+  if (!totals.length) {
+    return "No volume";
+  }
+  return totals
+    .map((entry) => formatCurrency(entry.volume, entry.currency))
+    .join(" · ");
+}

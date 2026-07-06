@@ -1,7 +1,7 @@
 import "server-only";
 import { getAccessToken } from "./admin-session";
 
-const BASE_URL = process.env.ADMIN_API_BASE_URL ?? "http://localhost:3000";
+const BASE_URL = process.env.ADMIN_API_BASE_URL ?? "http://127.0.0.1:3000";
 
 export class AdminApiError extends Error {
   constructor(

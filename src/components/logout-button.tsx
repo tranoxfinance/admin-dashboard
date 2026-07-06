@@ -10,11 +10,11 @@ export function LogoutButton() {
       <Button
         type="submit"
         variant="ghost"
-        size="sm"
-        className="w-full justify-start gap-2 text-muted-foreground"
+        size="icon-sm"
+        aria-label="Sign out"
+        className="text-muted-foreground"
       >
         <LogOut className="size-4" />
-        Sign out
       </Button>
     </form>
   );
