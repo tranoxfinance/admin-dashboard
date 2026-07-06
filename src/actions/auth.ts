@@ -17,6 +17,7 @@ import {
 
 export interface ActionState {
   error?: string;
+  success?: boolean;
 }
 
 interface TokenPair {
@@ -24,26 +25,37 @@ interface TokenPair {
   refreshToken: string;
 }
 
-export async function registerAction(
+export async function forgotPasswordAction(
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   const email = String(formData.get("email") ?? "");
-  const password = String(formData.get("password") ?? "");
-  const bootstrapKey = String(formData.get("bootstrapKey") ?? "");
   try {
-    const data = await adminApiPublic<{ enrollmentToken: string }>(
-      "/admin/auth/register",
-      {
-        method: "POST",
-        body: JSON.stringify({ email, password, bootstrapKey }),
-      },
-    );
-    await setShortLivedCookie(ENROLLMENT_COOKIE, data.enrollmentToken);
+    await adminApiPublic("/admin/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
   } catch (error) {
     return { error: describeError(error) };
   }
-  redirect("/setup");
+  return { success: true };
+}
+
+export async function resetPasswordAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const token = String(formData.get("token") ?? "");
+  const password = String(formData.get("password") ?? "");
+  try {
+    await adminApiPublic("/admin/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, password }),
+    });
+  } catch (error) {
+    return { error: describeError(error) };
+  }
+  return { success: true };
 }
 
 export async function loginAction(
@@ -153,10 +165,6 @@ function describeError(error: unknown): string {
         return "Account locked after too many failed attempts. Try again later.";
       case "ADMIN_ACCOUNT_INACTIVE":
         return "This admin account has been deactivated.";
-      case "ADMIN_BOOTSTRAP_KEY_INVALID":
-        return "Invalid bootstrap key.";
-      case "ADMIN_EMAIL_IN_USE":
-        return "That email is already registered.";
       case "ADMIN_MFA_INVALID":
         return "Incorrect code. Please try again.";
       case "ADMIN_MFA_EXPIRED":
@@ -165,6 +173,8 @@ function describeError(error: unknown): string {
         return "Too many incorrect attempts. Please sign in again.";
       case "ADMIN_TOTP_ALREADY_ENABLED":
         return "Two-factor authentication is already enabled for this account.";
+      case "ADMIN_RESET_TOKEN_INVALID":
+        return "This reset link is invalid or has expired.";
       default:
         return "Something went wrong. Please try again.";
     }

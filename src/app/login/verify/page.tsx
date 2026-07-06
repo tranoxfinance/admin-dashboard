@@ -6,6 +6,7 @@ import { AuthCard } from "@/components/auth-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/submit-button";
+import { FormError } from "@/components/form-error";
 
 export default function VerifyMfaPage() {
   const [state, action] = useActionState(verifyMfaAction, {});
@@ -30,9 +31,7 @@ export default function VerifyMfaPage() {
             className="text-center text-lg tracking-[0.5em]"
           />
         </div>
-        {state.error ? (
-          <p className="text-sm text-destructive">{state.error}</p>
-        ) : null}
+        <FormError message={state.error} />
         <SubmitButton pendingText="Verifying…">Verify</SubmitButton>
       </form>
     </AuthCard>

@@ -6,7 +6,13 @@ const ACCESS_COOKIE = "admin_access";
 const REFRESH_COOKIE = "admin_refresh";
 const REFRESH_MAX_AGE_SECONDS = 12 * 60 * 60;
 
-const PUBLIC_PATHS = ["/login", "/login/verify", "/register", "/setup"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/login/verify",
+  "/setup",
+  "/forgot-password",
+  "/reset-password",
+];
 
 interface AccessPayload {
   exp: number;
@@ -101,5 +107,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };
