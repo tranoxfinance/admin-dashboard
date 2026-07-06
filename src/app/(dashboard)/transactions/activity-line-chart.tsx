@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import {
   CartesianGrid,
@@ -14,6 +13,7 @@ import {
 } from "recharts";
 import type { ActivityDailyPoint } from "@/lib/types";
 import { CATEGORICAL_DARK, CATEGORICAL_LIGHT, CHART_CHROME } from "@/lib/chart-colors";
+import { useMounted } from "@/lib/use-mounted";
 
 function formatAxisDate(value: string) {
   return new Date(value).toLocaleDateString("en-US", {
@@ -59,8 +59,7 @@ function ChartTooltip({
 
 export function ActivityLineChart({ data }: { data: ActivityDailyPoint[] }) {
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   const isDark = mounted && resolvedTheme === "dark";
   const colors = isDark ? CATEGORICAL_DARK : CATEGORICAL_LIGHT;

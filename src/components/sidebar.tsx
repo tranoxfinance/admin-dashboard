@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
 import { SidebarNav } from "@/components/sidebar-nav";
@@ -8,22 +7,15 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useLocalStorageBoolean } from "@/lib/use-local-storage-boolean";
 
 const STORAGE_KEY = "admin-sidebar-collapsed";
 
 export function Sidebar({ email }: { email: string }) {
-  const [collapsed, setCollapsed] = useState(false);
-
-  useEffect(() => {
-    setCollapsed(localStorage.getItem(STORAGE_KEY) === "true");
-  }, []);
+  const [collapsed, setCollapsed] = useLocalStorageBoolean(STORAGE_KEY, false);
 
   function toggle() {
-    setCollapsed((value) => {
-      const next = !value;
-      localStorage.setItem(STORAGE_KEY, String(next));
-      return next;
-    });
+    setCollapsed(!collapsed);
   }
 
   const initials = email.slice(0, 2).toUpperCase();

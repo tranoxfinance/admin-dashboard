@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
 import { CATEGORICAL_DARK, CATEGORICAL_LIGHT } from "@/lib/chart-colors";
 import type { UserGrowthPoint } from "@/lib/types";
+import { useMounted } from "@/lib/use-mounted";
 
 function formatAxisDate(value: string) {
   return new Date(value).toLocaleDateString("en-US", {
@@ -56,8 +56,7 @@ export function TrendInsightCard({
   breakdown: TrendBreakdownItem[];
 }) {
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
   const isDark = mounted && resolvedTheme === "dark";
   const color = isDark ? CATEGORICAL_DARK[0] : CATEGORICAL_LIGHT[0];
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import {
   Bar,
@@ -14,6 +13,7 @@ import {
 } from "recharts";
 import type { ActivityStats } from "@/lib/types";
 import { CHART_CHROME, STATUS_COLORS } from "@/lib/chart-colors";
+import { useMounted } from "@/lib/use-mounted";
 
 const STATUS_GROUPS = [
   { key: "completed", label: "Completed", statuses: ["completed"] },
@@ -71,8 +71,7 @@ export function ActivityStatusChart({
   byType: ActivityStats["byType"];
 }) {
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
   const chrome =
     mounted && resolvedTheme === "dark" ? CHART_CHROME.dark : CHART_CHROME.light;
 
