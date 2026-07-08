@@ -129,3 +129,50 @@ export interface Paginated<T> {
   total: number;
   page: number;
 }
+
+export type SupportConversationStatus =
+  | "bot"
+  | "pending_agent"
+  | "active"
+  | "closed";
+
+export interface SupportConversationUser {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  phone: string;
+}
+
+export interface SupportConversationRow {
+  id: string;
+  status: SupportConversationStatus;
+  assignedAdminId: string | null;
+  lastMessageAt: string | null;
+  createdAt: string;
+  user: SupportConversationUser | null;
+}
+
+export type SupportMessageSenderType = "user" | "bot" | "agent";
+
+export interface SupportMessage {
+  id: string;
+  conversationId: string;
+  senderType: SupportMessageSenderType;
+  senderAdminId: string | null;
+  body: string;
+  createdAt: string;
+}
+
+export interface SupportConversationDetail {
+  conversation: {
+    id: string;
+    status: SupportConversationStatus;
+    assignedAdminId: string | null;
+    lastMessageAt: string | null;
+    createdAt: string;
+  };
+  user:
+    | (SupportConversationUser & { email: string | null })
+    | null;
+  messages: SupportMessage[];
+}

@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import {
   Bar,
   BarChart,
@@ -11,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useTheme } from "@/components/theme-provider";
 import type { ActivityStats } from "@/lib/types";
 import { CHART_CHROME, STATUS_COLORS } from "@/lib/chart-colors";
 import { useMounted } from "@/lib/use-mounted";

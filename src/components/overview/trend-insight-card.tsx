@@ -1,7 +1,14 @@
 "use client";
 
-import { useTheme } from "next-themes";
-import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
+import {
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { useTheme } from "@/components/theme-provider";
 import { CATEGORICAL_DARK, CATEGORICAL_LIGHT } from "@/lib/chart-colors";
 import type { UserGrowthPoint } from "@/lib/types";
 import { useMounted } from "@/lib/use-mounted";
@@ -59,8 +66,10 @@ export function TrendInsightCard({
   const mounted = useMounted();
   const isDark = mounted && resolvedTheme === "dark";
   const color = isDark ? CATEGORICAL_DARK[0] : CATEGORICAL_LIGHT[0];
+  const tickColor = isDark ? "#7e91a8" : "#6b7d92";
 
   const hasData = data.some((point) => point.count > 0);
+  const tickInterval = Math.max(0, Math.ceil(data.length / 7) - 1);
 
   return (
     <div className="flex flex-col gap-4">
@@ -75,44 +84,63 @@ export function TrendInsightCard({
         </div>
       </div>
       {hasData ? (
-        <div className="h-32 w-full">
+        <div className="h-40 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="trendInsightFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={color} stopOpacity={0.18} />
-                  <stop offset="100%" stopColor={color} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <Tooltip content={<ChartTooltip />} />
-              <Area
-                type="monotone"
+            <BarChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
+              <Tooltip cursor={{ fill: `${color}0f` }} content={<ChartTooltip />} />
+              <XAxis
+                dataKey="date"
+                tickFormatter={formatAxisDate}
+                axisLine={false}
+                tickLine={false}
+                interval={tickInterval}
+                tick={{ fontSize: 11, fill: tickColor }}
+                dy={8}
+              />
+              <YAxis
+                orientation="right"
+                axisLine={false}
+                tickLine={false}
+                width={36}
+                tickCount={3}
+                tick={{ fontSize: 11, fill: tickColor }}
+              />
+              <Bar
                 dataKey="count"
-                stroke={color}
-                strokeWidth={2}
-                fill="url(#trendInsightFill)"
-                dot={false}
+                fill={color}
+                radius={[4, 4, 0, 0]}
+                maxBarSize={22}
                 isAnimationActive={false}
               />
-            </AreaChart>
+            </BarChart>
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
+        <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
           No activity in this period.
         </div>
       )}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t pt-3">
-        {breakdown.map((item) => (
-          <span key={item.label} className="flex items-center gap-1.5 text-sm">
+      <div className="flex flex-col gap-3 border-t pt-3">
+        <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
+          {breakdown.map((item) => (
             <span
-              className="size-2 rounded-full"
-              style={{ backgroundColor: item.color }}
+              key={item.label}
+              style={{ width: `${item.percent}%`, backgroundColor: item.color }}
             />
-            <span className="text-muted-foreground">{item.label}</span>
-            <span className="font-medium">{item.percent}%</span>
-          </span>
-        ))}
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          {breakdown.map((item) => (
+            <span key={item.label} className="flex items-center gap-1.5 text-sm">
+              <span
+                className="size-2 shrink-0 rounded-full"
+                style={{ backgroundColor: item.color }}
+              />
+              <span className="text-muted-foreground">{item.label}</span>
+              <span className="font-semibold">{item.percent}%</span>
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );

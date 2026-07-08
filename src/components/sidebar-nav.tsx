@@ -8,6 +8,7 @@ import {
   ArrowLeftRight,
   ShieldAlert,
   ScrollText,
+  Headset,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +16,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
   { href: "/users", label: "Users", icon: Users },
   { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
+  { href: "/support", label: "Support", icon: Headset },
   { href: "/aml-flags", label: "AML Flags", icon: ShieldAlert },
   { href: "/audit-logs", label: "Audit Logs", icon: ScrollText },
 ];

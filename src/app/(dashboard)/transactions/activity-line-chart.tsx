@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import {
   CartesianGrid,
   Legend,
@@ -11,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useTheme } from "@/components/theme-provider";
 import type { ActivityDailyPoint } from "@/lib/types";
 import { CATEGORICAL_DARK, CATEGORICAL_LIGHT, CHART_CHROME } from "@/lib/chart-colors";
 import { useMounted } from "@/lib/use-mounted";

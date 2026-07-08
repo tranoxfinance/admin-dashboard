@@ -14,7 +14,7 @@ import { StatCard } from "@/components/overview/stat-card";
 import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { TrendInsightCard } from "@/components/overview/trend-insight-card";
 import { ActivityFeedCard } from "@/components/overview/activity-feed-card";
-import { CATEGORICAL_LIGHT, KYC_TIER_RAMP } from "@/lib/chart-colors";
+import { CATEGORICAL_LIGHT, WARM_CATEGORICAL, WARM_RAMP } from "@/lib/chart-colors";
 
 function deltaPercent(current: number, previous: number): number | null {
   if (previous === 0) {
@@ -39,6 +39,13 @@ const KYC_LABELS: Record<number, string> = {
 const COUNTRY_LABELS: Record<string, string> = {
   NG: "Nigeria",
   CI: "Ivory Coast",
+};
+
+const STAT_COLORS = {
+  users: "#0d8fd2",
+  newUsers: "#95c015",
+  volume: "#e9a028",
+  revenue: "#00407a",
 };
 
 export default async function OverviewPage({
@@ -123,20 +130,20 @@ export default async function OverviewPage({
   const kycSegments = [0, 1, 2].map((tier) => ({
     label: KYC_LABELS[tier],
     value: snapshot.kycDistribution.find((row) => row.tier === tier)?.count ?? 0,
-    color: KYC_TIER_RAMP[tier],
+    color: WARM_RAMP[tier],
   }));
 
   const usersByMarket = snapshot.countryDistribution.map((row, index) => ({
     label: COUNTRY_LABELS[row.country] ?? row.country,
     value: row.count,
-    color: CATEGORICAL_LIGHT[index % CATEGORICAL_LIGHT.length],
+    color: WARM_CATEGORICAL[index % WARM_CATEGORICAL.length],
   }));
 
   const transactionsByMarket = snapshot.transactionsByCountry.map(
     (row, index) => ({
       label: COUNTRY_LABELS[row.country] ?? row.country,
       value: row.count,
-      color: CATEGORICAL_LIGHT[index % CATEGORICAL_LIGHT.length],
+      color: WARM_CATEGORICAL[index % WARM_CATEGORICAL.length],
     }),
   );
 
@@ -153,24 +160,25 @@ export default async function OverviewPage({
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Link href="/users">
+        <Link href="/users" className="block h-full">
           <StatCard
             icon={Users}
             label="Total users"
             value={stats.totalUsers.toLocaleString()}
+            color={STAT_COLORS.users}
           />
         </Link>
-        <Link href="/users">
+        <Link href="/users" className="block h-full">
           <StatCard
             icon={TrendingUp}
             label="New users"
             value={stats.newUsers.toLocaleString()}
             delta={newUsersDelta}
             sparkline={{ data: userGrowthSparkline, dataKey: "count" }}
-            color={CATEGORICAL_LIGHT[0]}
+            color={STAT_COLORS.newUsers}
           />
         </Link>
-        <Link href="/transactions">
+        <Link href="/transactions" className="block h-full">
           <StatCard
             icon={Wallet}
             label={primaryVolume ? `Volume (${primaryVolume.currency})` : "Volume"}
@@ -179,16 +187,16 @@ export default async function OverviewPage({
                 ? formatCurrency(primaryVolume.volume, primaryVolume.currency)
                 : "—"
             }
+            secondary={
+              secondaryVolume
+                ? `+${formatCurrency(secondaryVolume.volume, secondaryVolume.currency)}`
+                : undefined
+            }
             sparkline={{ data: volumeSparkline, dataKey: "volume" }}
-            color={CATEGORICAL_LIGHT[1]}
+            color={STAT_COLORS.volume}
           />
-          {secondaryVolume ? (
-            <p className="mt-1 pl-1 text-xs text-muted-foreground">
-              +{formatCurrency(secondaryVolume.volume, secondaryVolume.currency)}
-            </p>
-          ) : null}
         </Link>
-        <Link href="/transactions">
+        <Link href="/transactions" className="block h-full">
           <StatCard
             icon={ArrowLeftRight}
             label={primaryRevenue ? `Revenue (${primaryRevenue.currency})` : "Revenue"}
@@ -197,29 +205,24 @@ export default async function OverviewPage({
                 ? formatCurrency(primaryRevenue.volume, primaryRevenue.currency)
                 : "—"
             }
+            secondary={
+              secondaryRevenue
+                ? `+${formatCurrency(secondaryRevenue.volume, secondaryRevenue.currency)}`
+                : undefined
+            }
             delta={transactionDelta}
-            color={CATEGORICAL_LIGHT[2]}
+            color={STAT_COLORS.revenue}
           />
-          {secondaryRevenue ? (
-            <p className="mt-1 pl-1 text-xs text-muted-foreground">
-              +{formatCurrency(secondaryRevenue.volume, secondaryRevenue.currency)}
-            </p>
-          ) : null}
         </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <Card className="rounded-2xl border-0 shadow-sm ring-0 lg:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-heading text-sm font-semibold">
-                  Activity trend
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Transfers, deposits, and withdrawals combined
-                </p>
-              </div>
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Activity trend
+              </span>
               <span
                 className={
                   stats.openAmlFlags > 0
@@ -239,17 +242,12 @@ export default async function OverviewPage({
             />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl border-0 shadow-sm ring-0">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-heading text-sm font-semibold">
-                  Top transactions
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Largest movements
-                </p>
-              </div>
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Top transactions
+              </span>
               <PeriodSelect paramName="topPeriod" value={topPeriod} />
             </div>
           </CardHeader>
@@ -260,41 +258,37 @@ export default async function OverviewPage({
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card>
+        <Card className="rounded-2xl border-0 shadow-sm ring-0">
           <CardHeader>
-            <h2 className="font-heading text-sm font-semibold">KYC tiers</h2>
-            <p className="text-xs text-muted-foreground">
-              Verification level across all users
-            </p>
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              KYC tiers
+            </span>
           </CardHeader>
           <CardContent>
-            <DonutStatCard segments={kycSegments} centerLabel="Top tier" />
+            <DonutStatCard segments={kycSegments} centerLabel="Total users" />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl border-0 shadow-sm ring-0">
           <CardHeader>
-            <h2 className="font-heading text-sm font-semibold">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               Users by market
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Where accounts are registered
-            </p>
+            </span>
           </CardHeader>
           <CardContent>
-            <DonutStatCard segments={usersByMarket} centerLabel="Leading" />
+            <DonutStatCard segments={usersByMarket} centerLabel="Total users" />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl border-0 shadow-sm ring-0">
           <CardHeader>
-            <h2 className="font-heading text-sm font-semibold">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               Transactions by market
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Where activity originates
-            </p>
+            </span>
           </CardHeader>
           <CardContent>
-            <DonutStatCard segments={transactionsByMarket} centerLabel="Leading" />
+            <DonutStatCard
+              segments={transactionsByMarket}
+              centerLabel="Total transactions"
+            />
           </CardContent>
         </Card>
       </div>

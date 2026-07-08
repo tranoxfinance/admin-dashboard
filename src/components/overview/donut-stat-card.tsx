@@ -37,13 +37,12 @@ function ChartTooltip({
 
 export function DonutStatCard({
   segments,
-  centerLabel = "Top",
+  centerLabel = "Total",
 }: {
   segments: DonutSegment[];
   centerLabel?: string;
 }) {
   const total = segments.reduce((sum, segment) => sum + segment.value, 0);
-  const top = [...segments].sort((a, b) => b.value - a.value)[0];
 
   if (!total) {
     return (
@@ -54,16 +53,19 @@ export function DonutStatCard({
   }
 
   return (
-    <div className="flex items-center gap-5">
-      <div className="relative size-28 shrink-0">
+    <div className="flex flex-col items-center gap-5">
+      <div className="relative size-40 shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={segments}
               dataKey="value"
               nameKey="label"
-              innerRadius={36}
-              outerRadius={52}
+              startAngle={210}
+              endAngle={-30}
+              innerRadius={52}
+              outerRadius={72}
+              cornerRadius={8}
               paddingAngle={segments.length > 1 ? 3 : 0}
               stroke="none"
             >
@@ -74,33 +76,34 @@ export function DonutStatCard({
             <Tooltip content={<ChartTooltip />} />
           </PieChart>
         </ResponsiveContainer>
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-2 text-center">
-          <span className="text-[10px] text-muted-foreground">
-            {centerLabel}
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5 text-center">
+          <span className="font-heading text-2xl font-bold leading-none tracking-tight">
+            {total.toLocaleString()}
           </span>
-          <span className="text-xs font-semibold leading-tight">
-            {top?.label}
+          <span className="w-20 text-[10px] uppercase leading-tight tracking-wide text-muted-foreground">
+            {centerLabel}
           </span>
         </div>
       </div>
-      <div className="flex flex-1 flex-col gap-2">
+      <div className="flex w-full flex-col gap-2.5">
         {segments.map((segment) => {
           const percent = Math.round((segment.value / total) * 100);
           return (
-            <div
-              key={segment.label}
-              className="flex items-center justify-between gap-2 text-sm"
-            >
-              <span className="flex items-center gap-2 truncate">
-                <span
-                  className="size-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: segment.color }}
-                />
-                <span className="truncate">{segment.label}</span>
+            <div key={segment.label} className="flex items-center gap-2 text-sm">
+              <span className="shrink-0 truncate text-muted-foreground">
+                {segment.label}
               </span>
-              <span className="shrink-0 tabular-nums text-muted-foreground">
-                {segment.value.toLocaleString()} · {percent}%
+              <span className="mx-1 h-px flex-1 border-t border-dashed border-border" />
+              <span className="shrink-0 font-semibold tabular-nums">
+                {segment.value.toLocaleString()}
               </span>
+              <span className="w-9 shrink-0 text-right text-xs text-muted-foreground">
+                {percent}%
+              </span>
+              <span
+                className="size-2 shrink-0 rounded-full"
+                style={{ backgroundColor: segment.color }}
+              />
             </div>
           );
         })}
