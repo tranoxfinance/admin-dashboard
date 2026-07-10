@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import {
   assignSupportConversationAction,
   closeSupportConversationAction,
+  resolveSupportConversationAction,
   sendSupportReplyAction,
 } from "@/actions/admin";
 import { formatDate } from "@/lib/format";
@@ -15,6 +16,7 @@ import type {
   SupportConversationDetail,
   SupportConversationStatus,
   SupportMessage,
+  SupportTicketCategory,
 } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,7 @@ const STATUS_VARIANT: Record<
   bot: "outline",
   pending_agent: "destructive",
   active: "default",
+  resolved: "secondary",
   closed: "secondary",
 };
 
@@ -33,7 +36,17 @@ const STATUS_LABEL: Record<SupportConversationStatus, string> = {
   bot: "Bot handling",
   pending_agent: "Needs agent",
   active: "Active",
+  resolved: "Resolved",
   closed: "Closed",
+};
+
+const CATEGORY_LABEL: Record<SupportTicketCategory, string> = {
+  transfer: "Transfer",
+  topup: "Top-up",
+  withdrawal: "Withdrawal",
+  kyc: "Verification",
+  account: "Account",
+  other: "Other",
 };
 
 export function SupportThread({
@@ -121,6 +134,21 @@ export function SupportThread({
     });
   }
 
+  function resolve() {
+    startMutating(async () => {
+      const result = await resolveSupportConversationAction(conversationId);
+      if (!result.ok) {
+        toast.error(result.error ?? "Could not resolve conversation");
+        return;
+      }
+      toast.success("Marked as resolved");
+      setDetail((current) => ({
+        ...current,
+        conversation: { ...current.conversation, status: "resolved" },
+      }));
+    });
+  }
+
   function close() {
     startMutating(async () => {
       const result = await closeSupportConversationAction(conversationId);
@@ -140,23 +168,40 @@ export function SupportThread({
   const userName = user
     ? [user.firstName, user.lastName].filter(Boolean).join(" ") || user.phone
     : "Unknown user";
-  const isClosed = detail.conversation.status === "closed";
+  const conversation = detail.conversation;
+  const isClosed = conversation.status === "closed";
+  const isResolved = conversation.status === "resolved";
+  const isTicket = conversation.kind === "ticket";
 
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col gap-4">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="font-heading text-2xl font-semibold">{userName}</h1>
+          <h1 className="font-heading text-2xl font-semibold">
+            {isTicket ? (conversation.subject ?? "Untitled ticket") : userName}
+          </h1>
           <p className="text-sm text-muted-foreground">
+            {isTicket
+              ? [
+                  conversation.reference,
+                  conversation.category
+                    ? CATEGORY_LABEL[conversation.category]
+                    : null,
+                  userName,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")
+              : null}
+            {isTicket ? <br /> : null}
             {user?.phone}
             {user?.email ? ` · ${user.email}` : ""}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant={STATUS_VARIANT[detail.conversation.status]}>
-            {STATUS_LABEL[detail.conversation.status]}
+          <Badge variant={STATUS_VARIANT[conversation.status]}>
+            {STATUS_LABEL[conversation.status]}
           </Badge>
-          {!detail.conversation.assignedAdminId && !isClosed ? (
+          {!conversation.assignedAdminId && !isClosed ? (
             <Button
               size="sm"
               variant="outline"
@@ -164,6 +209,16 @@ export function SupportThread({
               onClick={assign}
             >
               Assign to me
+            </Button>
+          ) : null}
+          {!isClosed && !isResolved ? (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isMutating}
+              onClick={resolve}
+            >
+              Mark resolved
             </Button>
           ) : null}
           {!isClosed ? (

@@ -3,7 +3,11 @@
 import { useRouter } from "next/navigation";
 import type { ColumnDef } from "@tanstack/react-table";
 import { formatDate } from "@/lib/format";
-import type { SupportConversationRow, SupportConversationStatus } from "@/lib/types";
+import type {
+  SupportConversationRow,
+  SupportConversationStatus,
+  SupportTicketCategory,
+} from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
 
@@ -14,6 +18,7 @@ const STATUS_VARIANT: Record<
   bot: "outline",
   pending_agent: "destructive",
   active: "default",
+  resolved: "secondary",
   closed: "secondary",
 };
 
@@ -21,7 +26,17 @@ const STATUS_LABEL: Record<SupportConversationStatus, string> = {
   bot: "Bot handling",
   pending_agent: "Needs agent",
   active: "Active",
+  resolved: "Resolved",
   closed: "Closed",
+};
+
+const CATEGORY_LABEL: Record<SupportTicketCategory, string> = {
+  transfer: "Transfer",
+  topup: "Top-up",
+  withdrawal: "Withdrawal",
+  kyc: "Verification",
+  account: "Account",
+  other: "Other",
 };
 
 const columns: ColumnDef<SupportConversationRow>[] = [
@@ -38,6 +53,29 @@ const columns: ColumnDef<SupportConversationRow>[] = [
         <div className="flex flex-col">
           <span className="font-medium">{name || user.phone}</span>
           <span className="text-xs text-muted-foreground">{user.phone}</span>
+        </div>
+      );
+    },
+  },
+  {
+    id: "topic",
+    header: "Topic",
+    cell: ({ row }) => {
+      const conversation = row.original;
+      if (conversation.kind !== "ticket") {
+        return <span className="text-muted-foreground">Live chat</span>;
+      }
+      return (
+        <div className="flex flex-col">
+          <span className="font-medium">
+            {conversation.subject ?? "Untitled ticket"}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {conversation.reference}
+            {conversation.category
+              ? ` · ${CATEGORY_LABEL[conversation.category]}`
+              : ""}
+          </span>
         </div>
       );
     },

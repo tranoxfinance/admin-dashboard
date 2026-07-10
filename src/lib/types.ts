@@ -134,7 +134,18 @@ export type SupportConversationStatus =
   | "bot"
   | "pending_agent"
   | "active"
+  | "resolved"
   | "closed";
+
+export type SupportConversationKind = "chat" | "ticket";
+
+export type SupportTicketCategory =
+  | "transfer"
+  | "topup"
+  | "withdrawal"
+  | "kyc"
+  | "account"
+  | "other";
 
 export interface SupportConversationUser {
   id: string;
@@ -146,6 +157,10 @@ export interface SupportConversationUser {
 export interface SupportConversationRow {
   id: string;
   status: SupportConversationStatus;
+  kind: SupportConversationKind;
+  subject: string | null;
+  category: SupportTicketCategory | null;
+  reference: string | null;
   assignedAdminId: string | null;
   lastMessageAt: string | null;
   createdAt: string;
@@ -167,6 +182,10 @@ export interface SupportConversationDetail {
   conversation: {
     id: string;
     status: SupportConversationStatus;
+    kind: SupportConversationKind;
+    subject: string | null;
+    category: SupportTicketCategory | null;
+    reference: string | null;
     assignedAdminId: string | null;
     lastMessageAt: string | null;
     createdAt: string;

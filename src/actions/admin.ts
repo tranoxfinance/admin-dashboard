@@ -98,6 +98,21 @@ export async function assignSupportConversationAction(
   return { ok: true };
 }
 
+export async function resolveSupportConversationAction(
+  conversationId: string,
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/support/conversations/${conversationId}/resolve`, {
+      method: "POST",
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/support");
+  revalidatePath(`/support/${conversationId}`);
+  return { ok: true };
+}
+
 export async function closeSupportConversationAction(
   conversationId: string,
 ): Promise<MutationResult> {
