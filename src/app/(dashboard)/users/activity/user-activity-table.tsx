@@ -69,6 +69,7 @@ const columns: ColumnDef<UserActivityRow>[] = [
         <Button
           variant="ghost"
           size="sm"
+          nativeButton={false}
           render={<Link href={`/audit-logs?userId=${row.original.userId}`} />}
         >
           View events
