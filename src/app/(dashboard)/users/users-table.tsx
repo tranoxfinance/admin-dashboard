@@ -1,89 +1,134 @@
 "use client";
 
+import { useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { formatDate } from "@/lib/format";
 import type { AdminUserRow } from "@/lib/types";
+import type { Dict } from "@/lib/i18n";
+import { useDict } from "@/components/i18n-provider";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
+import { UserRestrictDialog } from "./user-restrict-dialog";
 import { UserStatusToggle } from "./user-status-toggle";
 
-const columns: ColumnDef<AdminUserRow>[] = [
-  {
-    id: "name",
-    header: "Name",
-    accessorFn: (row) =>
-      [row.firstName, row.lastName].filter(Boolean).join(" "),
-    cell: ({ row }) => {
-      const name = [row.original.firstName, row.original.lastName]
-        .filter(Boolean)
-        .join(" ");
-      return name || "—";
+function buildColumns(
+  dict: Dict,
+  canManage: boolean,
+): ColumnDef<AdminUserRow>[] {
+  const columns: ColumnDef<AdminUserRow>[] = [
+    {
+      id: "name",
+      header: dict.users.colName,
+      accessorFn: (row) =>
+        [row.firstName, row.lastName].filter(Boolean).join(" "),
+      cell: ({ row }) => {
+        const name = [row.original.firstName, row.original.lastName]
+          .filter(Boolean)
+          .join(" ");
+        return name || "—";
+      },
     },
-  },
-  {
-    accessorKey: "phone",
-    header: "Phone",
-    cell: ({ row }) => (
-      <span className="font-medium">{row.original.phone}</span>
-    ),
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
-    cell: ({ row }) => row.original.email ?? "—",
-  },
-  {
-    accessorKey: "country",
-    header: "Country",
-  },
-  {
-    accessorKey: "kycTier",
-    header: "KYC Tier",
-    cell: ({ row }) => `Tier ${row.original.kycTier}`,
-  },
-  {
-    id: "status",
-    header: "Status",
-    accessorFn: (row) =>
-      row.isLocked ? "Locked" : row.isActive ? "Active" : "Inactive",
-    cell: ({ row }) => {
-      const user = row.original;
-      if (user.isLocked) {
-        return <Badge variant="destructive">Locked</Badge>;
-      }
-      return user.isActive ? (
-        <Badge className="bg-green text-white">Active</Badge>
-      ) : (
-        <Badge variant="outline">Inactive</Badge>
-      );
+    {
+      accessorKey: "phone",
+      header: dict.users.colPhone,
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.phone}</span>
+      ),
     },
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Joined",
-    cell: ({ row }) => formatDate(row.original.createdAt),
-  },
-  {
-    id: "actions",
-    header: () => <div className="text-right">Actions</div>,
-    cell: ({ row }) => (
-      <div className="text-right">
-        <UserStatusToggle
-          userId={row.original.id}
-          isActive={row.original.isActive}
-        />
-      </div>
-    ),
-  },
-];
+    {
+      accessorKey: "email",
+      header: dict.users.colEmail,
+      cell: ({ row }) => row.original.email ?? "—",
+    },
+    {
+      accessorKey: "country",
+      header: dict.users.colCountry,
+    },
+    {
+      accessorKey: "kycTier",
+      header: dict.users.colKycTier,
+      cell: ({ row }) => dict.users.tier(row.original.kycTier),
+    },
+    {
+      id: "status",
+      header: dict.common.status,
+      accessorFn: (row) =>
+        row.restrictionLevel === "suspended"
+          ? dict.users.statusSuspended
+          : row.restrictionLevel === "restricted"
+            ? dict.users.statusRestricted
+            : row.isLocked
+              ? dict.users.statusLocked
+              : row.isActive
+                ? dict.users.statusActive
+                : dict.users.statusInactive,
+      cell: ({ row }) => {
+        const user = row.original;
+        if (user.restrictionLevel === "suspended") {
+          return (
+            <Badge variant="destructive">{dict.users.statusSuspended}</Badge>
+          );
+        }
+        if (user.restrictionLevel === "restricted") {
+          return (
+            <Badge className="bg-amber-500 text-white">
+              {dict.users.statusRestricted}
+            </Badge>
+          );
+        }
+        if (user.isLocked) {
+          return <Badge variant="destructive">{dict.users.statusLocked}</Badge>;
+        }
+        return user.isActive ? (
+          <Badge className="bg-green text-white">
+            {dict.users.statusActive}
+          </Badge>
+        ) : (
+          <Badge variant="outline">{dict.users.statusInactive}</Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "createdAt",
+      header: dict.users.colJoined,
+      cell: ({ row }) => formatDate(row.original.createdAt, dict.common.dateLocale),
+    },
+  ];
+  if (canManage) {
+    columns.push({
+      id: "actions",
+      header: () => <div className="text-right">{dict.common.actions}</div>,
+      cell: ({ row }) => (
+        <div className="flex items-center justify-end gap-2">
+          {row.original.restrictionLevel === null ? (
+            <UserRestrictDialog userId={row.original.id} />
+          ) : null}
+          <UserStatusToggle
+            userId={row.original.id}
+            isActive={row.original.isActive}
+          />
+        </div>
+      ),
+    });
+  }
+  return columns;
+}
 
-export function UsersTable({ data }: { data: AdminUserRow[] }) {
+export function UsersTable({
+  data,
+  canManage,
+}: {
+  data: AdminUserRow[];
+  canManage: boolean;
+}) {
+  const dict = useDict();
+  const columns = useMemo(() => buildColumns(dict, canManage), [dict, canManage]);
   return (
     <DataTable
       columns={columns}
       data={data}
-      searchPlaceholder="Search by name, phone, email, country…"
-      emptyMessage="No users found."
+      searchPlaceholder={dict.users.search}
+      emptyMessage={dict.users.empty}
     />
   );
 }

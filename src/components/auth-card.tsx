@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export function AuthCard({
   title,
   description,
@@ -14,9 +16,11 @@ export function AuthCard({
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:44px_44px]"
         />
-        <img
+        <Image
           src="/tranox-logo.svg"
           alt="Tranox"
+          width={112}
+          height={28}
           className="relative h-7 w-auto brightness-0 invert"
         />
         <div className="relative max-w-sm">
@@ -34,9 +38,11 @@ export function AuthCard({
       </div>
       <div className="flex flex-1 items-center justify-center bg-background px-4 py-12">
         <div className="w-full max-w-sm">
-          <img
+          <Image
             src="/tranox-logo.svg"
             alt="Tranox"
+            width={112}
+            height={28}
             className="mb-8 h-7 w-auto lg:hidden"
           />
           <h1 className="font-heading text-2xl font-semibold">{title}</h1>

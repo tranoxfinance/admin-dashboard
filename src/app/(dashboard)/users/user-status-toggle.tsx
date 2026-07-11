@@ -3,6 +3,8 @@
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { setUserActiveAction } from "@/actions/admin";
+import { describeApiError } from "@/lib/i18n";
+import { useDict } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
 
 export function UserStatusToggle({
@@ -13,16 +15,17 @@ export function UserStatusToggle({
   isActive: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
+  const dict = useDict();
 
   function handleClick() {
     startTransition(async () => {
       const result = await setUserActiveAction(userId, !isActive);
       if (result.ok) {
         toast.success(
-          isActive ? "User deactivated" : "User activated",
+          isActive ? dict.users.userDeactivated : dict.users.userActivated,
         );
       } else {
-        toast.error(result.error ?? "Something went wrong");
+        toast.error(describeApiError(dict, result.error));
       }
     });
   }
@@ -34,7 +37,7 @@ export function UserStatusToggle({
       disabled={isPending}
       onClick={handleClick}
     >
-      {isActive ? "Deactivate" : "Activate"}
+      {isActive ? dict.users.deactivate : dict.users.activate}
     </Button>
   );
 }

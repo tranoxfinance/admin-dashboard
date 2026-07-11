@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import {
   Bar,
   BarChart,
@@ -11,22 +10,45 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useTheme } from "@/components/theme-provider";
+import { useDict } from "@/components/i18n-provider";
 import type { ActivityStats } from "@/lib/types";
+import type { Dict } from "@/lib/i18n";
 import { CHART_CHROME, STATUS_COLORS } from "@/lib/chart-colors";
 import { useMounted } from "@/lib/use-mounted";
 
-const STATUS_GROUPS = [
-  { key: "completed", label: "Completed", statuses: ["completed"] },
-  { key: "inProgress", label: "In progress", statuses: ["pending", "processing"] },
-  { key: "failed", label: "Failed", statuses: ["failed"] },
-  { key: "reversed", label: "Reversed", statuses: ["reversed"] },
-];
+function buildStatusGroups(dict: Dict) {
+  return [
+    {
+      key: "completed",
+      label: dict.transactions.statusCompleted,
+      statuses: ["completed"],
+    },
+    {
+      key: "inProgress",
+      label: dict.transactions.statusInProgress,
+      statuses: ["pending", "processing"],
+    },
+    {
+      key: "failed",
+      label: dict.transactions.statusFailed,
+      statuses: ["failed"],
+    },
+    {
+      key: "reversed",
+      label: dict.transactions.statusReversed,
+      statuses: ["reversed"],
+    },
+  ];
+}
 
-const TYPE_LABELS: Record<string, string> = {
-  transfer: "Transfers",
-  topup: "Deposits",
-  withdrawal: "Withdrawals",
-};
+function buildTypeLabels(dict: Dict): Record<string, string> {
+  return {
+    transfer: dict.common.transfers,
+    topup: dict.common.deposits,
+    withdrawal: dict.common.withdrawals,
+  };
+}
 
 function ChartTooltip({
   active,
@@ -72,12 +94,15 @@ export function ActivityStatusChart({
 }) {
   const { resolvedTheme } = useTheme();
   const mounted = useMounted();
+  const dict = useDict();
   const chrome =
     mounted && resolvedTheme === "dark" ? CHART_CHROME.dark : CHART_CHROME.light;
+  const statusGroups = buildStatusGroups(dict);
+  const typeLabels = buildTypeLabels(dict);
 
   const data = byType.map(({ type, statuses }) => {
-    const row: Record<string, number | string> = { type: TYPE_LABELS[type] };
-    for (const group of STATUS_GROUPS) {
+    const row: Record<string, number | string> = { type: typeLabels[type] };
+    for (const group of statusGroups) {
       row[group.key] = statuses
         .filter((s) => group.statuses.includes(s.status))
         .reduce((sum, s) => sum + s.count, 0);
@@ -86,13 +111,13 @@ export function ActivityStatusChart({
   });
 
   const hasData = data.some((row) =>
-    STATUS_GROUPS.some((group) => Number(row[group.key]) > 0),
+    statusGroups.some((group) => Number(row[group.key]) > 0),
   );
 
   if (!hasData) {
     return (
       <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-        No activity in this period.
+        {dict.transactions.empty}
       </div>
     );
   }
@@ -126,7 +151,7 @@ export function ActivityStatusChart({
           iconType="square"
           wrapperStyle={{ fontSize: 12, color: chrome.mutedInk }}
         />
-        {STATUS_GROUPS.map((group) => (
+        {statusGroups.map((group) => (
           <Bar
             key={group.key}
             dataKey={group.key}
