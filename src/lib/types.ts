@@ -79,6 +79,7 @@ export interface RevenueDailyPoint {
 
 export interface OverviewStats {
   totalUsers: number;
+  activeUsers: number;
   newUsers: number;
   userGrowthDaily: UserGrowthPoint[];
   kycDistribution: KycTierCount[];
@@ -98,7 +99,38 @@ export interface OverviewStats {
     daily: RevenueDailyPoint[];
   };
   openAmlFlags: number;
-  previousPeriod: { newUsers: number; transactionCount: number } | null;
+  previousPeriod: {
+    newUsers: number;
+    transactionCount: number;
+    activeUsers: number;
+  } | null;
+}
+
+export interface ActionCount {
+  action: string;
+  count: number;
+}
+
+export interface UserActivityStats {
+  activeUsers: number;
+  totalUsers: number;
+  totalEvents: number;
+  actionBreakdown: ActionCount[];
+  dailyActiveUsers: UserGrowthPoint[];
+  previousPeriod: { activeUsers: number } | null;
+}
+
+export interface UserActivityRow {
+  userId: string;
+  firstName: string | null;
+  lastName: string | null;
+  phone: string;
+  email: string | null;
+  country: string;
+  eventCount: number;
+  topAction: string | null;
+  lastAction: string | null;
+  lastActiveAt: string;
 }
 
 export interface AmlFlag {

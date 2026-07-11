@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { Users, ArrowLeftRight, Wallet, TrendingUp } from "lucide-react";
+import {
+  Users,
+  Activity,
+  ArrowLeftRight,
+  Wallet,
+  TrendingUp,
+} from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
 import { resolveDateRange } from "@/lib/date-range";
 import { formatCurrency } from "@/lib/format";
@@ -13,6 +19,7 @@ import { PeriodSelect } from "@/components/period-select";
 import { StatCard } from "@/components/overview/stat-card";
 import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { TrendInsightCard } from "@/components/overview/trend-insight-card";
+import { RevenueTrendChart } from "@/components/overview/revenue-trend-chart";
 import { ActivityFeedCard } from "@/components/overview/activity-feed-card";
 import { CATEGORICAL_LIGHT, WARM_CATEGORICAL, WARM_RAMP } from "@/lib/chart-colors";
 
@@ -43,6 +50,7 @@ const COUNTRY_LABELS: Record<string, string> = {
 
 const STAT_COLORS = {
   users: "#0d8fd2",
+  activeUsers: "#1baf7a",
   newUsers: "#95c015",
   volume: "#e9a028",
   revenue: "#00407a",
@@ -81,6 +89,9 @@ export default async function OverviewPage({
   const newUsersDelta = stats.previousPeriod
     ? deltaPercent(stats.newUsers, stats.previousPeriod.newUsers)
     : null;
+  const activeUsersDelta = stats.previousPeriod
+    ? deltaPercent(stats.activeUsers, stats.previousPeriod.activeUsers)
+    : null;
   const transactionDelta = stats.previousPeriod
     ? deltaPercent(stats.transactionCount, stats.previousPeriod.transactionCount)
     : null;
@@ -94,6 +105,12 @@ export default async function OverviewPage({
     ? stats.volumeDaily
         .filter((point) => point.currency === primaryVolume.currency)
         .map((point) => ({ date: point.date, volume: Number(point.volume) }))
+    : [];
+
+  const revenueTrendData = primaryRevenue
+    ? stats.revenue.daily
+        .filter((point) => point.currency === primaryRevenue.currency)
+        .map((point) => ({ date: point.date, value: Number(point.volume) }))
     : [];
 
   const userGrowthSparkline = stats.userGrowthDaily.map((point) => ({
@@ -159,13 +176,22 @@ export default async function OverviewPage({
         <PeriodSelect paramName="period" value={period} />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <Link href="/users" className="block h-full">
           <StatCard
             icon={Users}
             label="Total users"
             value={stats.totalUsers.toLocaleString()}
             color={STAT_COLORS.users}
+          />
+        </Link>
+        <Link href="/users/activity" className="block h-full">
+          <StatCard
+            icon={Activity}
+            label="Total active users"
+            value={stats.activeUsers.toLocaleString()}
+            delta={activeUsersDelta}
+            color={STAT_COLORS.activeUsers}
           />
         </Link>
         <Link href="/users" className="block h-full">
@@ -245,6 +271,28 @@ export default async function OverviewPage({
           <ActivityFeedCard data={topTransactions} />
         </InsightCard>
       </div>
+
+      <InsightCard
+        title="Revenue trend"
+        subtitle={
+          primaryRevenue
+            ? `Daily fee revenue in ${primaryRevenue.currency}`
+            : "Daily fee revenue"
+        }
+        action={
+          secondaryRevenue ? (
+            <span className="text-xs font-medium text-muted-foreground">
+              +{formatCurrency(secondaryRevenue.volume, secondaryRevenue.currency)}{" "}
+              in {secondaryRevenue.currency}
+            </span>
+          ) : undefined
+        }
+      >
+        <RevenueTrendChart
+          data={revenueTrendData}
+          currency={primaryRevenue?.currency ?? ""}
+        />
+      </InsightCard>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <InsightCard title="KYC tiers" subtitle="Verification level of all users">
