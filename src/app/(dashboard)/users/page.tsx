@@ -1,4 +1,5 @@
-import { Globe2, ShieldCheck, TrendingUp, Users } from "lucide-react";
+import Link from "next/link";
+import { Activity, Globe2, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
 import { resolveDateRange } from "@/lib/date-range";
 import type { AdminUserRow, OverviewStats, Paginated } from "@/lib/types";
@@ -8,6 +9,7 @@ import { StatCard } from "@/components/overview/stat-card";
 import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { AreaTrendChart } from "@/components/charts/area-trend-chart";
 import { BarList } from "@/components/charts/bar-list";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { KYC_TIER_RAMP } from "@/lib/chart-colors";
 import { UsersTable } from "./users-table";
@@ -103,7 +105,18 @@ export default async function UsersPage({
             {marketItems.length} market{marketItems.length === 1 ? "" : "s"}
           </p>
         </div>
-        <PeriodSelect paramName="period" value={period} />
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<Link href="/users/activity" />}
+          >
+            <Activity className="size-3.5" />
+            View activity
+          </Button>
+          <PeriodSelect paramName="period" value={period} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
