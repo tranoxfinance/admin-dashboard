@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -117,22 +117,8 @@ export function SidebarNav({
     return item.href.length > best.length ? item.href : best;
   }, "");
 
-  const activeSectionHref = navItems.find((item) =>
-    item.children?.some((child) => child.href === activeHref),
-  )?.href;
-
-  useEffect(() => {
-    if (activeSectionHref) {
-      setOpenSections((prev) =>
-        prev[activeSectionHref]
-          ? prev
-          : { ...prev, [activeSectionHref]: true },
-      );
-    }
-  }, [activeSectionHref]);
-
-  function toggleSection(href: string) {
-    setOpenSections((prev) => ({ ...prev, [href]: !prev[href] }));
+  function toggleSection(href: string, isOpen: boolean) {
+    setOpenSections((prev) => ({ ...prev, [href]: !isOpen }));
   }
 
   function renderFlatLink(item: NavItem) {
@@ -170,15 +156,15 @@ export function SidebarNav({
             </Fragment>
           );
         }
-        const isOpen = openSections[item.href] ?? false;
         const hasActiveChild = children.some(
           (child) => child.href === activeHref,
         );
+        const isOpen = openSections[item.href] ?? hasActiveChild;
         return (
           <Fragment key={item.href}>
             <button
               type="button"
-              onClick={() => toggleSection(item.href)}
+              onClick={() => toggleSection(item.href, isOpen)}
               aria-expanded={isOpen}
               className={cn(
                 "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
