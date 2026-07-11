@@ -10,6 +10,7 @@ import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { AreaTrendChart } from "@/components/charts/area-trend-chart";
 import { BarList } from "@/components/charts/bar-list";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserActivityTable } from "./user-activity-table";
 
 const STAT_COLORS = {
@@ -86,67 +87,80 @@ export default async function UserActivityPage({
         <PeriodSelect paramName="period" value={period} />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={Activity}
-          label="Active users"
-          value={stats.activeUsers.toLocaleString()}
-          delta={activeDelta}
-          color={STAT_COLORS.active}
-        />
-        <StatCard
-          icon={UserCheck}
-          label="Engagement"
-          value={`${engagementPercent}%`}
-          secondary={`${stats.activeUsers.toLocaleString()} of ${stats.totalUsers.toLocaleString()} users active`}
-          color={STAT_COLORS.engagement}
-        />
-        <StatCard
-          icon={MousePointerClick}
-          label="Events recorded"
-          value={stats.totalEvents.toLocaleString()}
-          color={STAT_COLORS.events}
-        />
-        <StatCard
-          icon={Flame}
-          label="Top action"
-          value={topAction ? humanizeAction(topAction.action) : "—"}
-          secondary={
-            topAction ? `${topAction.count.toLocaleString()} times` : undefined
-          }
-          color={STAT_COLORS.topAction}
-        />
-      </div>
+      <Tabs defaultValue="analytics">
+        <TabsList>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
+        </TabsList>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <InsightCard
-          title="Daily active users"
-          subtitle="Unique users with at least one action per day"
-          className="lg:col-span-2"
-        >
-          <AreaTrendChart
-            data={dailyActiveData}
-            seriesLabel="Active users"
-            color={STAT_COLORS.active}
-            height={280}
-          />
-        </InsightCard>
-        <InsightCard
-          title="What users do most"
-          subtitle="Share of activity and top actions"
-        >
-          <div className="flex flex-col gap-4">
-            <DonutStatCard
-              segments={categorySegments}
-              centerLabel="Total events"
+        <TabsContent value="analytics" className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              icon={Activity}
+              label="Active users"
+              value={stats.activeUsers.toLocaleString()}
+              delta={activeDelta}
+              color={STAT_COLORS.active}
             />
-            <Separator />
-            <BarList items={topActionItems} color={STAT_COLORS.topAction} />
+            <StatCard
+              icon={UserCheck}
+              label="Engagement"
+              value={`${engagementPercent}%`}
+              secondary={`${stats.activeUsers.toLocaleString()} of ${stats.totalUsers.toLocaleString()} users active`}
+              color={STAT_COLORS.engagement}
+            />
+            <StatCard
+              icon={MousePointerClick}
+              label="Events recorded"
+              value={stats.totalEvents.toLocaleString()}
+              color={STAT_COLORS.events}
+            />
+            <StatCard
+              icon={Flame}
+              label="Top action"
+              value={topAction ? humanizeAction(topAction.action) : "—"}
+              secondary={
+                topAction
+                  ? `${topAction.count.toLocaleString()} times`
+                  : undefined
+              }
+              color={STAT_COLORS.topAction}
+            />
           </div>
-        </InsightCard>
-      </div>
 
-      <UserActivityTable data={activity.items} />
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <InsightCard
+              title="Daily active users"
+              subtitle="Unique users with at least one action per day"
+              className="lg:col-span-2"
+            >
+              <AreaTrendChart
+                data={dailyActiveData}
+                seriesLabel="Active users"
+                color={STAT_COLORS.active}
+                height={280}
+              />
+            </InsightCard>
+            <InsightCard
+              title="What users do most"
+              subtitle="Share of activity and top actions"
+            >
+              <div className="flex flex-col gap-4">
+                <DonutStatCard
+                  segments={categorySegments}
+                  centerLabel="Total events"
+                />
+                <Separator />
+                <BarList items={topActionItems} color={STAT_COLORS.topAction} />
+              </div>
+            </InsightCard>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="users">
+          <UserActivityTable data={activity.items} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
