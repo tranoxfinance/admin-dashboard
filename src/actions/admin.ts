@@ -13,7 +13,7 @@ function describeError(error: unknown): string {
   if (error instanceof AdminApiError) {
     return error.errorCode;
   }
-  return "Could not reach the server. Please try again.";
+  return "NETWORK_ERROR";
 }
 
 export async function setUserActiveAction(
@@ -132,6 +132,25 @@ export async function reviewAppealAction(
   revalidatePath("/restrictions");
   revalidatePath("/aml-flags");
   return { ok: true };
+}
+
+export interface TranslateResult extends MutationResult {
+  translations?: string[];
+}
+
+export async function translateTextsAction(
+  texts: string[],
+  targetLang: "en" | "fr",
+): Promise<TranslateResult> {
+  try {
+    const result = await adminApi<{ translations: string[] }>(
+      "/admin/support/translate",
+      { method: "POST", body: JSON.stringify({ texts, targetLang }) },
+    );
+    return { ok: true, translations: result.translations };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
 }
 
 export interface SendSupportReplyResult extends MutationResult {

@@ -1,6 +1,7 @@
 "use client";
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { useDict } from "@/components/i18n-provider";
 
 export interface DonutSegment {
   label: string;
@@ -37,17 +38,19 @@ function ChartTooltip({
 
 export function DonutStatCard({
   segments,
-  centerLabel = "Total",
+  centerLabel,
 }: {
   segments: DonutSegment[];
   centerLabel?: string;
 }) {
+  const dict = useDict();
+  const resolvedCenterLabel = centerLabel ?? dict.common.total;
   const total = segments.reduce((sum, segment) => sum + segment.value, 0);
 
   if (!total) {
     return (
       <div className="flex h-36 items-center justify-center text-sm text-muted-foreground">
-        No data yet.
+        {dict.common.noDataYet}
       </div>
     );
   }
@@ -81,7 +84,7 @@ export function DonutStatCard({
             {total.toLocaleString()}
           </span>
           <span className="w-20 text-[10px] uppercase leading-tight tracking-wide text-muted-foreground">
-            {centerLabel}
+            {resolvedCenterLabel}
           </span>
         </div>
       </div>

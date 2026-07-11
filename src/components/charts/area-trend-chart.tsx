@@ -10,6 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { useTheme } from "@/components/theme-provider";
+import { useDict } from "@/components/i18n-provider";
 import { CHART_CHROME } from "@/lib/chart-colors";
 import { useMounted } from "@/lib/use-mounted";
 
@@ -18,8 +19,8 @@ export interface TrendPoint {
   value: number;
 }
 
-function formatAxisDate(value: string) {
-  return new Date(value).toLocaleDateString("en-US", {
+function formatAxisDate(value: string, locale: string) {
+  return new Date(value).toLocaleDateString(locale, {
     month: "short",
     day: "numeric",
   });
@@ -32,6 +33,7 @@ function ChartTooltip({
   seriesLabel,
   color,
   formatValue,
+  dateLocale,
 }: {
   active?: boolean;
   payload?: { value: number }[];
@@ -39,6 +41,7 @@ function ChartTooltip({
   seriesLabel: string;
   color: string;
   formatValue: (value: number) => string;
+  dateLocale: string;
 }) {
   if (!active || !payload?.length) {
     return null;
@@ -46,7 +49,7 @@ function ChartTooltip({
   return (
     <div className="rounded-lg border bg-card px-3 py-2 text-sm shadow-md">
       <p className="mb-1 font-medium text-foreground">
-        {label ? formatAxisDate(label) : ""}
+        {label ? formatAxisDate(label, dateLocale) : ""}
       </p>
       <div className="flex items-center gap-2">
         <span
@@ -79,6 +82,7 @@ export function AreaTrendChart({
 }) {
   const { resolvedTheme } = useTheme();
   const mounted = useMounted();
+  const dict = useDict();
   const chrome =
     mounted && resolvedTheme === "dark" ? CHART_CHROME.dark : CHART_CHROME.light;
 
@@ -89,7 +93,7 @@ export function AreaTrendChart({
         className="flex items-center justify-center text-sm text-muted-foreground"
         style={{ height }}
       >
-        No data in this period.
+        {dict.common.noData}
       </div>
     );
   }
@@ -108,7 +112,9 @@ export function AreaTrendChart({
         <CartesianGrid vertical={false} stroke={chrome.gridline} />
         <XAxis
           dataKey="date"
-          tickFormatter={formatAxisDate}
+          tickFormatter={(value: string) =>
+            formatAxisDate(value, dict.common.dateLocale)
+          }
           tick={{ fill: chrome.mutedInk, fontSize: 12 }}
           axisLine={{ stroke: chrome.baseline }}
           tickLine={false}
@@ -128,6 +134,7 @@ export function AreaTrendChart({
               seriesLabel={seriesLabel}
               color={color}
               formatValue={formatValue}
+              dateLocale={dict.common.dateLocale}
             />
           }
           cursor={{ stroke: chrome.baseline }}

@@ -81,7 +81,7 @@ export async function loginAction(
     await setShortLivedCookie(MFA_COOKIE, result.mfaToken);
     redirect("/login/verify");
   }
-  return { error: "Unexpected response from server" };
+  return { error: "UNEXPECTED_RESPONSE" };
 }
 
 export async function enrollTotpAction(
@@ -91,7 +91,7 @@ export async function enrollTotpAction(
   const code = String(formData.get("code") ?? "");
   const enrollmentToken = await getShortLivedCookie(ENROLLMENT_COOKIE);
   if (!enrollmentToken) {
-    return { error: "Your enrollment session expired. Please start again." };
+    return { error: "ENROLLMENT_EXPIRED" };
   }
   let tokens: TokenPair;
   try {
@@ -119,7 +119,7 @@ export async function verifyMfaAction(
   const code = String(formData.get("code") ?? "");
   const mfaToken = await getShortLivedCookie(MFA_COOKIE);
   if (!mfaToken) {
-    return { error: "Your login session expired. Please sign in again." };
+    return { error: "LOGIN_SESSION_EXPIRED" };
   }
   let tokens: TokenPair;
   try {
@@ -158,26 +158,7 @@ export async function logoutAction(): Promise<void> {
 
 function describeError(error: unknown): string {
   if (error instanceof AdminApiError) {
-    switch (error.errorCode) {
-      case "ADMIN_INVALID_CREDENTIALS":
-        return "Incorrect email or password.";
-      case "ADMIN_ACCOUNT_LOCKED":
-        return "Account locked after too many failed attempts. Try again later.";
-      case "ADMIN_ACCOUNT_INACTIVE":
-        return "This admin account has been deactivated.";
-      case "ADMIN_MFA_INVALID":
-        return "Incorrect code. Please try again.";
-      case "ADMIN_MFA_EXPIRED":
-        return "This code has expired. Please sign in again.";
-      case "ADMIN_MFA_MAX_ATTEMPTS":
-        return "Too many incorrect attempts. Please sign in again.";
-      case "ADMIN_TOTP_ALREADY_ENABLED":
-        return "Two-factor authentication is already enabled for this account.";
-      case "ADMIN_RESET_TOKEN_INVALID":
-        return "This reset link is invalid or has expired.";
-      default:
-        return "Something went wrong. Please try again.";
-    }
+    return error.errorCode;
   }
-  return "Could not reach the server. Please try again.";
+  return "NETWORK_ERROR";
 }

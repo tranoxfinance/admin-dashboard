@@ -9,12 +9,13 @@ import {
   YAxis,
 } from "recharts";
 import { useTheme } from "@/components/theme-provider";
+import { useDict } from "@/components/i18n-provider";
 import { CATEGORICAL_DARK, CATEGORICAL_LIGHT } from "@/lib/chart-colors";
 import type { UserGrowthPoint } from "@/lib/types";
 import { useMounted } from "@/lib/use-mounted";
 
-function formatAxisDate(value: string) {
-  return new Date(value).toLocaleDateString("en-US", {
+function formatAxisDate(value: string, locale: string) {
+  return new Date(value).toLocaleDateString(locale, {
     month: "short",
     day: "numeric",
   });
@@ -24,10 +25,14 @@ function ChartTooltip({
   active,
   payload,
   label,
+  seriesLabel,
+  dateLocale,
 }: {
   active?: boolean;
   payload?: { value: number }[];
   label?: string;
+  seriesLabel?: string;
+  dateLocale?: string;
 }) {
   if (!active || !payload?.length) {
     return null;
@@ -35,10 +40,10 @@ function ChartTooltip({
   return (
     <div className="rounded-lg border bg-card px-3 py-2 text-sm shadow-md">
       <p className="mb-1 font-medium text-foreground">
-        {label ? formatAxisDate(label) : ""}
+        {label ? formatAxisDate(label, dateLocale ?? "en-US") : ""}
       </p>
       <div className="flex items-center justify-between gap-4">
-        <span className="text-muted-foreground">Activity</span>
+        <span className="text-muted-foreground">{seriesLabel}</span>
         <span className="font-medium tabular-nums text-foreground">
           {payload[0].value}
         </span>
@@ -64,6 +69,7 @@ export function TrendInsightCard({
 }) {
   const { resolvedTheme } = useTheme();
   const mounted = useMounted();
+  const dict = useDict();
   const isDark = mounted && resolvedTheme === "dark";
   const color = isDark ? CATEGORICAL_DARK[0] : CATEGORICAL_LIGHT[0];
   const tickColor = isDark ? "#7e91a8" : "#6b7d92";
@@ -79,7 +85,7 @@ export function TrendInsightCard({
             {total.toLocaleString()}
           </span>
           <span className="ml-1.5 text-sm text-muted-foreground">
-            total activity
+            {dict.common.totalActivity}
           </span>
         </div>
       </div>
@@ -87,10 +93,20 @@ export function TrendInsightCard({
         <div className="h-40 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
-              <Tooltip cursor={{ fill: `${color}0f` }} content={<ChartTooltip />} />
+              <Tooltip
+                cursor={{ fill: `${color}0f` }}
+                content={
+                  <ChartTooltip
+                    seriesLabel={dict.common.activity}
+                    dateLocale={dict.common.dateLocale}
+                  />
+                }
+              />
               <XAxis
                 dataKey="date"
-                tickFormatter={formatAxisDate}
+                tickFormatter={(value: string) =>
+                  formatAxisDate(value, dict.common.dateLocale)
+                }
                 axisLine={false}
                 tickLine={false}
                 interval={tickInterval}
@@ -117,7 +133,7 @@ export function TrendInsightCard({
         </div>
       ) : (
         <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
-          No activity in this period.
+          {dict.common.noActivity}
         </div>
       )}
       <div className="flex flex-col gap-3 border-t pt-3">

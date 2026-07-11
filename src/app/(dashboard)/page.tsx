@@ -9,6 +9,7 @@ import {
 import { adminApi } from "@/lib/admin-api";
 import { resolveDateRange } from "@/lib/date-range";
 import { formatCurrency } from "@/lib/format";
+import { getDict } from "@/lib/i18n/server";
 import type {
   ActivityCurrencyTotal,
   ActivityItem,
@@ -37,17 +38,6 @@ function pickPrimary(
   return [sorted[0], sorted[1]];
 }
 
-const KYC_LABELS: Record<number, string> = {
-  0: "Tier 0",
-  1: "Tier 1",
-  2: "Tier 2",
-};
-
-const COUNTRY_LABELS: Record<string, string> = {
-  NG: "Nigeria",
-  CI: "Ivory Coast",
-};
-
 const STAT_COLORS = {
   users: "#0d8fd2",
   activeUsers: "#1baf7a",
@@ -62,6 +52,7 @@ export default async function OverviewPage({
   searchParams: Promise<{ period?: string; topPeriod?: string }>;
 }) {
   const params = await searchParams;
+  const dict = await getDict();
   const period = params.period ?? "30d";
   const topPeriod = params.topPeriod ?? "7d";
 
@@ -124,17 +115,17 @@ export default async function OverviewPage({
   );
   const typeBreakdown = [
     {
-      label: "Transfers",
+      label: dict.common.transfers,
       count: stats.volumeTotals.transfers.reduce((s, r) => s + r.count, 0),
       color: CATEGORICAL_LIGHT[0],
     },
     {
-      label: "Deposits",
+      label: dict.common.deposits,
       count: stats.volumeTotals.topups.reduce((s, r) => s + r.count, 0),
       color: CATEGORICAL_LIGHT[1],
     },
     {
-      label: "Withdrawals",
+      label: dict.common.withdrawals,
       count: stats.volumeTotals.withdrawals.reduce((s, r) => s + r.count, 0),
       color: CATEGORICAL_LIGHT[2],
     },
@@ -145,20 +136,20 @@ export default async function OverviewPage({
   }));
 
   const kycSegments = [0, 1, 2].map((tier) => ({
-    label: KYC_LABELS[tier],
+    label: dict.overview.tier(tier),
     value: snapshot.kycDistribution.find((row) => row.tier === tier)?.count ?? 0,
     color: WARM_RAMP[tier],
   }));
 
   const usersByMarket = snapshot.countryDistribution.map((row, index) => ({
-    label: COUNTRY_LABELS[row.country] ?? row.country,
+    label: dict.markets[row.country] ?? row.country,
     value: row.count,
     color: WARM_CATEGORICAL[index % WARM_CATEGORICAL.length],
   }));
 
   const transactionsByMarket = snapshot.transactionsByCountry.map(
     (row, index) => ({
-      label: COUNTRY_LABELS[row.country] ?? row.country,
+      label: dict.markets[row.country] ?? row.country,
       value: row.count,
       color: WARM_CATEGORICAL[index % WARM_CATEGORICAL.length],
     }),
@@ -168,9 +159,11 @@ export default async function OverviewPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-heading text-2xl font-semibold">Overview</h1>
+          <h1 className="font-heading text-2xl font-semibold">
+            {dict.overview.title}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Growth, transaction volume, and revenue at a glance.
+            {dict.overview.subtitle}
           </p>
         </div>
         <PeriodSelect paramName="period" value={period} />
@@ -180,7 +173,7 @@ export default async function OverviewPage({
         <Link href="/users" className="block h-full">
           <StatCard
             icon={Users}
-            label="Total users"
+            label={dict.common.totalUsers}
             value={stats.totalUsers.toLocaleString()}
             color={STAT_COLORS.users}
           />
@@ -188,7 +181,7 @@ export default async function OverviewPage({
         <Link href="/users/activity" className="block h-full">
           <StatCard
             icon={Activity}
-            label="Total active users"
+            label={dict.overview.totalActiveUsers}
             value={stats.activeUsers.toLocaleString()}
             delta={activeUsersDelta}
             color={STAT_COLORS.activeUsers}
@@ -197,7 +190,7 @@ export default async function OverviewPage({
         <Link href="/users" className="block h-full">
           <StatCard
             icon={TrendingUp}
-            label="New users"
+            label={dict.overview.newUsers}
             value={stats.newUsers.toLocaleString()}
             delta={newUsersDelta}
             sparkline={{ data: userGrowthSparkline, dataKey: "count" }}
@@ -207,7 +200,11 @@ export default async function OverviewPage({
         <Link href="/transactions" className="block h-full">
           <StatCard
             icon={Wallet}
-            label={primaryVolume ? `Volume (${primaryVolume.currency})` : "Volume"}
+            label={
+              primaryVolume
+                ? dict.overview.volumeIn(primaryVolume.currency)
+                : dict.overview.volume
+            }
             value={
               primaryVolume
                 ? formatCurrency(primaryVolume.volume, primaryVolume.currency)
@@ -225,7 +222,11 @@ export default async function OverviewPage({
         <Link href="/transactions" className="block h-full">
           <StatCard
             icon={ArrowLeftRight}
-            label={primaryRevenue ? `Revenue (${primaryRevenue.currency})` : "Revenue"}
+            label={
+              primaryRevenue
+                ? dict.overview.revenueIn(primaryRevenue.currency)
+                : dict.overview.revenue
+            }
             value={
               primaryRevenue
                 ? formatCurrency(primaryRevenue.volume, primaryRevenue.currency)
@@ -244,7 +245,7 @@ export default async function OverviewPage({
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <InsightCard
-          title="Activity trend"
+          title={dict.overview.activityTrend}
           className="lg:col-span-2"
           action={
             <span
@@ -254,7 +255,7 @@ export default async function OverviewPage({
                   : "rounded-full bg-[#0ca30c]/10 px-2.5 py-1 text-xs font-medium text-[#0ca30c]"
               }
             >
-              {stats.openAmlFlags} AML flag{stats.openAmlFlags === 1 ? "" : "s"}
+              {dict.overview.amlFlagCount(stats.openAmlFlags)}
             </span>
           }
         >
@@ -265,7 +266,7 @@ export default async function OverviewPage({
           />
         </InsightCard>
         <InsightCard
-          title="Top transactions"
+          title={dict.overview.topTransactions}
           action={<PeriodSelect paramName="topPeriod" value={topPeriod} />}
         >
           <ActivityFeedCard data={topTransactions} />
@@ -273,17 +274,22 @@ export default async function OverviewPage({
       </div>
 
       <InsightCard
-        title="Revenue trend"
+        title={dict.overview.revenueTrend}
         subtitle={
           primaryRevenue
-            ? `Daily fee revenue in ${primaryRevenue.currency}`
-            : "Daily fee revenue"
+            ? dict.overview.revenueTrendSubtitleIn(primaryRevenue.currency)
+            : dict.overview.revenueTrendSubtitle
         }
         action={
           secondaryRevenue ? (
             <span className="text-xs font-medium text-muted-foreground">
-              +{formatCurrency(secondaryRevenue.volume, secondaryRevenue.currency)}{" "}
-              in {secondaryRevenue.currency}
+              {dict.overview.plusIn(
+                formatCurrency(
+                  secondaryRevenue.volume,
+                  secondaryRevenue.currency,
+                ),
+                secondaryRevenue.currency,
+              )}
             </span>
           ) : undefined
         }
@@ -295,22 +301,31 @@ export default async function OverviewPage({
       </InsightCard>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <InsightCard title="KYC tiers" subtitle="Verification level of all users">
-          <DonutStatCard segments={kycSegments} centerLabel="Total users" />
-        </InsightCard>
         <InsightCard
-          title="Users by market"
-          subtitle="Where accounts are registered"
+          title={dict.overview.kycTiers}
+          subtitle={dict.overview.kycTiersSubtitle}
         >
-          <DonutStatCard segments={usersByMarket} centerLabel="Total users" />
+          <DonutStatCard
+            segments={kycSegments}
+            centerLabel={dict.common.totalUsers}
+          />
         </InsightCard>
         <InsightCard
-          title="Transactions by market"
-          subtitle="Where activity originates"
+          title={dict.overview.usersByMarket}
+          subtitle={dict.overview.usersByMarketSubtitle}
+        >
+          <DonutStatCard
+            segments={usersByMarket}
+            centerLabel={dict.common.totalUsers}
+          />
+        </InsightCard>
+        <InsightCard
+          title={dict.overview.transactionsByMarket}
+          subtitle={dict.overview.transactionsByMarketSubtitle}
         >
           <DonutStatCard
             segments={transactionsByMarket}
-            centerLabel="Total transactions"
+            centerLabel={dict.overview.totalTransactions}
           />
         </InsightCard>
       </div>

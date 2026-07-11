@@ -2,6 +2,9 @@
 
 import Image from "next/image";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import type { AdminRole } from "@/lib/admin-session";
+import { useDict } from "@/components/i18n-provider";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { LogoutButton } from "@/components/logout-button";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -12,8 +15,9 @@ import { useLocalStorageBoolean } from "@/lib/use-local-storage-boolean";
 
 const STORAGE_KEY = "admin-sidebar-collapsed";
 
-export function Sidebar({ email }: { email: string }) {
+export function Sidebar({ email, role }: { email: string; role: AdminRole }) {
   const [collapsed, setCollapsed] = useLocalStorageBoolean(STORAGE_KEY, false);
+  const dict = useDict();
 
   function toggle() {
     setCollapsed(!collapsed);
@@ -42,7 +46,9 @@ export function Sidebar({ email }: { email: string }) {
           variant="ghost"
           size="icon-sm"
           onClick={toggle}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={
+            collapsed ? dict.nav.expandSidebar : dict.nav.collapseSidebar
+          }
           className="text-muted-foreground"
         >
           {collapsed ? (
@@ -52,7 +58,7 @@ export function Sidebar({ email }: { email: string }) {
           )}
         </Button>
       </div>
-      <SidebarNav collapsed={collapsed} />
+      <SidebarNav collapsed={collapsed} role={role} />
       <div
         className={cn(
           "flex items-center gap-2 border-t p-3",
@@ -69,6 +75,7 @@ export function Sidebar({ email }: { email: string }) {
             {email}
           </p>
         )}
+        <LanguageSwitcher />
         <ThemeToggle />
         <LogoutButton />
       </div>

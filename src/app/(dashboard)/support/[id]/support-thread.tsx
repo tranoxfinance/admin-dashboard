@@ -3,21 +3,24 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { io, type Socket } from "socket.io-client";
+import { Languages } from "lucide-react";
 import { toast } from "sonner";
 import {
   assignSupportConversationAction,
   closeSupportConversationAction,
   resolveSupportConversationAction,
   sendSupportReplyAction,
+  translateTextsAction,
 } from "@/actions/admin";
 import { formatDate } from "@/lib/format";
+import { describeApiError } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type {
   SupportConversationDetail,
   SupportConversationStatus,
   SupportMessage,
-  SupportTicketCategory,
 } from "@/lib/types";
+import { useDict, useLocale } from "@/components/i18n-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -32,38 +35,36 @@ const STATUS_VARIANT: Record<
   closed: "secondary",
 };
 
-const STATUS_LABEL: Record<SupportConversationStatus, string> = {
-  bot: "Bot handling",
-  pending_agent: "Needs agent",
-  active: "Active",
-  resolved: "Resolved",
-  closed: "Closed",
-};
-
-const CATEGORY_LABEL: Record<SupportTicketCategory, string> = {
-  transfer: "Transfer",
-  topup: "Top-up",
-  withdrawal: "Withdrawal",
-  kyc: "Verification",
-  account: "Account",
-  other: "Other",
-};
-
 export function SupportThread({
   initialDetail,
   conversationId,
   accessToken,
+  canManage,
 }: {
   initialDetail: SupportConversationDetail;
   conversationId: string;
   accessToken: string;
+  canManage: boolean;
 }) {
   const router = useRouter();
+  const dict = useDict();
+  const locale = useLocale();
   const [detail, setDetail] = useState(initialDetail);
   const [draft, setDraft] = useState("");
   const [isSending, startSending] = useTransition();
   const [isMutating, startMutating] = useTransition();
+  const [isTranslating, startTranslating] = useTransition();
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [showTranslations, setShowTranslations] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const statusLabels: Record<SupportConversationStatus, string> = {
+    bot: dict.support.statusBot,
+    pending_agent: dict.support.statusPendingAgent,
+    active: dict.support.statusActive,
+    resolved: dict.support.statusResolved,
+    closed: dict.support.statusClosed,
+  };
 
   function appendMessage(message: SupportMessage) {
     setDetail((current) =>
@@ -102,6 +103,36 @@ export function SupportThread({
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [detail.messages.length]);
 
+  function toggleTranslations() {
+    if (showTranslations) {
+      setShowTranslations(false);
+      return;
+    }
+    const pending = detail.messages.filter(
+      (message) => translations[message.id] === undefined,
+    );
+    if (pending.length === 0) {
+      setShowTranslations(true);
+      return;
+    }
+    startTranslating(async () => {
+      const result = await translateTextsAction(
+        pending.map((message) => message.body),
+        locale,
+      );
+      if (!result.ok || !result.translations) {
+        toast.error(describeApiError(dict, result.error));
+        return;
+      }
+      const next = { ...translations };
+      pending.forEach((message, index) => {
+        next[message.id] = result.translations![index];
+      });
+      setTranslations(next);
+      setShowTranslations(true);
+    });
+  }
+
   function send() {
     const message = draft.trim();
     if (!message) {
@@ -110,7 +141,11 @@ export function SupportThread({
     startSending(async () => {
       const result = await sendSupportReplyAction(conversationId, message);
       if (!result.ok || !result.message) {
-        toast.error(result.error ?? "Could not send reply");
+        toast.error(
+          result.error
+            ? describeApiError(dict, result.error)
+            : dict.support.sendError,
+        );
         return;
       }
       setDraft("");
@@ -126,10 +161,14 @@ export function SupportThread({
     startMutating(async () => {
       const result = await assignSupportConversationAction(conversationId);
       if (!result.ok) {
-        toast.error(result.error ?? "Could not assign conversation");
+        toast.error(
+          result.error
+            ? describeApiError(dict, result.error)
+            : dict.support.assignError,
+        );
         return;
       }
-      toast.success("Conversation assigned to you");
+      toast.success(dict.support.assignedToast);
       router.refresh();
     });
   }
@@ -138,10 +177,14 @@ export function SupportThread({
     startMutating(async () => {
       const result = await resolveSupportConversationAction(conversationId);
       if (!result.ok) {
-        toast.error(result.error ?? "Could not resolve conversation");
+        toast.error(
+          result.error
+            ? describeApiError(dict, result.error)
+            : dict.support.resolveError,
+        );
         return;
       }
-      toast.success("Marked as resolved");
+      toast.success(dict.support.resolvedToast);
       setDetail((current) => ({
         ...current,
         conversation: { ...current.conversation, status: "resolved" },
@@ -153,10 +196,14 @@ export function SupportThread({
     startMutating(async () => {
       const result = await closeSupportConversationAction(conversationId);
       if (!result.ok) {
-        toast.error(result.error ?? "Could not close conversation");
+        toast.error(
+          result.error
+            ? describeApiError(dict, result.error)
+            : dict.support.closeError,
+        );
         return;
       }
-      toast.success("Conversation closed");
+      toast.success(dict.support.closedToast);
       setDetail((current) => ({
         ...current,
         conversation: { ...current.conversation, status: "closed" },
@@ -167,25 +214,33 @@ export function SupportThread({
   const user = detail.user;
   const userName = user
     ? [user.firstName, user.lastName].filter(Boolean).join(" ") || user.phone
-    : "Unknown user";
+    : dict.common.unknownUser;
   const conversation = detail.conversation;
   const isClosed = conversation.status === "closed";
   const isResolved = conversation.status === "resolved";
   const isTicket = conversation.kind === "ticket";
+
+  const senderLabels = {
+    user: dict.support.senderUser,
+    bot: dict.support.senderBot,
+    agent: dict.support.senderAgent,
+  };
 
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col gap-4">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="font-heading text-2xl font-semibold">
-            {isTicket ? (conversation.subject ?? "Untitled ticket") : userName}
+            {isTicket
+              ? (conversation.subject ?? dict.support.untitledTicket)
+              : userName}
           </h1>
           <p className="text-sm text-muted-foreground">
             {isTicket
               ? [
                   conversation.reference,
                   conversation.category
-                    ? CATEGORY_LABEL[conversation.category]
+                    ? dict.support.categories[conversation.category]
                     : null,
                   userName,
                 ]
@@ -199,36 +254,49 @@ export function SupportThread({
         </div>
         <div className="flex items-center gap-2">
           <Badge variant={STATUS_VARIANT[conversation.status]}>
-            {STATUS_LABEL[conversation.status]}
+            {statusLabels[conversation.status]}
           </Badge>
-          {!conversation.assignedAdminId && !isClosed ? (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={isTranslating}
+            onClick={toggleTranslations}
+          >
+            <Languages className="size-3.5" />
+            {isTranslating
+              ? dict.common.translating
+              : showTranslations
+                ? dict.common.showOriginal
+                : dict.common.translate}
+          </Button>
+          {canManage && !conversation.assignedAdminId && !isClosed ? (
             <Button
               size="sm"
               variant="outline"
               disabled={isMutating}
               onClick={assign}
             >
-              Assign to me
+              {dict.support.assignToMe}
             </Button>
           ) : null}
-          {!isClosed && !isResolved ? (
+          {canManage && !isClosed && !isResolved ? (
             <Button
               size="sm"
               variant="outline"
               disabled={isMutating}
               onClick={resolve}
             >
-              Mark resolved
+              {dict.support.markResolved}
             </Button>
           ) : null}
-          {!isClosed ? (
+          {canManage && !isClosed ? (
             <Button
               size="sm"
               variant="outline"
               disabled={isMutating}
               onClick={close}
             >
-              Close
+              {dict.support.close}
             </Button>
           ) : null}
         </div>
@@ -240,6 +308,9 @@ export function SupportThread({
       >
         {detail.messages.map((message) => {
           const isUser = message.senderType === "user";
+          const translated = showTranslations
+            ? translations[message.id]
+            : undefined;
           return (
             <div
               key={message.id}
@@ -255,14 +326,18 @@ export function SupportThread({
                       : "bg-primary text-primary-foreground",
                 )}
               >
-                <p className="whitespace-pre-wrap">{message.body}</p>
+                <p className="whitespace-pre-wrap">
+                  {translated ?? message.body}
+                </p>
+                {translated !== undefined && translated !== message.body ? (
+                  <p className="mt-1 flex items-center gap-1 text-[11px] opacity-70">
+                    <Languages className="size-3" />
+                    {message.body}
+                  </p>
+                ) : null}
                 <p className="mt-1 text-[11px] opacity-70">
-                  {message.senderType === "user"
-                    ? "User"
-                    : message.senderType === "bot"
-                      ? "Bot"
-                      : "Agent"}{" "}
-                  · {formatDate(message.createdAt)}
+                  {senderLabels[message.senderType]} ·{" "}
+                  {formatDate(message.createdAt, dict.common.dateLocale)}
                 </p>
               </div>
             </div>
@@ -270,7 +345,7 @@ export function SupportThread({
         })}
       </div>
 
-      {!isClosed ? (
+      {canManage && !isClosed ? (
         <div className="flex items-end gap-2">
           <textarea
             value={draft}
@@ -281,12 +356,12 @@ export function SupportThread({
                 send();
               }
             }}
-            placeholder="Reply to the user…"
+            placeholder={dict.support.replyPlaceholder}
             rows={2}
             className="flex-1 resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           />
           <Button disabled={isSending || !draft.trim()} onClick={send}>
-            Send
+            {dict.support.send}
           </Button>
         </div>
       ) : null}

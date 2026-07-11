@@ -1,37 +1,45 @@
+"use client";
+
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { useDict } from "@/components/i18n-provider";
+import type { Dict } from "@/lib/i18n";
 import type { ActivityItem } from "@/lib/types";
 
 const TYPE_META: Record<
   ActivityItem["type"],
   {
-    label: string;
     icon: typeof ArrowLeftRight;
     gradient: string;
   }
 > = {
   topup: {
-    label: "Deposit",
     icon: ArrowDownLeft,
     gradient: "linear-gradient(90deg, #0ca30c, #7bd66f)",
   },
   withdrawal: {
-    label: "Withdrawal",
     icon: ArrowUpRight,
     gradient: "linear-gradient(90deg, #d03b3b, #f5975e)",
   },
   transfer: {
-    label: "Transfer",
     icon: ArrowLeftRight,
     gradient: "linear-gradient(90deg, #00407a, #0d8fd2)",
   },
 };
 
+function typeLabel(dict: Dict, type: ActivityItem["type"]): string {
+  if (type === "topup") return dict.transactions.typeDeposit;
+  if (type === "withdrawal") return dict.transactions.typeWithdrawal;
+  return dict.transactions.typeTransfer;
+}
+
 export function ActivityFeedCard({ data }: { data: ActivityItem[] }) {
+  const dict = useDict();
+
   if (!data.length) {
     return (
       <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
-        No activity in this period.
+        {dict.common.noActivity}
       </div>
     );
   }
@@ -54,7 +62,7 @@ export function ActivityFeedCard({ data }: { data: ActivityItem[] }) {
               >
                 <meta.icon className="size-3.5 shrink-0 text-white" />
                 <span className="truncate text-sm font-medium text-white">
-                  {meta.label}
+                  {typeLabel(dict, item.type)}
                 </span>
               </div>
             </div>
@@ -63,7 +71,7 @@ export function ActivityFeedCard({ data }: { data: ActivityItem[] }) {
                 {formatCurrency(item.amount, item.currency)}
               </span>
               <span className="text-[11px] text-muted-foreground">
-                {formatDate(item.initiatedAt)}
+                {formatDate(item.initiatedAt, dict.common.dateLocale)}
               </span>
             </div>
           </div>

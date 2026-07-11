@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useDict } from "@/components/i18n-provider";
 import {
   Select,
   SelectContent,
@@ -8,13 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const OPTIONS = [
-  { label: "Last 7 days", value: "7d" },
-  { label: "Last 30 days", value: "30d" },
-  { label: "Last 90 days", value: "90d" },
-  { label: "All time", value: "all" },
-];
 
 export function PeriodSelect({
   paramName,
@@ -26,6 +20,14 @@ export function PeriodSelect({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const dict = useDict();
+
+  const options = [
+    { label: dict.periods.last7, value: "7d" },
+    { label: dict.periods.last30, value: "30d" },
+    { label: dict.periods.last90, value: "90d" },
+    { label: dict.periods.allTime, value: "all" },
+  ];
 
   function handleChange(next: string | null) {
     if (!next) return;
@@ -40,7 +42,7 @@ export function PeriodSelect({
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {OPTIONS.map((option) => (
+        {options.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}
           </SelectItem>

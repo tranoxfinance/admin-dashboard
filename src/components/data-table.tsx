@@ -12,6 +12,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { useDict } from "@/components/i18n-provider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,12 +36,13 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data,
-  searchPlaceholder = "Search…",
-  emptyMessage = "No results.",
+  searchPlaceholder,
+  emptyMessage,
   onRowClick,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+  const dict = useDict();
 
   const table = useReactTable({
     data,
@@ -72,7 +74,7 @@ export function DataTable<TData, TValue>({
         <Input
           value={globalFilter}
           onChange={(event) => setGlobalFilter(event.target.value)}
-          placeholder={searchPlaceholder}
+          placeholder={searchPlaceholder ?? dict.common.search}
           className="pl-8"
         />
       </div>
@@ -134,7 +136,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  {emptyMessage}
+                  {emptyMessage ?? dict.common.noResults}
                 </TableCell>
               </TableRow>
             )}
@@ -143,9 +145,7 @@ export function DataTable<TData, TValue>({
       </div>
       {pageCount > 1 ? (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>
-            {rangeStart}–{rangeEnd} of {filteredCount}
-          </span>
+          <span>{dict.common.rangeOf(rangeStart, rangeEnd, filteredCount)}</span>
           <div className="flex items-center gap-1">
             <Button
               variant="outline"

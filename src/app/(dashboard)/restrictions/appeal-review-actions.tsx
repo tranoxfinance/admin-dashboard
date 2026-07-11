@@ -3,10 +3,13 @@
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { reviewAppealAction } from "@/actions/admin";
+import { describeApiError } from "@/lib/i18n";
+import { useDict } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
 
 export function AppealReviewActions({ appealId }: { appealId: string }) {
   const [isPending, startTransition] = useTransition();
+  const dict = useDict();
 
   function review(decision: "approved" | "rejected") {
     startTransition(async () => {
@@ -14,11 +17,11 @@ export function AppealReviewActions({ appealId }: { appealId: string }) {
       if (result.ok) {
         toast.success(
           decision === "approved"
-            ? "Appeal approved and restriction lifted"
-            : "Appeal rejected",
+            ? dict.restrictions.approvedToast
+            : dict.restrictions.rejectedToast,
         );
       } else {
-        toast.error(result.error ?? "Something went wrong");
+        toast.error(describeApiError(dict, result.error));
       }
     });
   }
@@ -31,10 +34,10 @@ export function AppealReviewActions({ appealId }: { appealId: string }) {
         disabled={isPending}
         onClick={() => review("rejected")}
       >
-        Reject
+        {dict.restrictions.reject}
       </Button>
       <Button size="sm" disabled={isPending} onClick={() => review("approved")}>
-        Approve
+        {dict.restrictions.approve}
       </Button>
     </div>
   );

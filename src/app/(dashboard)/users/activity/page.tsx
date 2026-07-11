@@ -2,6 +2,7 @@ import { Activity, Flame, MousePointerClick, UserCheck } from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
 import { buildCategoryBreakdown, humanizeAction } from "@/lib/activity";
 import { resolveDateRange } from "@/lib/date-range";
+import { getDict } from "@/lib/i18n/server";
 import type { Paginated, UserActivityRow, UserActivityStats } from "@/lib/types";
 import { InsightCard } from "@/components/insight-card";
 import { PeriodSelect } from "@/components/period-select";
@@ -33,6 +34,7 @@ export default async function UserActivityPage({
   searchParams: Promise<{ period?: string }>;
 }) {
   const params = await searchParams;
+  const dict = await getDict();
   const period = params.period ?? "30d";
   const { dateFrom, dateTo } = resolveDateRange({ period });
 
@@ -79,9 +81,11 @@ export default async function UserActivityPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-heading text-2xl font-semibold">User Activity</h1>
+          <h1 className="font-heading text-2xl font-semibold">
+            {dict.userActivity.title}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            What users are doing across the app, and who is most active.
+            {dict.userActivity.subtitle}
           </p>
         </div>
         <PeriodSelect paramName="period" value={period} />
@@ -89,39 +93,44 @@ export default async function UserActivityPage({
 
       <Tabs defaultValue="analytics">
         <TabsList>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="analytics">{dict.common.analytics}</TabsTrigger>
+          <TabsTrigger value="users">{dict.userActivity.tabUsers}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics" className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               icon={Activity}
-              label="Active users"
+              label={dict.userActivity.statActive}
               value={stats.activeUsers.toLocaleString()}
               delta={activeDelta}
               color={STAT_COLORS.active}
             />
             <StatCard
               icon={UserCheck}
-              label="Engagement"
+              label={dict.userActivity.statEngagement}
               value={`${engagementPercent}%`}
-              secondary={`${stats.activeUsers.toLocaleString()} of ${stats.totalUsers.toLocaleString()} users active`}
+              secondary={dict.userActivity.engagementSecondary(
+                stats.activeUsers.toLocaleString(),
+                stats.totalUsers.toLocaleString(),
+              )}
               color={STAT_COLORS.engagement}
             />
             <StatCard
               icon={MousePointerClick}
-              label="Events recorded"
+              label={dict.userActivity.statEvents}
               value={stats.totalEvents.toLocaleString()}
               color={STAT_COLORS.events}
             />
             <StatCard
               icon={Flame}
-              label="Top action"
+              label={dict.userActivity.statTopAction}
               value={topAction ? humanizeAction(topAction.action) : "—"}
               secondary={
                 topAction
-                  ? `${topAction.count.toLocaleString()} times`
+                  ? dict.userActivity.topActionSecondary(
+                      topAction.count.toLocaleString(),
+                    )
                   : undefined
               }
               color={STAT_COLORS.topAction}
@@ -130,25 +139,25 @@ export default async function UserActivityPage({
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <InsightCard
-              title="Daily active users"
-              subtitle="Unique users with at least one action per day"
+              title={dict.userActivity.dailyActive}
+              subtitle={dict.userActivity.dailyActiveSubtitle}
               className="lg:col-span-2"
             >
               <AreaTrendChart
                 data={dailyActiveData}
-                seriesLabel="Active users"
+                seriesLabel={dict.userActivity.activeUsersSeries}
                 color={STAT_COLORS.active}
                 height={280}
               />
             </InsightCard>
             <InsightCard
-              title="What users do most"
-              subtitle="Share of activity and top actions"
+              title={dict.userActivity.whatUsersDoMost}
+              subtitle={dict.userActivity.whatUsersDoSubtitle}
             >
               <div className="flex flex-col gap-4">
                 <DonutStatCard
                   segments={categorySegments}
-                  centerLabel="Total events"
+                  centerLabel={dict.userActivity.totalEvents}
                 />
                 <Separator />
                 <BarList items={topActionItems} color={STAT_COLORS.topAction} />

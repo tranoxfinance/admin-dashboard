@@ -1,3 +1,7 @@
+"use client";
+
+import { useDict } from "@/components/i18n-provider";
+
 export interface BarListItem {
   label: string;
   value: number;
@@ -13,12 +17,13 @@ export function BarList({
   color?: string;
   formatValue?: (value: number) => string;
 }) {
+  const dict = useDict();
   const max = Math.max(...items.map((item) => item.value), 0);
 
   if (!max) {
     return (
       <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-        No data yet.
+        {dict.common.noDataYet}
       </div>
     );
   }

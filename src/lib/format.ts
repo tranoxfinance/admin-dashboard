@@ -11,8 +11,8 @@ export function formatCurrency(amount: string, currency: string): string {
   }).format(value)}`;
 }
 
-export function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("en-US", {
+export function formatDate(value: string, locale = "en-US"): string {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
@@ -20,9 +20,10 @@ export function formatDate(value: string): string {
 
 export function formatVolumeSummary(
   totals: { currency: string; volume: string }[],
+  emptyText = "No volume",
 ): string {
   if (!totals.length) {
-    return "No volume";
+    return emptyText;
   }
   return totals
     .map((entry) => formatCurrency(entry.volume, entry.currency))

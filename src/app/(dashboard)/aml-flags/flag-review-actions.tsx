@@ -7,6 +7,8 @@ import {
   liftRestrictionAction,
   reviewFlagAction,
 } from "@/actions/admin";
+import { describeApiError } from "@/lib/i18n";
+import { useDict } from "@/components/i18n-provider";
 import type { AmlFlag } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 
@@ -20,16 +22,19 @@ export function FlagReviewActions({
   restriction: AmlFlag["restriction"];
 }) {
   const [isPending, startTransition] = useTransition();
+  const dict = useDict();
 
   function review(nextStatus: "reviewed" | "dismissed") {
     startTransition(async () => {
       const result = await reviewFlagAction(flagId, nextStatus);
       if (result.ok) {
         toast.success(
-          nextStatus === "reviewed" ? "Flag marked reviewed" : "Flag dismissed",
+          nextStatus === "reviewed"
+            ? dict.amlFlags.reviewedToast
+            : dict.amlFlags.dismissedToast,
         );
       } else {
-        toast.error(result.error ?? "Something went wrong");
+        toast.error(describeApiError(dict, result.error));
       }
     });
   }
@@ -39,9 +44,9 @@ export function FlagReviewActions({
     startTransition(async () => {
       const result = await liftRestrictionAction(restriction.id);
       if (result.ok) {
-        toast.success("Restriction lifted");
+        toast.success(dict.amlFlags.liftedToast);
       } else {
-        toast.error(result.error ?? "Something went wrong");
+        toast.error(describeApiError(dict, result.error));
       }
     });
   }
@@ -51,9 +56,9 @@ export function FlagReviewActions({
     startTransition(async () => {
       const result = await escalateRestrictionAction(restriction.id);
       if (result.ok) {
-        toast.success("Account suspended");
+        toast.success(dict.amlFlags.suspendedToast);
       } else {
-        toast.error(result.error ?? "Something went wrong");
+        toast.error(describeApiError(dict, result.error));
       }
     });
   }
@@ -69,7 +74,7 @@ export function FlagReviewActions({
               disabled={isPending}
               onClick={escalate}
             >
-              Escalate
+              {dict.amlFlags.escalate}
             </Button>
           ) : null}
           <Button
@@ -78,7 +83,7 @@ export function FlagReviewActions({
             disabled={isPending}
             onClick={lift}
           >
-            Lift restriction
+            {dict.amlFlags.liftRestriction}
           </Button>
         </>
       ) : null}
@@ -90,14 +95,14 @@ export function FlagReviewActions({
             disabled={isPending}
             onClick={() => review("dismissed")}
           >
-            Dismiss
+            {dict.amlFlags.dismiss}
           </Button>
           <Button
             size="sm"
             disabled={isPending}
             onClick={() => review("reviewed")}
           >
-            Mark reviewed
+            {dict.amlFlags.markReviewed}
           </Button>
         </>
       ) : null}

@@ -1,7 +1,9 @@
 import { ArrowLeftRight, Banknote, PiggyBank } from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
+import { getSession } from "@/lib/admin-session";
 import { formatVolumeSummary } from "@/lib/format";
 import { resolveDateRange } from "@/lib/date-range";
+import { getDict } from "@/lib/i18n/server";
 import type {
   ActivityItem,
   ActivityStats,
@@ -19,19 +21,37 @@ import { ActivityStatusChart } from "./activity-status-chart";
 import { ActivityTable } from "./activity-table";
 import { VolumeTrendChart } from "./volume-trend-chart";
 
-const STATUS_GROUPS = [
-  { key: "completed", label: "Completed", statuses: ["completed"] },
-  { key: "inProgress", label: "In progress", statuses: ["pending", "processing"] },
-  { key: "failed", label: "Failed", statuses: ["failed"] },
-  { key: "reversed", label: "Reversed", statuses: ["reversed"] },
-];
-
 export default async function TransactionsPage({
   searchParams,
 }: {
   searchParams: Promise<{ period?: string; from?: string; to?: string }>;
 }) {
   const params = await searchParams;
+  const dict = await getDict();
+  const session = await getSession();
+  const canManage = session?.role !== "viewer";
+  const statusGroups = [
+    {
+      key: "completed",
+      label: dict.transactions.statusCompleted,
+      statuses: ["completed"],
+    },
+    {
+      key: "inProgress",
+      label: dict.transactions.statusInProgress,
+      statuses: ["pending", "processing"],
+    },
+    {
+      key: "failed",
+      label: dict.transactions.statusFailed,
+      statuses: ["failed"],
+    },
+    {
+      key: "reversed",
+      label: dict.transactions.statusReversed,
+      statuses: ["reversed"],
+    },
+  ];
   const { period, dateFrom, dateTo } = resolveDateRange(params);
 
   const activityQuery = new URLSearchParams({ page: "1", limit: "50" });
@@ -63,7 +83,7 @@ export default async function TransactionsPage({
     0,
   );
 
-  const statusSegments = STATUS_GROUPS.map((group) => ({
+  const statusSegments = statusGroups.map((group) => ({
     label: group.label,
     value: stats.byType.reduce(
       (sum, entry) =>
@@ -79,18 +99,24 @@ export default async function TransactionsPage({
   const completedShare = (() => {
     const total = statusSegments.reduce((sum, s) => sum + s.value, 0);
     const completed =
-      statusSegments.find((s) => s.label === "Completed")?.value ?? 0;
+      statusSegments.find(
+        (s) => s.label === dict.transactions.statusCompleted,
+      )?.value ?? 0;
     return total ? Math.round((completed / total) * 100) : 0;
   })();
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-heading text-2xl font-semibold">Transactions</h1>
+        <h1 className="font-heading text-2xl font-semibold">
+          {dict.transactions.title}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          {activity.total.toLocaleString()} activity record
-          {activity.total === 1 ? "" : "s"} · {completedShare}% completed in
-          this period
+          {dict.transactions.subtitle(
+            activity.total.toLocaleString(),
+            activity.total === 1,
+            completedShare,
+          )}
         </p>
       </div>
 
@@ -98,65 +124,67 @@ export default async function TransactionsPage({
 
       <Tabs defaultValue="analytics">
         <TabsList>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          <TabsTrigger value="analytics">{dict.common.analytics}</TabsTrigger>
+          <TabsTrigger value="transactions">
+            {dict.transactions.tabTransactions}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics" className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <StatCard
               icon={ArrowLeftRight}
-              label="Transfers"
+              label={dict.common.transfers}
               value={transferCount.toLocaleString()}
-              secondary={formatVolumeSummary(stats.totals.transfers)}
+              secondary={formatVolumeSummary(stats.totals.transfers, dict.common.noVolumeShort)}
               color="#0d8fd2"
             />
             <StatCard
               icon={PiggyBank}
-              label="Deposits"
+              label={dict.common.deposits}
               value={topupCount.toLocaleString()}
-              secondary={formatVolumeSummary(stats.totals.topups)}
+              secondary={formatVolumeSummary(stats.totals.topups, dict.common.noVolumeShort)}
               color="#95c015"
             />
             <StatCard
               icon={Banknote}
-              label="Withdrawals"
+              label={dict.common.withdrawals}
               value={withdrawalCount.toLocaleString()}
-              secondary={formatVolumeSummary(stats.totals.withdrawals)}
+              secondary={formatVolumeSummary(stats.totals.withdrawals, dict.common.noVolumeShort)}
               color="#e9a028"
             />
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <InsightCard
-              title="Activity over time"
-              subtitle="Daily count of transfers, deposits, and withdrawals"
+              title={dict.transactions.activityOverTime}
+              subtitle={dict.transactions.activityOverTimeSubtitle}
               className="lg:col-span-2"
             >
               <ActivityLineChart data={stats.daily} />
             </InsightCard>
             <InsightCard
-              title="Outcome share"
-              subtitle="All activity by final status"
+              title={dict.transactions.outcomeShare}
+              subtitle={dict.transactions.outcomeShareSubtitle}
             >
               <DonutStatCard
                 segments={statusSegments}
-                centerLabel="Total activity"
+                centerLabel={dict.transactions.totalActivity}
               />
             </InsightCard>
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <InsightCard
-              title="Volume by currency"
-              subtitle="Daily processed volume per corridor currency"
+              title={dict.transactions.volumeByCurrency}
+              subtitle={dict.transactions.volumeByCurrencySubtitle}
               className="lg:col-span-2"
             >
               <VolumeTrendChart data={overview.volumeDaily} />
             </InsightCard>
             <InsightCard
-              title="Status breakdown"
-              subtitle="How each activity type is resolving"
+              title={dict.transactions.statusBreakdown}
+              subtitle={dict.transactions.statusBreakdownSubtitle}
             >
               <ActivityStatusChart byType={stats.byType} />
             </InsightCard>
@@ -164,7 +192,7 @@ export default async function TransactionsPage({
         </TabsContent>
 
         <TabsContent value="transactions">
-          <ActivityTable data={activity.items} />
+          <ActivityTable data={activity.items} canManage={canManage} />
         </TabsContent>
       </Tabs>
     </div>

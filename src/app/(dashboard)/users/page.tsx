@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Activity, Globe2, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
+import { getSession } from "@/lib/admin-session";
 import { resolveDateRange } from "@/lib/date-range";
+import { getDict } from "@/lib/i18n/server";
 import type { AdminUserRow, OverviewStats, Paginated } from "@/lib/types";
 import { InsightCard } from "@/components/insight-card";
 import { PeriodSelect } from "@/components/period-select";
@@ -14,17 +16,6 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KYC_TIER_RAMP } from "@/lib/chart-colors";
 import { UsersTable } from "./users-table";
-
-const KYC_LABELS: Record<number, string> = {
-  0: "Tier 0 — Unverified",
-  1: "Tier 1 — Basic",
-  2: "Tier 2 — Full",
-};
-
-const COUNTRY_LABELS: Record<string, string> = {
-  NG: "Nigeria",
-  CI: "Ivory Coast",
-};
 
 const STAT_COLORS = {
   total: "#0d8fd2",
@@ -46,6 +37,9 @@ export default async function UsersPage({
   searchParams: Promise<{ period?: string }>;
 }) {
   const params = await searchParams;
+  const dict = await getDict();
+  const session = await getSession();
+  const canManage = session?.role !== "viewer";
   const period = params.period ?? "30d";
   const { dateFrom, dateTo } = resolveDateRange({ period });
 
@@ -81,14 +75,14 @@ export default async function UsersPage({
     : 0;
 
   const kycSegments = [0, 1, 2].map((tier) => ({
-    label: KYC_LABELS[tier],
+    label: dict.users.kycLabels[tier],
     value:
       snapshot.kycDistribution.find((row) => row.tier === tier)?.count ?? 0,
     color: KYC_TIER_RAMP[tier],
   }));
 
   const marketItems = snapshot.countryDistribution.map((row) => ({
-    label: COUNTRY_LABELS[row.country] ?? row.country,
+    label: dict.markets[row.country] ?? row.country,
     value: row.count,
   }));
 
@@ -100,10 +94,14 @@ export default async function UsersPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-heading text-2xl font-semibold">Users</h1>
+          <h1 className="font-heading text-2xl font-semibold">
+            {dict.users.title}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            {data.total.toLocaleString()} total accounts across{" "}
-            {marketItems.length} market{marketItems.length === 1 ? "" : "s"}
+            {dict.users.subtitle(
+              data.total.toLocaleString(),
+              marketItems.length,
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -114,7 +112,7 @@ export default async function UsersPage({
             render={<Link href="/users/activity" />}
           >
             <Activity className="size-3.5" />
-            View activity
+            {dict.users.viewActivity}
           </Button>
           <PeriodSelect paramName="period" value={period} />
         </div>
@@ -122,21 +120,21 @@ export default async function UsersPage({
 
       <Tabs defaultValue="analytics">
         <TabsList>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="analytics">{dict.common.analytics}</TabsTrigger>
+          <TabsTrigger value="users">{dict.users.tabUsers}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics" className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               icon={Users}
-              label="Total users"
+              label={dict.common.totalUsers}
               value={snapshot.totalUsers.toLocaleString()}
               color={STAT_COLORS.total}
             />
             <StatCard
               icon={TrendingUp}
-              label="New users"
+              label={dict.users.newUsers}
               value={stats.newUsers.toLocaleString()}
               delta={newUsersDelta}
               sparkline={{ data: growthSparkline, dataKey: "count" }}
@@ -144,18 +142,20 @@ export default async function UsersPage({
             />
             <StatCard
               icon={ShieldCheck}
-              label="KYC verified"
+              label={dict.users.kycVerified}
               value={verifiedUsers.toLocaleString()}
-              secondary={`${verifiedPercent}% of all accounts`}
+              secondary={dict.users.verifiedSecondary(verifiedPercent)}
               color={STAT_COLORS.verified}
             />
             <StatCard
               icon={Globe2}
-              label="Largest market"
+              label={dict.users.largestMarket}
               value={topMarket?.label ?? "—"}
               secondary={
                 topMarket
-                  ? `${topMarket.value.toLocaleString()} accounts`
+                  ? dict.users.marketSecondary(
+                      topMarket.value.toLocaleString(),
+                    )
                   : undefined
               }
               color={STAT_COLORS.markets}
@@ -164,25 +164,25 @@ export default async function UsersPage({
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <InsightCard
-              title="Signups over time"
-              subtitle="New accounts created per day"
+              title={dict.users.signupsOverTime}
+              subtitle={dict.users.signupsSubtitle}
               className="lg:col-span-2"
             >
               <AreaTrendChart
                 data={growthData}
-                seriesLabel="New users"
+                seriesLabel={dict.users.newUsersSeries}
                 color={STAT_COLORS.new}
                 height={280}
               />
             </InsightCard>
             <InsightCard
-              title="KYC tiers"
-              subtitle="Verification level and market split"
+              title={dict.users.kycTiersTitle}
+              subtitle={dict.users.kycTiersSubtitle}
             >
               <div className="flex flex-col gap-4">
                 <DonutStatCard
                   segments={kycSegments}
-                  centerLabel="Total users"
+                  centerLabel={dict.common.totalUsers}
                 />
                 <Separator />
                 <BarList items={marketItems} color={STAT_COLORS.markets} />
@@ -192,7 +192,7 @@ export default async function UsersPage({
         </TabsContent>
 
         <TabsContent value="users">
-          <UsersTable data={data.items} />
+          <UsersTable data={data.items} canManage={canManage} />
         </TabsContent>
       </Tabs>
     </div>

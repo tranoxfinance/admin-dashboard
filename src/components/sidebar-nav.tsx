@@ -11,39 +11,85 @@ import {
   ShieldAlert,
   ShieldBan,
   ScrollText,
+  ShieldCheck,
+  UserCog,
   Headset,
   type LucideIcon,
 } from "lucide-react";
+import type { AdminRole } from "@/lib/admin-session";
+import type { Dict } from "@/lib/i18n";
+import { useDict } from "@/components/i18n-provider";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
+  superAdminOnly?: boolean;
   children?: NavItem[];
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Overview", icon: LayoutDashboard },
-  {
-    href: "/users",
-    label: "Users",
-    icon: Users,
-    children: [
-      { href: "/users/activity", label: "Activity", icon: Activity },
-      { href: "/restrictions", label: "Restrictions", icon: ShieldBan },
-    ],
-  },
-  { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
-  { href: "/support", label: "Support", icon: Headset },
-  { href: "/aml-flags", label: "AML Flags", icon: ShieldAlert },
-  { href: "/audit-logs", label: "Audit Logs", icon: ScrollText },
-];
+function buildNavItems(dict: Dict): NavItem[] {
+  return [
+    { href: "/", label: dict.nav.overview, icon: LayoutDashboard },
+    {
+      href: "/users",
+      label: dict.nav.users,
+      icon: Users,
+      children: [
+        { href: "/users/activity", label: dict.nav.activity, icon: Activity },
+        {
+          href: "/restrictions",
+          label: dict.nav.restrictions,
+          icon: ShieldBan,
+        },
+      ],
+    },
+    {
+      href: "/transactions",
+      label: dict.nav.transactions,
+      icon: ArrowLeftRight,
+    },
+    { href: "/support", label: dict.nav.support, icon: Headset },
+    { href: "/aml-flags", label: dict.nav.amlFlags, icon: ShieldAlert },
+    { href: "/audit-logs", label: dict.nav.auditLogs, icon: ScrollText },
+    {
+      href: "/admins",
+      label: dict.nav.admins,
+      icon: UserCog,
+      superAdminOnly: true,
+      children: [
+        {
+          href: "/admin-logs",
+          label: dict.nav.adminLogs,
+          icon: ShieldCheck,
+          superAdminOnly: true,
+        },
+      ],
+    },
+  ];
+}
 
-export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
+export function SidebarNav({
+  collapsed = false,
+  role,
+}: {
+  collapsed?: boolean;
+  role: AdminRole;
+}) {
   const pathname = usePathname();
+  const dict = useDict();
 
-  const allItems = NAV_ITEMS.flatMap((item) => [
+  const navItems = buildNavItems(dict)
+    .filter((item) => !item.superAdminOnly || role === "super_admin")
+    .map((item) => ({
+      ...item,
+      children: item.children?.filter(
+        (child) => !child.superAdminOnly || role === "super_admin",
+      ),
+    }));
+
+  const allItems = navItems.flatMap((item) => [
     item,
     ...(item.children ?? []),
   ]);
@@ -84,7 +130,7 @@ export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
 
   return (
     <nav className="flex flex-1 flex-col gap-0.5 p-2">
-      {NAV_ITEMS.map((item) => (
+      {navItems.map((item) => (
         <Fragment key={item.href}>
           {renderLink(item)}
           {item.children?.map((child) => renderLink(child, true))}

@@ -1,6 +1,7 @@
 "use client";
 
 import { AreaTrendChart } from "@/components/charts/area-trend-chart";
+import { useDict } from "@/components/i18n-provider";
 import type { RevenueDailyPoint } from "@/lib/types";
 import { formatCurrency } from "@/lib/format";
 
@@ -17,12 +18,13 @@ function compactNumber(value: number): string {
 }
 
 export function VolumeTrendChart({ data }: { data: RevenueDailyPoint[] }) {
+  const dict = useDict();
   const currencies = [...new Set(data.map((point) => point.currency))].sort();
 
   if (!currencies.length) {
     return (
       <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-        No volume in this period.
+        {dict.common.noVolume}
       </div>
     );
   }
@@ -45,7 +47,7 @@ export function VolumeTrendChart({ data }: { data: RevenueDailyPoint[] }) {
             </div>
             <AreaTrendChart
               data={points}
-              seriesLabel={`Volume (${currency})`}
+              seriesLabel={dict.overview.volumeIn(currency)}
               color={color}
               height={200}
               formatValue={(value) => formatCurrency(String(value), currency)}

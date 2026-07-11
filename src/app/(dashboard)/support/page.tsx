@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Bot, MessagesSquare, TicketCheck, UserRoundSearch } from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
+import { getDict } from "@/lib/i18n/server";
 import { cn } from "@/lib/utils";
 import type {
   SupportConversationKind,
@@ -14,42 +15,6 @@ import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { BarList } from "@/components/charts/bar-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SupportConversationsTable } from "./support-conversations-table";
-
-const STATUS_FILTERS: { label: string; value: SupportConversationStatus | "all" }[] = [
-  { label: "All", value: "all" },
-  { label: "Needs agent", value: "pending_agent" },
-  { label: "Active", value: "active" },
-  { label: "Bot handling", value: "bot" },
-  { label: "Resolved", value: "resolved" },
-  { label: "Closed", value: "closed" },
-];
-
-const KIND_FILTERS: { label: string; value: SupportConversationKind | "all" }[] = [
-  { label: "Everything", value: "all" },
-  { label: "Tickets", value: "ticket" },
-  { label: "Live chats", value: "chat" },
-];
-
-const STATUS_SEGMENTS: {
-  status: SupportConversationStatus;
-  label: string;
-  color: string;
-}[] = [
-  { status: "pending_agent", label: "Needs agent", color: "#e9a028" },
-  { status: "active", label: "Active with agent", color: "#0d8fd2" },
-  { status: "bot", label: "Bot handling", color: "#5ba2ca" },
-  { status: "resolved", label: "Resolved", color: "#0ca30c" },
-  { status: "closed", label: "Closed", color: "#898781" },
-];
-
-const CATEGORY_LABELS: Record<SupportTicketCategory, string> = {
-  transfer: "Transfer",
-  topup: "Top-up",
-  withdrawal: "Withdrawal",
-  kyc: "KYC",
-  account: "Account",
-  other: "Other",
-};
 
 function buildHref(status: string, kind: string): string {
   const params = new URLSearchParams({ view: "conversations" });
@@ -68,6 +33,49 @@ export default async function SupportPage({
   searchParams: Promise<{ status?: string; kind?: string; view?: string }>;
 }) {
   const params = await searchParams;
+  const dict = await getDict();
+  const statusFilters: {
+    label: string;
+    value: SupportConversationStatus | "all";
+  }[] = [
+    { label: dict.support.filterAll, value: "all" },
+    { label: dict.support.statusPendingAgent, value: "pending_agent" },
+    { label: dict.support.statusActive, value: "active" },
+    { label: dict.support.statusBot, value: "bot" },
+    { label: dict.support.statusResolved, value: "resolved" },
+    { label: dict.support.statusClosed, value: "closed" },
+  ];
+  const kindFilters: {
+    label: string;
+    value: SupportConversationKind | "all";
+  }[] = [
+    { label: dict.support.filterEverything, value: "all" },
+    { label: dict.support.filterTickets, value: "ticket" },
+    { label: dict.support.filterLiveChats, value: "chat" },
+  ];
+  const statusSegmentDefs: {
+    status: SupportConversationStatus;
+    label: string;
+    color: string;
+  }[] = [
+    {
+      status: "pending_agent",
+      label: dict.support.statusPendingAgent,
+      color: "#e9a028",
+    },
+    {
+      status: "active",
+      label: dict.support.statusActiveWithAgent,
+      color: "#0d8fd2",
+    },
+    { status: "bot", label: dict.support.statusBot, color: "#5ba2ca" },
+    {
+      status: "resolved",
+      label: dict.support.statusResolved,
+      color: "#0ca30c",
+    },
+    { status: "closed", label: dict.support.statusClosed, color: "#898781" },
+  ];
   const status = params.status ?? "all";
   const kind = params.kind ?? "all";
   const defaultTab = params.view === "conversations" ? "conversations" : "analytics";
@@ -101,7 +109,7 @@ export default async function SupportPage({
       (row.status === "pending_agent" || row.status === "active"),
   ).length;
 
-  const statusSegments = STATUS_SEGMENTS.map((segment) => ({
+  const statusSegments = statusSegmentDefs.map((segment) => ({
     label: segment.label,
     value: countByStatus(segment.status),
     color: segment.color,
@@ -109,10 +117,10 @@ export default async function SupportPage({
 
   const tickets = all.filter((row) => row.kind === "ticket");
   const categoryItems = (
-    Object.keys(CATEGORY_LABELS) as SupportTicketCategory[]
+    Object.keys(dict.support.categories) as SupportTicketCategory[]
   )
     .map((category) => ({
-      label: CATEGORY_LABELS[category],
+      label: dict.support.categories[category],
       value: tickets.filter((row) => row.category === category).length,
     }))
     .filter((item) => item.value > 0)
@@ -121,65 +129,69 @@ export default async function SupportPage({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-heading text-2xl font-semibold">Support</h1>
+        <h1 className="font-heading text-2xl font-semibold">
+          {dict.support.title}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          {conversations.length} conversation
-          {conversations.length === 1 ? "" : "s"} shown · {openTickets} open
-          ticket{openTickets === 1 ? "" : "s"}
+          {dict.support.subtitle(conversations.length, openTickets)}
         </p>
       </div>
 
       <Tabs defaultValue={defaultTab}>
         <TabsList>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="conversations">Conversations</TabsTrigger>
+          <TabsTrigger value="analytics">{dict.common.analytics}</TabsTrigger>
+          <TabsTrigger value="conversations">
+            {dict.support.tabConversations}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics" className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               icon={UserRoundSearch}
-              label="Needs agent"
+              label={dict.support.statNeedsAgent}
               value={countByStatus("pending_agent").toLocaleString()}
-              secondary="Waiting in the queue"
+              secondary={dict.support.statNeedsAgentSecondary}
               color="#e9a028"
             />
             <StatCard
               icon={MessagesSquare}
-              label="Active with agent"
+              label={dict.support.statActive}
               value={countByStatus("active").toLocaleString()}
-              secondary="Being handled now"
+              secondary={dict.support.statActiveSecondary}
               color="#0d8fd2"
             />
             <StatCard
               icon={Bot}
-              label="Bot handling"
+              label={dict.support.statBot}
               value={countByStatus("bot").toLocaleString()}
-              secondary="AI assistant conversations"
+              secondary={dict.support.statBotSecondary}
               color="#5ba2ca"
             />
             <StatCard
               icon={TicketCheck}
-              label="Open tickets"
+              label={dict.support.statOpenTickets}
               value={openTickets.toLocaleString()}
-              secondary={`${tickets.length.toLocaleString()} tickets in total`}
+              secondary={dict.support.statOpenTicketsSecondary(
+                tickets.length.toLocaleString(),
+              )}
               color="#00407a"
             />
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <InsightCard
-              title="Queue health"
-              subtitle="Every conversation by current status"
+              title={dict.support.queueHealth}
+              subtitle={dict.support.queueHealthSubtitle}
             >
               <DonutStatCard
                 segments={statusSegments}
-                centerLabel="Conversations"
+                centerLabel={dict.support.conversationsCenter}
               />
             </InsightCard>
             <InsightCard
-              title="Tickets by category"
-              subtitle="What customers raise tickets about"
+              title={dict.support.ticketsByCategory}
+              subtitle={dict.support.ticketsByCategorySubtitle}
               className="lg:col-span-2"
             >
               <BarList items={categoryItems} color="#0d8fd2" />
@@ -190,7 +202,7 @@ export default async function SupportPage({
         <TabsContent value="conversations" className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1 rounded-lg bg-muted p-1 w-fit">
-              {KIND_FILTERS.map((filter) => (
+              {kindFilters.map((filter) => (
                 <Link
                   key={filter.value}
                   href={buildHref(status, filter.value)}
@@ -206,7 +218,7 @@ export default async function SupportPage({
               ))}
             </div>
             <div className="flex items-center gap-1 rounded-lg bg-muted p-1 w-fit">
-              {STATUS_FILTERS.map((filter) => (
+              {statusFilters.map((filter) => (
                 <Link
                   key={filter.value}
                   href={buildHref(filter.value, kind)}

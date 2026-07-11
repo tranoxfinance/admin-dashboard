@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { adminApi, AdminApiError } from "@/lib/admin-api";
-import { getAccessToken } from "@/lib/admin-session";
+import { getAccessToken, getSession } from "@/lib/admin-session";
 import type { SupportConversationDetail } from "@/lib/types";
 import { SupportThread } from "./support-thread";
 
@@ -22,12 +22,14 @@ export default async function SupportConversationPage({
     throw error;
   }
   const accessToken = await getAccessToken();
+  const session = await getSession();
 
   return (
     <SupportThread
       initialDetail={detail}
       conversationId={id}
       accessToken={accessToken ?? ""}
+      canManage={session?.role !== "viewer"}
     />
   );
 }

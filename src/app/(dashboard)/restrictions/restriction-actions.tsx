@@ -6,6 +6,8 @@ import {
   escalateRestrictionAction,
   liftRestrictionAction,
 } from "@/actions/admin";
+import { describeApiError } from "@/lib/i18n";
+import { useDict } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
 
 export function RestrictionActions({
@@ -16,14 +18,15 @@ export function RestrictionActions({
   level: "restricted" | "suspended";
 }) {
   const [isPending, startTransition] = useTransition();
+  const dict = useDict();
 
   function lift() {
     startTransition(async () => {
       const result = await liftRestrictionAction(restrictionId);
       if (result.ok) {
-        toast.success("Restriction lifted");
+        toast.success(dict.restrictions.liftedToast);
       } else {
-        toast.error(result.error ?? "Something went wrong");
+        toast.error(describeApiError(dict, result.error));
       }
     });
   }
@@ -32,9 +35,9 @@ export function RestrictionActions({
     startTransition(async () => {
       const result = await escalateRestrictionAction(restrictionId);
       if (result.ok) {
-        toast.success("Account suspended");
+        toast.success(dict.restrictions.suspendedToast);
       } else {
-        toast.error(result.error ?? "Something went wrong");
+        toast.error(describeApiError(dict, result.error));
       }
     });
   }
@@ -48,11 +51,11 @@ export function RestrictionActions({
           disabled={isPending}
           onClick={escalate}
         >
-          Escalate
+          {dict.restrictions.escalate}
         </Button>
       ) : null}
       <Button size="sm" variant="outline" disabled={isPending} onClick={lift}>
-        Lift
+        {dict.restrictions.lift}
       </Button>
     </div>
   );

@@ -1,5 +1,7 @@
 import { ShieldAlert, ShieldCheck, ShieldOff } from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
+import { getSession } from "@/lib/admin-session";
+import { getDict } from "@/lib/i18n/server";
 import type { AmlFlag } from "@/lib/types";
 import { InsightCard } from "@/components/insight-card";
 import { StatCard } from "@/components/overview/stat-card";
@@ -8,19 +10,37 @@ import { BarList } from "@/components/charts/bar-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AmlFlagsTable } from "./aml-flags-table";
 
-const STATUS_META = [
-  { status: "open", label: "Open", color: "#d03b3b", icon: ShieldAlert },
-  { status: "reviewed", label: "Reviewed", color: "#0ca30c", icon: ShieldCheck },
-  { status: "dismissed", label: "Dismissed", color: "#898781", icon: ShieldOff },
-] as const;
-
 export default async function AmlFlagsPage() {
+  const dict = await getDict();
+  const session = await getSession();
+  const canManage = session?.role !== "viewer";
   const flags = await adminApi<AmlFlag[]>("/admin/aml-flags");
+
+  const statusMeta = [
+    {
+      status: "open",
+      label: dict.amlFlags.statusOpen,
+      color: "#d03b3b",
+      icon: ShieldAlert,
+    },
+    {
+      status: "reviewed",
+      label: dict.amlFlags.statusReviewed,
+      color: "#0ca30c",
+      icon: ShieldCheck,
+    },
+    {
+      status: "dismissed",
+      label: dict.amlFlags.statusDismissed,
+      color: "#898781",
+      icon: ShieldOff,
+    },
+  ] as const;
 
   const countByStatus = (status: AmlFlag["status"]) =>
     flags.filter((flag) => flag.status === status).length;
 
-  const statusSegments = STATUS_META.map((meta) => ({
+  const statusSegments = statusMeta.map((meta) => ({
     label: meta.label,
     value: countByStatus(meta.status),
     color: meta.color,
@@ -38,22 +58,23 @@ export default async function AmlFlagsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-heading text-2xl font-semibold">AML Flags</h1>
+        <h1 className="font-heading text-2xl font-semibold">
+          {dict.amlFlags.title}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          {flags.length} flag{flags.length === 1 ? "" : "s"} ·{" "}
-          {countByStatus("open")} awaiting review
+          {dict.amlFlags.subtitle(flags.length, countByStatus("open"))}
         </p>
       </div>
 
       <Tabs defaultValue="analytics">
         <TabsList>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="flags">Flags</TabsTrigger>
+          <TabsTrigger value="analytics">{dict.common.analytics}</TabsTrigger>
+          <TabsTrigger value="flags">{dict.amlFlags.tabFlags}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics" className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {STATUS_META.map((meta) => (
+            {statusMeta.map((meta) => (
               <StatCard
                 key={meta.status}
                 icon={meta.icon}
@@ -67,17 +88,17 @@ export default async function AmlFlagsPage() {
           {flags.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               <InsightCard
-                title="Review pipeline"
-                subtitle="Every flag by current status"
+                title={dict.amlFlags.reviewPipeline}
+                subtitle={dict.amlFlags.reviewPipelineSubtitle}
               >
                 <DonutStatCard
                   segments={statusSegments}
-                  centerLabel="Total flags"
+                  centerLabel={dict.amlFlags.totalFlags}
                 />
               </InsightCard>
               <InsightCard
-                title="Top flag reasons"
-                subtitle="Most frequent triggers across all flags"
+                title={dict.amlFlags.topReasons}
+                subtitle={dict.amlFlags.topReasonsSubtitle}
                 className="lg:col-span-2"
               >
                 <BarList items={reasonItems} color="#d03b3b" />
@@ -87,7 +108,7 @@ export default async function AmlFlagsPage() {
         </TabsContent>
 
         <TabsContent value="flags">
-          <AmlFlagsTable data={flags} />
+          <AmlFlagsTable data={flags} canManage={canManage} />
         </TabsContent>
       </Tabs>
     </div>

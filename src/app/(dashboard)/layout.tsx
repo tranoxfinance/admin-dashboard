@@ -13,10 +13,11 @@ export default async function DashboardLayout({
   if (!session) {
     redirect("/login");
   }
+  const role = session.role ?? "admin";
 
   return (
     <div className="flex h-screen overflow-hidden bg-muted/30">
-      <Sidebar email={session.email} />
+      <Sidebar email={session.email} role={role} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex h-14 shrink-0 items-center justify-between border-b bg-sidebar px-4 md:hidden">
           <Image src="/tranox-logo.svg" alt="Tranox" width={96} height={24} className="h-6 w-auto" />

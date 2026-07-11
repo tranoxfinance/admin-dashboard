@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { createRestrictionAction } from "@/actions/admin";
+import { describeApiError } from "@/lib/i18n";
+import { useDict } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,25 +25,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const LEVEL_OPTIONS = [
-  { value: "restricted", label: "Restricted — transactions blocked" },
-  { value: "suspended", label: "Suspended — login blocked" },
-] as const;
-
-const REASON_OPTIONS = [
-  { value: "fraud_suspicion", label: "Fraud suspicion" },
-  { value: "compliance_review", label: "Compliance review" },
-  { value: "other", label: "Other" },
-] as const;
+const REASON_VALUES = ["fraud_suspicion", "compliance_review", "other"] as const;
 
 export function UserRestrictDialog({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false);
   const [level, setLevel] = useState<"restricted" | "suspended">("restricted");
-  const [reason, setReason] = useState<
-    "fraud_suspicion" | "compliance_review" | "other"
-  >("fraud_suspicion");
+  const [reason, setReason] = useState<(typeof REASON_VALUES)[number]>(
+    "fraud_suspicion",
+  );
   const [note, setNote] = useState("");
   const [isPending, startTransition] = useTransition();
+  const dict = useDict();
+  const t = dict.users.restrictDialog;
 
   function handleConfirm() {
     startTransition(async () => {
@@ -52,12 +47,12 @@ export function UserRestrictDialog({ userId }: { userId: string }) {
       });
       if (result.ok) {
         toast.success(
-          level === "suspended" ? "Account suspended" : "Account restricted",
+          level === "suspended" ? t.successSuspended : t.successRestricted,
         );
         setOpen(false);
         setNote("");
       } else {
-        toast.error(result.error ?? "Something went wrong");
+        toast.error(describeApiError(dict, result.error));
       }
     });
   }
@@ -65,20 +60,16 @@ export function UserRestrictDialog({ userId }: { userId: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button size="sm" variant="outline" />}>
-        Restrict
+        {dict.users.restrict}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Restrict this account?</DialogTitle>
-          <DialogDescription>
-            Restricted accounts can sign in but cannot move money. Suspended
-            accounts are signed out and cannot log back in. The user is
-            notified and can submit one appeal.
-          </DialogDescription>
+          <DialogTitle>{t.title}</DialogTitle>
+          <DialogDescription>{t.description}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label>Level</Label>
+            <Label>{t.level}</Label>
             <Select
               value={level}
               onValueChange={(value) => {
@@ -89,16 +80,13 @@ export function UserRestrictDialog({ userId }: { userId: string }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {LEVEL_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
+                <SelectItem value="restricted">{t.levelRestricted}</SelectItem>
+                <SelectItem value="suspended">{t.levelSuspended}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="flex flex-col gap-2">
-            <Label>Reason</Label>
+            <Label>{t.reason}</Label>
             <Select
               value={reason}
               onValueChange={(value) => {
@@ -109,28 +97,28 @@ export function UserRestrictDialog({ userId }: { userId: string }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {REASON_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                {REASON_VALUES.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {dict.restrictions.reasons[value]}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="restriction-note">Internal note (optional)</Label>
+            <Label htmlFor="restriction-note">{t.noteLabel}</Label>
             <Input
               id="restriction-note"
               value={note}
               maxLength={500}
-              placeholder="Context for other admins"
+              placeholder={t.notePlaceholder}
               onChange={(event) => setNote(event.target.value)}
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
+            {dict.common.cancel}
           </Button>
           <Button
             variant="destructive"
@@ -138,10 +126,10 @@ export function UserRestrictDialog({ userId }: { userId: string }) {
             onClick={handleConfirm}
           >
             {isPending
-              ? "Applying…"
+              ? t.applying
               : level === "suspended"
-                ? "Suspend account"
-                : "Restrict account"}
+                ? t.confirmSuspend
+                : t.confirmRestrict}
           </Button>
         </DialogFooter>
       </DialogContent>
