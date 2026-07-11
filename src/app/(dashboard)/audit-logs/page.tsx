@@ -1,12 +1,10 @@
 import { adminApi } from "@/lib/admin-api";
+import { humanizeAction } from "@/lib/activity";
 import type { AuditLog, Paginated } from "@/lib/types";
 import { InsightCard } from "@/components/insight-card";
 import { BarList } from "@/components/charts/bar-list";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuditLogsTable } from "./audit-logs-table";
-
-function humanizeAction(action: string): string {
-  return action.replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase());
-}
 
 export default async function AuditLogsPage({
   searchParams,
@@ -16,6 +14,7 @@ export default async function AuditLogsPage({
   const params = await searchParams;
   const query = new URLSearchParams({ page: "1", limit: "100" });
   if (params.userId) query.set("userId", params.userId);
+  const defaultTab = params.userId ? "logs" : "analytics";
 
   const data = await adminApi<Paginated<AuditLog>>(
     `/admin/audit-logs?${query.toString()}`,
@@ -40,16 +39,31 @@ export default async function AuditLogsPage({
         </p>
       </div>
 
-      {actionItems.length > 0 ? (
-        <InsightCard
-          title="Most frequent actions"
-          subtitle={`Across the ${data.items.length} most recent events`}
-        >
-          <BarList items={actionItems} color="#00407a" />
-        </InsightCard>
-      ) : null}
+      <Tabs defaultValue={defaultTab}>
+        <TabsList>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="logs">Logs</TabsTrigger>
+        </TabsList>
 
-      <AuditLogsTable data={data.items} />
+        <TabsContent value="analytics">
+          {actionItems.length > 0 ? (
+            <InsightCard
+              title="Most frequent actions"
+              subtitle={`Across the ${data.items.length} most recent events`}
+            >
+              <BarList items={actionItems} color="#00407a" />
+            </InsightCard>
+          ) : (
+            <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
+              No events recorded yet.
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="logs">
+          <AuditLogsTable data={data.items} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
