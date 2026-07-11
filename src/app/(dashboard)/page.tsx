@@ -8,7 +8,7 @@ import type {
   ActivityItem,
   OverviewStats,
 } from "@/lib/types";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { InsightCard } from "@/components/insight-card";
 import { PeriodSelect } from "@/components/period-select";
 import { StatCard } from "@/components/overview/stat-card";
 import { DonutStatCard } from "@/components/overview/donut-stat-card";
@@ -217,80 +217,54 @@ export default async function OverviewPage({
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card className="rounded-2xl border-0 shadow-sm ring-0 lg:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Activity trend
-              </span>
-              <span
-                className={
-                  stats.openAmlFlags > 0
-                    ? "rounded-full bg-[#d03b3b]/10 px-2.5 py-1 text-xs font-medium text-[#d03b3b]"
-                    : "rounded-full bg-[#0ca30c]/10 px-2.5 py-1 text-xs font-medium text-[#0ca30c]"
-                }
-              >
-                {stats.openAmlFlags} AML flag{stats.openAmlFlags === 1 ? "" : "s"}
-              </span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <TrendInsightCard
-              data={stats.activityDaily}
-              total={activityTotal}
-              breakdown={typeBreakdown}
-            />
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl border-0 shadow-sm ring-0">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Top transactions
-              </span>
-              <PeriodSelect paramName="topPeriod" value={topPeriod} />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ActivityFeedCard data={topTransactions} />
-          </CardContent>
-        </Card>
+        <InsightCard
+          title="Activity trend"
+          className="lg:col-span-2"
+          action={
+            <span
+              className={
+                stats.openAmlFlags > 0
+                  ? "rounded-full bg-[#d03b3b]/10 px-2.5 py-1 text-xs font-medium text-[#d03b3b]"
+                  : "rounded-full bg-[#0ca30c]/10 px-2.5 py-1 text-xs font-medium text-[#0ca30c]"
+              }
+            >
+              {stats.openAmlFlags} AML flag{stats.openAmlFlags === 1 ? "" : "s"}
+            </span>
+          }
+        >
+          <TrendInsightCard
+            data={stats.activityDaily}
+            total={activityTotal}
+            breakdown={typeBreakdown}
+          />
+        </InsightCard>
+        <InsightCard
+          title="Top transactions"
+          action={<PeriodSelect paramName="topPeriod" value={topPeriod} />}
+        >
+          <ActivityFeedCard data={topTransactions} />
+        </InsightCard>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card className="rounded-2xl border-0 shadow-sm ring-0">
-          <CardHeader>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-              KYC tiers
-            </span>
-          </CardHeader>
-          <CardContent>
-            <DonutStatCard segments={kycSegments} centerLabel="Total users" />
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl border-0 shadow-sm ring-0">
-          <CardHeader>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Users by market
-            </span>
-          </CardHeader>
-          <CardContent>
-            <DonutStatCard segments={usersByMarket} centerLabel="Total users" />
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl border-0 shadow-sm ring-0">
-          <CardHeader>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Transactions by market
-            </span>
-          </CardHeader>
-          <CardContent>
-            <DonutStatCard
-              segments={transactionsByMarket}
-              centerLabel="Total transactions"
-            />
-          </CardContent>
-        </Card>
+        <InsightCard title="KYC tiers" subtitle="Verification level of all users">
+          <DonutStatCard segments={kycSegments} centerLabel="Total users" />
+        </InsightCard>
+        <InsightCard
+          title="Users by market"
+          subtitle="Where accounts are registered"
+        >
+          <DonutStatCard segments={usersByMarket} centerLabel="Total users" />
+        </InsightCard>
+        <InsightCard
+          title="Transactions by market"
+          subtitle="Where activity originates"
+        >
+          <DonutStatCard
+            segments={transactionsByMarket}
+            centerLabel="Total transactions"
+          />
+        </InsightCard>
       </div>
     </div>
   );
