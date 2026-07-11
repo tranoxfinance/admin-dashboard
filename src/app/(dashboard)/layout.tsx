@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/admin-session";
 import { LogoutButton } from "@/components/logout-button";
@@ -18,7 +19,7 @@ export default async function DashboardLayout({
       <Sidebar email={session.email} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex h-14 shrink-0 items-center justify-between border-b bg-sidebar px-4 md:hidden">
-          <img src="/tranox-logo.svg" alt="Tranox" className="h-6 w-auto" />
+          <Image src="/tranox-logo.svg" alt="Tranox" width={96} height={24} className="h-6 w-auto" />
           <LogoutButton />
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>

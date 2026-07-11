@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
 import { SidebarNav } from "@/components/sidebar-nav";
@@ -34,7 +35,7 @@ export function Sidebar({ email }: { email: string }) {
         )}
       >
         {collapsed ? null : (
-          <img src="/tranox-logo.svg" alt="Tranox" className="h-6 w-auto" />
+          <Image src="/tranox-logo.svg" alt="Tranox" width={96} height={24} className="h-6 w-auto" />
         )}
         <Button
           type="button"
