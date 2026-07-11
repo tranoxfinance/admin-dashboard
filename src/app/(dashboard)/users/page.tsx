@@ -11,6 +11,7 @@ import { AreaTrendChart } from "@/components/charts/area-trend-chart";
 import { BarList } from "@/components/charts/bar-list";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KYC_TIER_RAMP } from "@/lib/chart-colors";
 import { UsersTable } from "./users-table";
 
@@ -119,65 +120,81 @@ export default async function UsersPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={Users}
-          label="Total users"
-          value={snapshot.totalUsers.toLocaleString()}
-          color={STAT_COLORS.total}
-        />
-        <StatCard
-          icon={TrendingUp}
-          label="New users"
-          value={stats.newUsers.toLocaleString()}
-          delta={newUsersDelta}
-          sparkline={{ data: growthSparkline, dataKey: "count" }}
-          color={STAT_COLORS.new}
-        />
-        <StatCard
-          icon={ShieldCheck}
-          label="KYC verified"
-          value={verifiedUsers.toLocaleString()}
-          secondary={`${verifiedPercent}% of all accounts`}
-          color={STAT_COLORS.verified}
-        />
-        <StatCard
-          icon={Globe2}
-          label="Largest market"
-          value={topMarket?.label ?? "—"}
-          secondary={
-            topMarket ? `${topMarket.value.toLocaleString()} accounts` : undefined
-          }
-          color={STAT_COLORS.markets}
-        />
-      </div>
+      <Tabs defaultValue="analytics">
+        <TabsList>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
+        </TabsList>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <InsightCard
-          title="Signups over time"
-          subtitle="New accounts created per day"
-          className="lg:col-span-2"
-        >
-          <AreaTrendChart
-            data={growthData}
-            seriesLabel="New users"
-            color={STAT_COLORS.new}
-            height={280}
-          />
-        </InsightCard>
-        <InsightCard
-          title="KYC tiers"
-          subtitle="Verification level and market split"
-        >
-          <div className="flex flex-col gap-4">
-            <DonutStatCard segments={kycSegments} centerLabel="Total users" />
-            <Separator />
-            <BarList items={marketItems} color={STAT_COLORS.markets} />
+        <TabsContent value="analytics" className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              icon={Users}
+              label="Total users"
+              value={snapshot.totalUsers.toLocaleString()}
+              color={STAT_COLORS.total}
+            />
+            <StatCard
+              icon={TrendingUp}
+              label="New users"
+              value={stats.newUsers.toLocaleString()}
+              delta={newUsersDelta}
+              sparkline={{ data: growthSparkline, dataKey: "count" }}
+              color={STAT_COLORS.new}
+            />
+            <StatCard
+              icon={ShieldCheck}
+              label="KYC verified"
+              value={verifiedUsers.toLocaleString()}
+              secondary={`${verifiedPercent}% of all accounts`}
+              color={STAT_COLORS.verified}
+            />
+            <StatCard
+              icon={Globe2}
+              label="Largest market"
+              value={topMarket?.label ?? "—"}
+              secondary={
+                topMarket
+                  ? `${topMarket.value.toLocaleString()} accounts`
+                  : undefined
+              }
+              color={STAT_COLORS.markets}
+            />
           </div>
-        </InsightCard>
-      </div>
 
-      <UsersTable data={data.items} />
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <InsightCard
+              title="Signups over time"
+              subtitle="New accounts created per day"
+              className="lg:col-span-2"
+            >
+              <AreaTrendChart
+                data={growthData}
+                seriesLabel="New users"
+                color={STAT_COLORS.new}
+                height={280}
+              />
+            </InsightCard>
+            <InsightCard
+              title="KYC tiers"
+              subtitle="Verification level and market split"
+            >
+              <div className="flex flex-col gap-4">
+                <DonutStatCard
+                  segments={kycSegments}
+                  centerLabel="Total users"
+                />
+                <Separator />
+                <BarList items={marketItems} color={STAT_COLORS.markets} />
+              </div>
+            </InsightCard>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="users">
+          <UsersTable data={data.items} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
