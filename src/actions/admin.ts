@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { adminApi, AdminApiError } from "@/lib/admin-api";
-import type { SupportMessage } from "@/lib/types";
+import type { AdminAccountRow, SupportMessage } from "@/lib/types";
 
 export interface MutationResult {
   ok: boolean;
@@ -131,6 +131,39 @@ export async function reviewAppealAction(
   revalidatePath("/users");
   revalidatePath("/restrictions");
   revalidatePath("/aml-flags");
+  return { ok: true };
+}
+
+export async function createAdminAction(payload: {
+  email: string;
+  password: string;
+  role: AdminAccountRow["role"];
+}): Promise<MutationResult> {
+  try {
+    await adminApi("/admin/admins", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/admins");
+  return { ok: true };
+}
+
+export async function updateAdminAction(
+  adminId: string,
+  changes: { role?: AdminAccountRow["role"]; isActive?: boolean },
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/admins/${adminId}`, {
+      method: "PATCH",
+      body: JSON.stringify(changes),
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/admins");
   return { ok: true };
 }
 

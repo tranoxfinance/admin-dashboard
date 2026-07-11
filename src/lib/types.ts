@@ -284,3 +284,24 @@ export interface SupportConversationDetail {
     | null;
   messages: SupportMessage[];
 }
+
+export interface AdminAccountRow {
+  id: string;
+  email: string;
+  role: "super_admin" | "admin" | "viewer";
+  isActive: boolean;
+  totpEnabled: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+}
+
+export interface AdminLogRow {
+  id: string;
+  adminId: string | null;
+  adminEmail: string | null;
+  action: string;
+  entityType: string | null;
+  entityId: string | null;
+  ipAddress: string | null;
+  createdAt: string;
+}
