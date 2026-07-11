@@ -29,6 +29,18 @@ function systemTheme(): ResolvedTheme {
     : "light";
 }
 
+function readStoredTheme(): Theme {
+  if (typeof window === "undefined") {
+    return "system";
+  }
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored === "light" || stored === "dark" ? stored : "system";
+  } catch {
+    return "system";
+  }
+}
+
 function applyTheme(resolved: ResolvedTheme) {
   const root = document.documentElement;
   root.classList.remove("light", "dark");
@@ -44,21 +56,19 @@ function disableTransitionsBriefly() {
     ),
   );
   document.head.appendChild(style);
-  window.getComputedStyle(style).opacity;
+  window.getComputedStyle(style).getPropertyValue("opacity");
   setTimeout(() => document.head.removeChild(style), 1);
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    const initial: Theme =
-      stored === "light" || stored === "dark" ? stored : "system";
-    setThemeState(initial);
-    setResolvedTheme(initial === "system" ? systemTheme() : initial);
-  }, []);
+  const [theme, setThemeState] = useState<Theme>(readStoredTheme);
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => {
+    if (typeof window === "undefined") {
+      return "light";
+    }
+    const initial = readStoredTheme();
+    return initial === "system" ? systemTheme() : initial;
+  });
 
   useEffect(() => {
     if (theme !== "system") {

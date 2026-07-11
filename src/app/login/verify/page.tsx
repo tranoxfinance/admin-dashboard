@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { verifyMfaAction } from "@/actions/auth";
 import { AuthCard } from "@/components/auth-card";
 import { Input } from "@/components/ui/input";
@@ -11,22 +11,29 @@ import { FormError } from "@/components/form-error";
 export default function VerifyMfaPage() {
   const [state, action, isPending] = useActionState(verifyMfaAction, {});
   const [code, setCode] = useState("");
+  const [lastError, setLastError] = useState(state.error);
   const formRef = useRef<HTMLFormElement>(null);
   const submittedRef = useRef(false);
 
-  useEffect(() => {
+  if (state.error !== lastError) {
+    setLastError(state.error);
     if (state.error) {
       setCode("");
-      submittedRef.current = false;
     }
-  }, [state.error]);
+  }
 
-  useEffect(() => {
-    if (code.length === 6 && !isPending && !submittedRef.current) {
+  const handleCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const next = event.target.value.replace(/\D/g, "").slice(0, 6);
+    setCode(next);
+    if (next.length < 6) {
+      submittedRef.current = false;
+      return;
+    }
+    if (!isPending && !submittedRef.current) {
       submittedRef.current = true;
       formRef.current?.requestSubmit();
     }
-  }, [code, isPending]);
+  };
 
   return (
     <AuthCard
@@ -46,9 +53,7 @@ export default function VerifyMfaPage() {
             autoFocus
             required
             value={code}
-            onChange={(event) =>
-              setCode(event.target.value.replace(/\D/g, "").slice(0, 6))
-            }
+            onChange={handleCodeChange}
             className="text-center text-lg tracking-[0.5em]"
           />
         </div>
