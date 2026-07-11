@@ -34,6 +34,29 @@ const columns: ColumnDef<AmlFlag>[] = [
     ),
   },
   {
+    id: "restriction",
+    header: "Restriction",
+    accessorFn: (row) => row.restriction?.reference ?? "",
+    cell: ({ row }) => {
+      const restriction = row.original.restriction;
+      if (!restriction) {
+        return "—";
+      }
+      return (
+        <div className="flex items-center gap-2">
+          {restriction.level === "suspended" ? (
+            <Badge variant="destructive">Suspended</Badge>
+          ) : (
+            <Badge className="bg-amber-500 text-white">Restricted</Badge>
+          )}
+          <span className="text-xs text-muted-foreground">
+            {restriction.reference}
+          </span>
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "createdAt",
     header: "Flagged",
     cell: ({ row }) => formatDate(row.original.createdAt),
@@ -43,8 +66,12 @@ const columns: ColumnDef<AmlFlag>[] = [
     header: () => <div className="text-right">Actions</div>,
     cell: ({ row }) => (
       <div className="text-right">
-        {row.original.status === "open" ? (
-          <FlagReviewActions flagId={row.original.id} />
+        {row.original.status === "open" || row.original.restriction ? (
+          <FlagReviewActions
+            flagId={row.original.id}
+            status={row.original.status}
+            restriction={row.original.restriction}
+          />
         ) : null}
       </div>
     ),
