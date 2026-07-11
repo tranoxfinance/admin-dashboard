@@ -1,13 +1,30 @@
+import { ArrowLeftRight, Banknote, PiggyBank } from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
 import { formatVolumeSummary } from "@/lib/format";
 import { resolveDateRange } from "@/lib/date-range";
-import type { ActivityItem, ActivityStats, Paginated } from "@/lib/types";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import type {
+  ActivityItem,
+  ActivityStats,
+  OverviewStats,
+  Paginated,
+} from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InsightCard } from "@/components/insight-card";
 import { PeriodFilters } from "@/components/period-filters";
+import { StatCard } from "@/components/overview/stat-card";
+import { DonutStatCard } from "@/components/overview/donut-stat-card";
+import { STATUS_COLORS } from "@/lib/chart-colors";
 import { ActivityLineChart } from "./activity-line-chart";
 import { ActivityStatusChart } from "./activity-status-chart";
 import { ActivityTable } from "./activity-table";
+import { VolumeTrendChart } from "./volume-trend-chart";
+
+const STATUS_GROUPS = [
+  { key: "completed", label: "Completed", statuses: ["completed"] },
+  { key: "inProgress", label: "In progress", statuses: ["pending", "processing"] },
+  { key: "failed", label: "Failed", statuses: ["failed"] },
+  { key: "reversed", label: "Reversed", statuses: ["reversed"] },
+];
 
 export default async function TransactionsPage({
   searchParams,
@@ -25,11 +42,12 @@ export default async function TransactionsPage({
   if (dateFrom) statsQuery.set("dateFrom", dateFrom);
   if (dateTo) statsQuery.set("dateTo", dateTo);
 
-  const [activity, stats] = await Promise.all([
+  const [activity, stats, overview] = await Promise.all([
     adminApi<Paginated<ActivityItem>>(
       `/admin/transactions?${activityQuery.toString()}`,
     ),
     adminApi<ActivityStats>(`/admin/transactions/stats?${statsQuery.toString()}`),
+    adminApi<OverviewStats>(`/admin/overview/stats?${statsQuery.toString()}`),
   ]);
 
   const transferCount = stats.totals.transfers.reduce(
@@ -45,12 +63,33 @@ export default async function TransactionsPage({
     0,
   );
 
+  const statusSegments = STATUS_GROUPS.map((group) => ({
+    label: group.label,
+    value: stats.byType.reduce(
+      (sum, entry) =>
+        sum +
+        entry.statuses
+          .filter((row) => group.statuses.includes(row.status))
+          .reduce((inner, row) => inner + row.count, 0),
+      0,
+    ),
+    color: STATUS_COLORS[group.key],
+  })).filter((segment) => segment.value > 0);
+
+  const completedShare = (() => {
+    const total = statusSegments.reduce((sum, s) => sum + s.value, 0);
+    const completed =
+      statusSegments.find((s) => s.label === "Completed")?.value ?? 0;
+    return total ? Math.round((completed / total) * 100) : 0;
+  })();
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-heading text-2xl font-semibold">Transactions</h1>
         <p className="text-sm text-muted-foreground">
-          {activity.total} activity record{activity.total === 1 ? "" : "s"} in
+          {activity.total.toLocaleString()} activity record
+          {activity.total === 1 ? "" : "s"} · {completedShare}% completed in
           this period
         </p>
       </div>
@@ -65,80 +104,62 @@ export default async function TransactionsPage({
 
         <TabsContent value="analytics" className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <span className="text-sm text-muted-foreground">
-                  Transfers
-                </span>
-              </CardHeader>
-              <CardContent>
-                <p className="font-heading text-2xl font-semibold">
-                  {transferCount.toLocaleString()}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {formatVolumeSummary(stats.totals.transfers)}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <span className="text-sm text-muted-foreground">
-                  Deposits
-                </span>
-              </CardHeader>
-              <CardContent>
-                <p className="font-heading text-2xl font-semibold">
-                  {topupCount.toLocaleString()}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {formatVolumeSummary(stats.totals.topups)}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <span className="text-sm text-muted-foreground">
-                  Withdrawals
-                </span>
-              </CardHeader>
-              <CardContent>
-                <p className="font-heading text-2xl font-semibold">
-                  {withdrawalCount.toLocaleString()}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {formatVolumeSummary(stats.totals.withdrawals)}
-                </p>
-              </CardContent>
-            </Card>
+            <StatCard
+              icon={ArrowLeftRight}
+              label="Transfers"
+              value={transferCount.toLocaleString()}
+              secondary={formatVolumeSummary(stats.totals.transfers)}
+              color="#0d8fd2"
+            />
+            <StatCard
+              icon={PiggyBank}
+              label="Deposits"
+              value={topupCount.toLocaleString()}
+              secondary={formatVolumeSummary(stats.totals.topups)}
+              color="#95c015"
+            />
+            <StatCard
+              icon={Banknote}
+              label="Withdrawals"
+              value={withdrawalCount.toLocaleString()}
+              secondary={formatVolumeSummary(stats.totals.withdrawals)}
+              color="#e9a028"
+            />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <h2 className="font-heading text-sm font-semibold">
-                  Activity over time
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Daily count of transfers, deposits, and withdrawals
-                </p>
-              </CardHeader>
-              <CardContent>
-                <ActivityLineChart data={stats.daily} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <h2 className="font-heading text-sm font-semibold">
-                  Status breakdown
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  How each activity type is resolving
-                </p>
-              </CardHeader>
-              <CardContent>
-                <ActivityStatusChart byType={stats.byType} />
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <InsightCard
+              title="Activity over time"
+              subtitle="Daily count of transfers, deposits, and withdrawals"
+              className="lg:col-span-2"
+            >
+              <ActivityLineChart data={stats.daily} />
+            </InsightCard>
+            <InsightCard
+              title="Outcome share"
+              subtitle="All activity by final status"
+            >
+              <DonutStatCard
+                segments={statusSegments}
+                centerLabel="Total activity"
+              />
+            </InsightCard>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <InsightCard
+              title="Volume by currency"
+              subtitle="Daily processed volume per corridor currency"
+              className="lg:col-span-2"
+            >
+              <VolumeTrendChart data={overview.volumeDaily} />
+            </InsightCard>
+            <InsightCard
+              title="Status breakdown"
+              subtitle="How each activity type is resolving"
+            >
+              <ActivityStatusChart byType={stats.byType} />
+            </InsightCard>
           </div>
         </TabsContent>
 
