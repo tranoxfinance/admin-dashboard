@@ -5,6 +5,7 @@ import { InsightCard } from "@/components/insight-card";
 import { StatCard } from "@/components/overview/stat-card";
 import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { BarList } from "@/components/charts/bar-list";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AmlFlagsTable } from "./aml-flags-table";
 
 const STATUS_META = [
@@ -44,37 +45,51 @@ export default async function AmlFlagsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {STATUS_META.map((meta) => (
-          <StatCard
-            key={meta.status}
-            icon={meta.icon}
-            label={meta.label}
-            value={countByStatus(meta.status).toLocaleString()}
-            color={meta.color}
-          />
-        ))}
-      </div>
+      <Tabs defaultValue="analytics">
+        <TabsList>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="flags">Flags</TabsTrigger>
+        </TabsList>
 
-      {flags.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <InsightCard
-            title="Review pipeline"
-            subtitle="Every flag by current status"
-          >
-            <DonutStatCard segments={statusSegments} centerLabel="Total flags" />
-          </InsightCard>
-          <InsightCard
-            title="Top flag reasons"
-            subtitle="Most frequent triggers across all flags"
-            className="lg:col-span-2"
-          >
-            <BarList items={reasonItems} color="#d03b3b" />
-          </InsightCard>
-        </div>
-      ) : null}
+        <TabsContent value="analytics" className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {STATUS_META.map((meta) => (
+              <StatCard
+                key={meta.status}
+                icon={meta.icon}
+                label={meta.label}
+                value={countByStatus(meta.status).toLocaleString()}
+                color={meta.color}
+              />
+            ))}
+          </div>
 
-      <AmlFlagsTable data={flags} />
+          {flags.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <InsightCard
+                title="Review pipeline"
+                subtitle="Every flag by current status"
+              >
+                <DonutStatCard
+                  segments={statusSegments}
+                  centerLabel="Total flags"
+                />
+              </InsightCard>
+              <InsightCard
+                title="Top flag reasons"
+                subtitle="Most frequent triggers across all flags"
+                className="lg:col-span-2"
+              >
+                <BarList items={reasonItems} color="#d03b3b" />
+              </InsightCard>
+            </div>
+          ) : null}
+        </TabsContent>
+
+        <TabsContent value="flags">
+          <AmlFlagsTable data={flags} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
