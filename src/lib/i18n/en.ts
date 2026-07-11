@@ -59,6 +59,7 @@ export const en = {
   nav: {
     overview: "Overview",
     users: "Users",
+    all: "All",
     activity: "Activity",
     restrictions: "Restrictions",
     transactions: "Transactions",

@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useState, type MouseEvent } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -38,6 +38,7 @@ function buildNavItems(dict: Dict): NavItem[] {
       label: dict.nav.users,
       icon: Users,
       children: [
+        { href: "/users", label: dict.nav.all, icon: Users },
         { href: "/users/activity", label: dict.nav.activity, icon: Activity },
         {
           href: "/restrictions",
@@ -60,6 +61,12 @@ function buildNavItems(dict: Dict): NavItem[] {
       icon: UserCog,
       superAdminOnly: true,
       children: [
+        {
+          href: "/admins",
+          label: dict.nav.all,
+          icon: UserCog,
+          superAdminOnly: true,
+        },
         {
           href: "/admin-logs",
           label: dict.nav.adminLogs,
@@ -100,10 +107,9 @@ export function SidebarNav({
       ),
     }));
 
-  const allItems = navItems.flatMap((item) => [
-    item,
-    ...(item.children ?? []),
-  ]);
+  const allItems = navItems.flatMap((item) =>
+    item.children ? item.children : [item],
+  );
   const activeHref = allItems.reduce((best, item) => {
     if (!matchesPath(item.href, pathname)) {
       return best;
@@ -111,10 +117,8 @@ export function SidebarNav({
     return item.href.length > best.length ? item.href : best;
   }, "");
 
-  const activeSectionHref = navItems.find(
-    (item) =>
-      item.href === activeHref ||
-      item.children?.some((child) => child.href === activeHref),
+  const activeSectionHref = navItems.find((item) =>
+    item.children?.some((child) => child.href === activeHref),
   )?.href;
 
   useEffect(() => {
@@ -127,9 +131,7 @@ export function SidebarNav({
     }
   }, [activeSectionHref]);
 
-  function toggleSection(event: MouseEvent, href: string) {
-    event.preventDefault();
-    event.stopPropagation();
+  function toggleSection(href: string) {
     setOpenSections((prev) => ({ ...prev, [href]: !prev[href] }));
   }
 
@@ -162,56 +164,40 @@ export function SidebarNav({
         if (collapsed || children.length === 0) {
           return (
             <Fragment key={item.href}>
-              {renderFlatLink(item)}
-              {collapsed ? children.map((child) => renderFlatLink(child)) : null}
+              {collapsed && children.length > 0
+                ? children.map((child) => renderFlatLink(child))
+                : renderFlatLink(item)}
             </Fragment>
           );
         }
         const isOpen = openSections[item.href] ?? false;
-        const isSectionActive = item.href === activeHref;
         const hasActiveChild = children.some(
           (child) => child.href === activeHref,
         );
         return (
           <Fragment key={item.href}>
-            <div
+            <button
+              type="button"
+              onClick={() => toggleSection(item.href)}
+              aria-expanded={isOpen}
               className={cn(
-                "flex items-center rounded-lg text-sm font-medium transition-colors",
-                isSectionActive
+                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                hasActiveChild && !isOpen
                   ? "bg-primary/10 text-primary"
-                  : hasActiveChild && !isOpen
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
-              <Link
-                href={item.href}
-                aria-current={isSectionActive ? "page" : undefined}
-                className="flex min-w-0 flex-1 items-center gap-2 rounded-l-lg px-3 py-2"
-              >
-                <item.icon className="size-4 shrink-0" />
-                <span className="truncate">{item.label}</span>
-              </Link>
-              <button
-                type="button"
-                onClick={(event) => toggleSection(event, item.href)}
-                aria-expanded={isOpen}
-                aria-label={item.label}
+              <item.icon className="size-4 shrink-0" />
+              <span className="min-w-0 flex-1 truncate text-left">
+                {item.label}
+              </span>
+              <ChevronDown
                 className={cn(
-                  "mr-1.5 flex size-6 shrink-0 items-center justify-center rounded-md transition-colors",
-                  isSectionActive
-                    ? "hover:bg-primary/15"
-                    : "hover:bg-foreground/10",
+                  "size-4 shrink-0 transition-transform duration-200",
+                  !isOpen && "-rotate-90",
                 )}
-              >
-                <ChevronDown
-                  className={cn(
-                    "size-4 transition-transform duration-200",
-                    !isOpen && "-rotate-90",
-                  )}
-                />
-              </button>
-            </div>
+              />
+            </button>
             {isOpen ? (
               <div className="my-0.5 ml-5 flex flex-col gap-0.5 border-l border-border pl-2">
                 {children.map((child) => {

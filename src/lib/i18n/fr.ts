@@ -66,6 +66,7 @@ export const fr: Dict = {
   nav: {
     overview: "Vue d'ensemble",
     users: "Utilisateurs",
+    all: "Tous",
     activity: "Activité",
     restrictions: "Restrictions",
     transactions: "Transactions",
