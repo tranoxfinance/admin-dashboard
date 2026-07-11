@@ -8,9 +8,17 @@ function humanizeAction(action: string): string {
   return action.replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase());
 }
 
-export default async function AuditLogsPage() {
+export default async function AuditLogsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ userId?: string }>;
+}) {
+  const params = await searchParams;
+  const query = new URLSearchParams({ page: "1", limit: "100" });
+  if (params.userId) query.set("userId", params.userId);
+
   const data = await adminApi<Paginated<AuditLog>>(
-    "/admin/audit-logs?page=1&limit=100",
+    `/admin/audit-logs?${query.toString()}`,
   );
 
   const actionCounts = new Map<string, number>();
@@ -28,6 +36,7 @@ export default async function AuditLogsPage() {
         <h1 className="font-heading text-2xl font-semibold">Audit Logs</h1>
         <p className="text-sm text-muted-foreground">
           {data.total.toLocaleString()} recorded events
+          {params.userId ? ` for user ${params.userId.slice(0, 8)}` : ""}
         </p>
       </div>
 

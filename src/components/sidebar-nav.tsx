@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
+  Activity,
   ArrowLeftRight,
   ShieldAlert,
   ScrollText,
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
   { href: "/users", label: "Users", icon: Users },
+  { href: "/users/activity", label: "User Activity", icon: Activity },
   { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
   { href: "/support", label: "Support", icon: Headset },
   { href: "/aml-flags", label: "AML Flags", icon: ShieldAlert },
@@ -24,13 +26,21 @@ const NAV_ITEMS = [
 export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
   const pathname = usePathname();
 
+  const activeHref = NAV_ITEMS.reduce((best, item) => {
+    const matches =
+      item.href === "/"
+        ? pathname === "/"
+        : pathname === item.href || pathname.startsWith(`${item.href}/`);
+    if (!matches) {
+      return best;
+    }
+    return item.href.length > best.length ? item.href : best;
+  }, "");
+
   return (
     <nav className="flex flex-1 flex-col gap-0.5 p-2">
       {NAV_ITEMS.map((item) => {
-        const isActive =
-          item.href === "/"
-            ? pathname === "/"
-            : pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const isActive = item.href === activeHref;
         return (
           <Link
             key={item.href}
