@@ -8,7 +8,59 @@ export interface AdminUserRow {
   kycTier: number;
   isActive: boolean;
   isLocked: boolean;
+  restrictionLevel: RestrictionLevel | null;
   createdAt: string;
+}
+
+export type RestrictionLevel = "restricted" | "suspended";
+
+export type RestrictionReason =
+  | "aml_velocity"
+  | "fraud_suspicion"
+  | "compliance_review"
+  | "other";
+
+export type RestrictionStatus = "active" | "lifted";
+
+export type RestrictionAppealStatus = "pending" | "approved" | "rejected";
+
+export interface RestrictionUser {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  phone: string;
+}
+
+export interface AccountRestrictionRow {
+  id: string;
+  reference: string;
+  level: RestrictionLevel;
+  reason: RestrictionReason;
+  note: string | null;
+  source: "manual" | "aml_auto";
+  status: RestrictionStatus;
+  amlFlagId: string | null;
+  liftedAt: string | null;
+  createdAt: string;
+  user: RestrictionUser | null;
+  appeal: { id: string; status: RestrictionAppealStatus } | null;
+}
+
+export interface RestrictionAppealRow {
+  id: string;
+  status: RestrictionAppealStatus;
+  statement: string;
+  conversationId: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  restriction: {
+    id: string;
+    reference: string;
+    level: RestrictionLevel;
+    reason: RestrictionReason;
+    status: RestrictionStatus;
+  } | null;
+  user: RestrictionUser | null;
 }
 
 export type ActivityType = "transfer" | "topup" | "withdrawal";
@@ -141,6 +193,11 @@ export interface AmlFlag {
   status: "open" | "reviewed" | "dismissed";
   createdAt: string;
   reviewedAt: string | null;
+  restriction: {
+    id: string;
+    level: RestrictionLevel;
+    reference: string;
+  } | null;
 }
 
 export interface AuditLog {

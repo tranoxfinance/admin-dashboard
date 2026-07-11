@@ -62,6 +62,78 @@ export async function reviewFlagAction(
   return { ok: true };
 }
 
+export async function createRestrictionAction(
+  userId: string,
+  payload: {
+    level: "restricted" | "suspended";
+    reason: "fraud_suspicion" | "compliance_review" | "other";
+    note?: string;
+  },
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/users/${userId}/restrictions`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/users");
+  revalidatePath("/restrictions");
+  revalidatePath("/aml-flags");
+  return { ok: true };
+}
+
+export async function liftRestrictionAction(
+  restrictionId: string,
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/restrictions/${restrictionId}/lift`, {
+      method: "PATCH",
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/users");
+  revalidatePath("/restrictions");
+  revalidatePath("/aml-flags");
+  return { ok: true };
+}
+
+export async function escalateRestrictionAction(
+  restrictionId: string,
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/restrictions/${restrictionId}/escalate`, {
+      method: "PATCH",
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/users");
+  revalidatePath("/restrictions");
+  revalidatePath("/aml-flags");
+  return { ok: true };
+}
+
+export async function reviewAppealAction(
+  appealId: string,
+  decision: "approved" | "rejected",
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/appeals/${appealId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ decision }),
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/users");
+  revalidatePath("/restrictions");
+  revalidatePath("/aml-flags");
+  return { ok: true };
+}
+
 export interface SendSupportReplyResult extends MutationResult {
   message?: SupportMessage;
 }
