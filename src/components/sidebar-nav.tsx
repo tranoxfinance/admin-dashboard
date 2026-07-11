@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useEffect, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   UserCog,
   Headset,
+  ChevronDown,
   type LucideIcon,
 } from "lucide-react";
 import type { AdminRole } from "@/lib/admin-session";
@@ -70,6 +71,13 @@ function buildNavItems(dict: Dict): NavItem[] {
   ];
 }
 
+function matchesPath(href: string, pathname: string) {
+  if (href === "/") {
+    return pathname === "/";
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function SidebarNav({
   collapsed = false,
   role,
@@ -79,6 +87,9 @@ export function SidebarNav({
 }) {
   const pathname = usePathname();
   const dict = useDict();
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
+    {},
+  );
 
   const navItems = buildNavItems(dict)
     .filter((item) => !item.superAdminOnly || role === "super_admin")
@@ -94,48 +105,138 @@ export function SidebarNav({
     ...(item.children ?? []),
   ]);
   const activeHref = allItems.reduce((best, item) => {
-    const matches =
-      item.href === "/"
-        ? pathname === "/"
-        : pathname === item.href || pathname.startsWith(`${item.href}/`);
-    if (!matches) {
+    if (!matchesPath(item.href, pathname)) {
       return best;
     }
     return item.href.length > best.length ? item.href : best;
   }, "");
 
-  function renderLink(item: NavItem, nested = false) {
+  const activeSectionHref = navItems.find(
+    (item) =>
+      item.href === activeHref ||
+      item.children?.some((child) => child.href === activeHref),
+  )?.href;
+
+  useEffect(() => {
+    if (activeSectionHref) {
+      setOpenSections((prev) =>
+        prev[activeSectionHref]
+          ? prev
+          : { ...prev, [activeSectionHref]: true },
+      );
+    }
+  }, [activeSectionHref]);
+
+  function toggleSection(event: MouseEvent, href: string) {
+    event.preventDefault();
+    event.stopPropagation();
+    setOpenSections((prev) => ({ ...prev, [href]: !prev[href] }));
+  }
+
+  function renderFlatLink(item: NavItem) {
     const isActive = item.href === activeHref;
     return (
       <Link
         key={item.href}
         href={item.href}
         title={collapsed ? item.label : undefined}
+        aria-current={isActive ? "page" : undefined}
         className={cn(
           "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
           collapsed && "justify-center px-0",
-          nested && !collapsed && "ml-6 py-1.5",
           isActive
-            ? "bg-accent text-accent-foreground"
+            ? "bg-primary text-primary-foreground shadow-sm"
             : "text-muted-foreground hover:bg-muted hover:text-foreground",
         )}
       >
-        <item.icon
-          className={cn("size-4 shrink-0", nested && !collapsed && "size-3.5")}
-        />
-        {collapsed ? null : item.label}
+        <item.icon className="size-4 shrink-0" />
+        {collapsed ? null : <span className="truncate">{item.label}</span>}
       </Link>
     );
   }
 
   return (
     <nav className="flex flex-1 flex-col gap-0.5 p-2">
-      {navItems.map((item) => (
-        <Fragment key={item.href}>
-          {renderLink(item)}
-          {item.children?.map((child) => renderLink(child, true))}
-        </Fragment>
-      ))}
+      {navItems.map((item) => {
+        const children = item.children ?? [];
+        if (collapsed || children.length === 0) {
+          return (
+            <Fragment key={item.href}>
+              {renderFlatLink(item)}
+              {collapsed ? children.map((child) => renderFlatLink(child)) : null}
+            </Fragment>
+          );
+        }
+        const isOpen = openSections[item.href] ?? false;
+        const isSectionActive = item.href === activeHref;
+        const hasActiveChild = children.some(
+          (child) => child.href === activeHref,
+        );
+        return (
+          <Fragment key={item.href}>
+            <div
+              className={cn(
+                "flex items-center rounded-lg text-sm font-medium transition-colors",
+                isSectionActive
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : hasActiveChild && !isOpen
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              <Link
+                href={item.href}
+                aria-current={isSectionActive ? "page" : undefined}
+                className="flex min-w-0 flex-1 items-center gap-2 rounded-l-lg px-3 py-2"
+              >
+                <item.icon className="size-4 shrink-0" />
+                <span className="truncate">{item.label}</span>
+              </Link>
+              <button
+                type="button"
+                onClick={(event) => toggleSection(event, item.href)}
+                aria-expanded={isOpen}
+                aria-label={item.label}
+                className={cn(
+                  "mr-1.5 flex size-6 shrink-0 items-center justify-center rounded-md transition-colors",
+                  isSectionActive
+                    ? "hover:bg-white/20"
+                    : "hover:bg-foreground/10",
+                )}
+              >
+                <ChevronDown
+                  className={cn(
+                    "size-4 transition-transform duration-200",
+                    !isOpen && "-rotate-90",
+                  )}
+                />
+              </button>
+            </div>
+            {isOpen ? (
+              <div className="my-0.5 ml-5 flex flex-col gap-0.5 border-l border-border pl-2">
+                {children.map((child) => {
+                  const isActive = child.href === activeHref;
+                  return (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      aria-current={isActive ? "page" : undefined}
+                      className={cn(
+                        "rounded-md px-3 py-1.5 text-sm transition-colors",
+                        isActive
+                          ? "bg-primary font-medium text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      )}
+                    >
+                      <span className="block truncate">{child.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
+          </Fragment>
+        );
+      })}
     </nav>
   );
 }
