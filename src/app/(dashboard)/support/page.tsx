@@ -12,6 +12,7 @@ import { InsightCard } from "@/components/insight-card";
 import { StatCard } from "@/components/overview/stat-card";
 import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { BarList } from "@/components/charts/bar-list";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SupportConversationsTable } from "./support-conversations-table";
 
 const STATUS_FILTERS: { label: string; value: SupportConversationStatus | "all" }[] = [
@@ -51,25 +52,25 @@ const CATEGORY_LABELS: Record<SupportTicketCategory, string> = {
 };
 
 function buildHref(status: string, kind: string): string {
-  const params = new URLSearchParams();
+  const params = new URLSearchParams({ view: "conversations" });
   if (status !== "all") {
     params.set("status", status);
   }
   if (kind !== "all") {
     params.set("kind", kind);
   }
-  const query = params.toString();
-  return query ? `/support?${query}` : "/support";
+  return `/support?${params.toString()}`;
 }
 
 export default async function SupportPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; kind?: string }>;
+  searchParams: Promise<{ status?: string; kind?: string; view?: string }>;
 }) {
   const params = await searchParams;
   const status = params.status ?? "all";
   const kind = params.kind ?? "all";
+  const defaultTab = params.view === "conversations" ? "conversations" : "analytics";
   const query = new URLSearchParams();
   if (status !== "all") {
     query.set("status", status);
@@ -128,92 +129,103 @@ export default async function SupportPage({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={UserRoundSearch}
-          label="Needs agent"
-          value={countByStatus("pending_agent").toLocaleString()}
-          secondary="Waiting in the queue"
-          color="#e9a028"
-        />
-        <StatCard
-          icon={MessagesSquare}
-          label="Active with agent"
-          value={countByStatus("active").toLocaleString()}
-          secondary="Being handled now"
-          color="#0d8fd2"
-        />
-        <StatCard
-          icon={Bot}
-          label="Bot handling"
-          value={countByStatus("bot").toLocaleString()}
-          secondary="AI assistant conversations"
-          color="#5ba2ca"
-        />
-        <StatCard
-          icon={TicketCheck}
-          label="Open tickets"
-          value={openTickets.toLocaleString()}
-          secondary={`${tickets.length.toLocaleString()} tickets in total`}
-          color="#00407a"
-        />
-      </div>
+      <Tabs defaultValue={defaultTab}>
+        <TabsList>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="conversations">Conversations</TabsTrigger>
+        </TabsList>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <InsightCard
-          title="Queue health"
-          subtitle="Every conversation by current status"
-        >
-          <DonutStatCard
-            segments={statusSegments}
-            centerLabel="Conversations"
-          />
-        </InsightCard>
-        <InsightCard
-          title="Tickets by category"
-          subtitle="What customers raise tickets about"
-          className="lg:col-span-2"
-        >
-          <BarList items={categoryItems} color="#0d8fd2" />
-        </InsightCard>
-      </div>
+        <TabsContent value="analytics" className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              icon={UserRoundSearch}
+              label="Needs agent"
+              value={countByStatus("pending_agent").toLocaleString()}
+              secondary="Waiting in the queue"
+              color="#e9a028"
+            />
+            <StatCard
+              icon={MessagesSquare}
+              label="Active with agent"
+              value={countByStatus("active").toLocaleString()}
+              secondary="Being handled now"
+              color="#0d8fd2"
+            />
+            <StatCard
+              icon={Bot}
+              label="Bot handling"
+              value={countByStatus("bot").toLocaleString()}
+              secondary="AI assistant conversations"
+              color="#5ba2ca"
+            />
+            <StatCard
+              icon={TicketCheck}
+              label="Open tickets"
+              value={openTickets.toLocaleString()}
+              secondary={`${tickets.length.toLocaleString()} tickets in total`}
+              color="#00407a"
+            />
+          </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1 rounded-lg bg-muted p-1 w-fit">
-          {KIND_FILTERS.map((filter) => (
-            <Link
-              key={filter.value}
-              href={buildHref(status, filter.value)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                kind === filter.value
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <InsightCard
+              title="Queue health"
+              subtitle="Every conversation by current status"
             >
-              {filter.label}
-            </Link>
-          ))}
-        </div>
-        <div className="flex items-center gap-1 rounded-lg bg-muted p-1 w-fit">
-          {STATUS_FILTERS.map((filter) => (
-            <Link
-              key={filter.value}
-              href={buildHref(filter.value, kind)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                status === filter.value
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
+              <DonutStatCard
+                segments={statusSegments}
+                centerLabel="Conversations"
+              />
+            </InsightCard>
+            <InsightCard
+              title="Tickets by category"
+              subtitle="What customers raise tickets about"
+              className="lg:col-span-2"
             >
-              {filter.label}
-            </Link>
-          ))}
-        </div>
-      </div>
+              <BarList items={categoryItems} color="#0d8fd2" />
+            </InsightCard>
+          </div>
+        </TabsContent>
 
-      <SupportConversationsTable data={conversations} />
+        <TabsContent value="conversations" className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1 rounded-lg bg-muted p-1 w-fit">
+              {KIND_FILTERS.map((filter) => (
+                <Link
+                  key={filter.value}
+                  href={buildHref(status, filter.value)}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                    kind === filter.value
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {filter.label}
+                </Link>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 rounded-lg bg-muted p-1 w-fit">
+              {STATUS_FILTERS.map((filter) => (
+                <Link
+                  key={filter.value}
+                  href={buildHref(filter.value, kind)}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                    status === filter.value
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {filter.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <SupportConversationsTable data={conversations} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
