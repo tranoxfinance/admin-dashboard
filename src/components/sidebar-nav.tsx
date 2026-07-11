@@ -145,7 +145,7 @@ export function SidebarNav({
           "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
           collapsed && "justify-center px-0",
           isActive
-            ? "bg-primary text-primary-foreground shadow-sm"
+            ? "bg-primary/10 text-primary"
             : "text-muted-foreground hover:bg-muted hover:text-foreground",
         )}
       >
@@ -178,7 +178,7 @@ export function SidebarNav({
               className={cn(
                 "flex items-center rounded-lg text-sm font-medium transition-colors",
                 isSectionActive
-                  ? "bg-primary text-primary-foreground shadow-sm"
+                  ? "bg-primary/10 text-primary"
                   : hasActiveChild && !isOpen
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -200,7 +200,7 @@ export function SidebarNav({
                 className={cn(
                   "mr-1.5 flex size-6 shrink-0 items-center justify-center rounded-md transition-colors",
                   isSectionActive
-                    ? "hover:bg-white/20"
+                    ? "hover:bg-primary/15"
                     : "hover:bg-foreground/10",
                 )}
               >
@@ -224,7 +224,7 @@ export function SidebarNav({
                       className={cn(
                         "rounded-md px-3 py-1.5 text-sm transition-colors",
                         isActive
-                          ? "bg-primary font-medium text-primary-foreground shadow-sm"
+                          ? "bg-primary/10 font-medium text-primary"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground",
                       )}
                     >
