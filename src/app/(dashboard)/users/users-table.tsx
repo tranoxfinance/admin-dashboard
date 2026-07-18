@@ -90,6 +90,16 @@ function buildColumns(
       },
     },
     {
+      accessorKey: "gender",
+      header: dict.users.colGender,
+      cell: ({ row }) => {
+        const gender = row.original.gender;
+        if (gender === "male") return dict.users.genderMale;
+        if (gender === "female") return dict.users.genderFemale;
+        return "—";
+      },
+    },
+    {
       accessorKey: "dateOfBirth",
       header: dict.users.colDob,
       cell: ({ row }) =>
