@@ -14,6 +14,8 @@ import {
   ShieldCheck,
   UserCog,
   Headset,
+  Bell,
+  Smartphone,
   ChevronDown,
   type LucideIcon,
 } from "lucide-react";
@@ -53,6 +55,13 @@ function buildNavItems(dict: Dict): NavItem[] {
       icon: ArrowLeftRight,
     },
     { href: "/support", label: dict.nav.support, icon: Headset },
+    { href: "/notifications", label: dict.nav.notifications, icon: Bell },
+    {
+      href: "/app-config",
+      label: dict.nav.appConfig,
+      icon: Smartphone,
+      superAdminOnly: true,
+    },
     { href: "/aml-flags", label: dict.nav.amlFlags, icon: ShieldAlert },
     { href: "/audit-logs", label: dict.nav.auditLogs, icon: ScrollText },
     {

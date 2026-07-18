@@ -2,7 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { adminApi, AdminApiError } from "@/lib/admin-api";
-import type { AdminAccountRow, SupportMessage } from "@/lib/types";
+import type {
+  AdminAccountRow,
+  AdminNotificationChannel,
+  AdminNotificationRow,
+  AppConfigRow,
+  AppPlatform,
+  SupportMessage,
+} from "@/lib/types";
 
 export interface MutationResult {
   ok: boolean;
@@ -235,6 +242,68 @@ export async function resolveSupportConversationAction(
   revalidatePath("/support");
   revalidatePath(`/support/${conversationId}`);
   return { ok: true };
+}
+
+export interface SendNotificationResult extends MutationResult {
+  notification?: AdminNotificationRow;
+}
+
+export async function sendUserNotificationAction(
+  userId: string,
+  payload: { title: string; body: string; channels: AdminNotificationChannel[] },
+): Promise<SendNotificationResult> {
+  try {
+    const notification = await adminApi<AdminNotificationRow>(
+      `/admin/notifications/user/${userId}`,
+      { method: "POST", body: JSON.stringify(payload) },
+    );
+    return { ok: true, notification };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export async function broadcastNotificationAction(payload: {
+  title: string;
+  body: string;
+  channels: AdminNotificationChannel[];
+}): Promise<SendNotificationResult> {
+  try {
+    const notification = await adminApi<AdminNotificationRow>(
+      "/admin/notifications/broadcast",
+      { method: "POST", body: JSON.stringify(payload) },
+    );
+    revalidatePath("/notifications");
+    return { ok: true, notification };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface UpdateAppConfigResult extends MutationResult {
+  config?: AppConfigRow;
+}
+
+export async function updateAppConfigAction(
+  platform: AppPlatform,
+  changes: {
+    minimumVersion?: string;
+    latestVersion?: string;
+    maintenanceMode?: boolean;
+    maintenanceMessage?: string;
+    updateMessage?: string;
+  },
+): Promise<UpdateAppConfigResult> {
+  try {
+    const config = await adminApi<AppConfigRow>(
+      `/admin/app-config/${platform}`,
+      { method: "PUT", body: JSON.stringify(changes) },
+    );
+    revalidatePath("/app-config");
+    return { ok: true, config };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
 }
 
 export async function closeSupportConversationAction(

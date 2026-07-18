@@ -9,6 +9,34 @@ export interface AdminUserRow {
   isActive: boolean;
   isLocked: boolean;
   restrictionLevel: RestrictionLevel | null;
+  dateOfBirth: string | null;
+  createdAt: string;
+}
+
+export type AppPlatform = "ios" | "android";
+
+export interface AppConfigRow {
+  platform: AppPlatform;
+  minimumVersion: string;
+  latestVersion: string;
+  maintenanceMode: boolean;
+  maintenanceMessage: string | null;
+  updateMessage: string | null;
+  updatedAt: string;
+}
+
+export type AdminNotificationChannel = "email" | "push" | "inbox";
+
+export interface AdminNotificationRow {
+  id: string;
+  adminId: string;
+  targetType: "user" | "broadcast";
+  targetUserId: string | null;
+  title: string;
+  body: string;
+  channels: AdminNotificationChannel[];
+  recipientCount: number;
+  status: "queued" | "sent" | "failed";
   createdAt: string;
 }
 
