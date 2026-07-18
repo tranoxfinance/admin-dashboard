@@ -8,6 +8,9 @@ import type {
   AdminNotificationRow,
   AppConfigRow,
   AppPlatform,
+  ServiceName,
+  ServiceStatusLevel,
+  ServiceStatusRow,
   SupportMessage,
 } from "@/lib/types";
 
@@ -301,6 +304,26 @@ export async function updateAppConfigAction(
     );
     revalidatePath("/app-config");
     return { ok: true, config };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface UpdateServiceStatusResult extends MutationResult {
+  status?: ServiceStatusRow;
+}
+
+export async function updateServiceStatusAction(
+  service: ServiceName,
+  changes: { status: ServiceStatusLevel; message?: string },
+): Promise<UpdateServiceStatusResult> {
+  try {
+    const status = await adminApi<ServiceStatusRow>(
+      `/admin/service-status/${service}`,
+      { method: "PUT", body: JSON.stringify(changes) },
+    );
+    revalidatePath("/app-config");
+    return { ok: true, status };
   } catch (error) {
     return { ok: false, error: describeError(error) };
   }

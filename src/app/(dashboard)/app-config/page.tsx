@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
-import type { AppConfigRow } from "@/lib/types";
+import type { AppConfigRow, ServiceStatusRow } from "@/lib/types";
 import { AppConfigForm } from "./app-config-form";
+import { ServiceStatusPanel } from "./service-status-panel";
 
 export default async function AppConfigPage() {
   const session = await getSession();
@@ -11,7 +12,10 @@ export default async function AppConfigPage() {
     redirect("/");
   }
   const dict = await getDict();
-  const configs = await adminApi<AppConfigRow[]>("/admin/app-config");
+  const [configs, serviceStatuses] = await Promise.all([
+    adminApi<AppConfigRow[]>("/admin/app-config"),
+    adminApi<ServiceStatusRow[]>("/admin/service-status"),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -29,6 +33,8 @@ export default async function AppConfigPage() {
           <AppConfigForm key={config.platform} config={config} />
         ))}
       </div>
+
+      <ServiceStatusPanel data={serviceStatuses} />
     </div>
   );
 }

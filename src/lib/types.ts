@@ -9,6 +9,7 @@ export interface AdminUserRow {
   isActive: boolean;
   isLocked: boolean;
   restrictionLevel: RestrictionLevel | null;
+  gender: "male" | "female" | null;
   dateOfBirth: string | null;
   createdAt: string;
 }
@@ -22,6 +23,16 @@ export interface AppConfigRow {
   maintenanceMode: boolean;
   maintenanceMessage: string | null;
   updateMessage: string | null;
+  updatedAt: string;
+}
+
+export type ServiceName = "transfers" | "topups" | "withdrawals" | "kyc";
+export type ServiceStatusLevel = "operational" | "degraded" | "down";
+
+export interface ServiceStatusRow {
+  service: ServiceName;
+  status: ServiceStatusLevel;
+  message: string | null;
   updatedAt: string;
 }
 
