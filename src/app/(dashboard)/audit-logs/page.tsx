@@ -16,7 +16,7 @@ export default async function AuditLogsPage({
 }) {
   const params = await searchParams;
   const session = await getSession();
-  if (session?.role === "support" || session?.role === "hr") {
+  if (session?.role === "support" || session?.role === "hr" || session?.role === "social_media") {
     redirect("/");
   }
   const dict = await getDict();

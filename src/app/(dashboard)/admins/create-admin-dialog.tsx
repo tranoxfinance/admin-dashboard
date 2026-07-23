@@ -31,12 +31,17 @@ import {
 const ROLE_VALUES: AdminAccountRow["role"][] = [
   "viewer",
   "support",
+  "social_media",
   "hr",
   "admin",
   "super_admin",
 ];
 
-const HR_ROLE_VALUES: AdminAccountRow["role"][] = ["viewer", "support"];
+const HR_ROLE_VALUES: AdminAccountRow["role"][] = [
+  "viewer",
+  "support",
+  "social_media",
+];
 
 export function CreateAdminDialog({
   currentRole,

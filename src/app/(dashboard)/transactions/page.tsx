@@ -30,7 +30,7 @@ export default async function TransactionsPage({
   const params = await searchParams;
   const dict = await getDict();
   const session = await getSession();
-  if (session?.role === "support" || session?.role === "hr") {
+  if (session?.role === "support" || session?.role === "hr" || session?.role === "social_media") {
     redirect("/");
   }
   const canManage = session?.role !== "viewer";

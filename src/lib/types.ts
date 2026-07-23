@@ -327,7 +327,7 @@ export interface SupportConversationDetail {
 export interface AdminAccountRow {
   id: string;
   email: string;
-  role: "super_admin" | "admin" | "support" | "hr" | "viewer";
+  role: "super_admin" | "admin" | "support" | "hr" | "social_media" | "viewer";
   isActive: boolean;
   totpEnabled: boolean;
   lastLoginAt: string | null;
@@ -343,4 +343,75 @@ export interface AdminLogRow {
   entityId: string | null;
   ipAddress: string | null;
   createdAt: string;
+}
+
+export type JobStatus = "draft" | "open" | "closed";
+
+export type JobEmploymentType =
+  | "full_time"
+  | "part_time"
+  | "contract"
+  | "internship";
+
+export interface JobOpeningRow {
+  id: string;
+  slug: string;
+  title: string;
+  department: string;
+  location: string;
+  employmentType: JobEmploymentType;
+  status: JobStatus;
+  description: string;
+  requirements: string;
+  applicationCount: number;
+  publishedAt: string | null;
+  closesAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ApplicationStatus = "submitted" | "interview" | "rejected" | "hired";
+
+export interface JobApplicationRow {
+  id: string;
+  jobId: string;
+  jobTitle: string;
+  reference: string;
+  fullName: string;
+  email: string;
+  phone: string | null;
+  linkedinUrl: string | null;
+  coverLetter: string | null;
+  cvFilename: string;
+  cvUrl?: string | null;
+  status: ApplicationStatus;
+  interviewAt: string | null;
+  decisionNote: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+}
+
+export type ArticleStatus = "draft" | "published" | "archived";
+
+export type ArticleCategory = "news" | "press" | "product" | "community";
+
+export interface ArticleMediaItem {
+  id: string;
+  mediaType: "image" | "video";
+  url: string;
+}
+
+export interface ArticleRow {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  body: string;
+  category: ArticleCategory;
+  status: ArticleStatus;
+  coverImageUrl: string | null;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  media: ArticleMediaItem[];
 }

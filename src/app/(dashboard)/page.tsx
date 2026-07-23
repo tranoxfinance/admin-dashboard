@@ -58,7 +58,10 @@ export default async function OverviewPage({
     redirect("/support");
   }
   if (session?.role === "hr") {
-    redirect("/admins");
+    redirect("/careers");
+  }
+  if (session?.role === "social_media") {
+    redirect("/articles");
   }
   const params = await searchParams;
   const dict = await getDict();

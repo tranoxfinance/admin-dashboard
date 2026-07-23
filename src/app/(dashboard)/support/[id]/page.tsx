@@ -11,7 +11,7 @@ export default async function SupportConversationPage({
 }) {
   const { id } = await params;
   const session = await getSession();
-  if (session?.role === "hr") {
+  if (session?.role === "hr" || session?.role === "social_media") {
     redirect("/");
   }
   let detail: SupportConversationDetail;

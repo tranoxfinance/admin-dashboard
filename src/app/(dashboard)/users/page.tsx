@@ -40,7 +40,7 @@ export default async function UsersPage({
   const params = await searchParams;
   const dict = await getDict();
   const session = await getSession();
-  if (session?.role === "hr") {
+  if (session?.role === "hr" || session?.role === "social_media") {
     redirect("/");
   }
   const canManage =

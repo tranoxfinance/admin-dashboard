@@ -36,7 +36,7 @@ export default async function SupportPage({
 }) {
   const params = await searchParams;
   const session = await getSession();
-  if (session?.role === "hr") {
+  if (session?.role === "hr" || session?.role === "social_media") {
     redirect("/");
   }
   const dict = await getDict();

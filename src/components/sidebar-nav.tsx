@@ -8,6 +8,9 @@ import {
   Users,
   Activity,
   ArrowLeftRight,
+  Briefcase,
+  Inbox,
+  Newspaper,
   ShieldAlert,
   ShieldBan,
   ScrollText,
@@ -40,6 +43,13 @@ const OPS_AND_SUPPORT_ROLES: AdminRole[] = [
   "support",
 ];
 const STAFF_ROLES: AdminRole[] = ["super_admin", "hr"];
+const CAREERS_ROLES: AdminRole[] = ["super_admin", "admin", "viewer", "hr"];
+const CONTENT_ROLES: AdminRole[] = [
+  "super_admin",
+  "admin",
+  "viewer",
+  "social_media",
+];
 
 function buildNavItems(dict: Dict): NavItem[] {
   return [
@@ -87,6 +97,32 @@ function buildNavItems(dict: Dict): NavItem[] {
       label: dict.nav.notifications,
       icon: Bell,
       roles: OPS_ROLES,
+    },
+    {
+      href: "/careers",
+      label: dict.nav.careers,
+      icon: Briefcase,
+      roles: CAREERS_ROLES,
+      children: [
+        {
+          href: "/careers",
+          label: dict.nav.jobOpenings,
+          icon: Briefcase,
+          roles: CAREERS_ROLES,
+        },
+        {
+          href: "/careers/applications",
+          label: dict.nav.applications,
+          icon: Inbox,
+          roles: CAREERS_ROLES,
+        },
+      ],
+    },
+    {
+      href: "/articles",
+      label: dict.nav.articles,
+      icon: Newspaper,
+      roles: CONTENT_ROLES,
     },
     {
       href: "/app-config",

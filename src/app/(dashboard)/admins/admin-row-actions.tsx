@@ -20,10 +20,15 @@ const ROLE_VALUES: AdminAccountRow["role"][] = [
   "admin",
   "hr",
   "support",
+  "social_media",
   "viewer",
 ];
 
-const HR_ROLE_VALUES: AdminAccountRow["role"][] = ["support", "viewer"];
+const HR_ROLE_VALUES: AdminAccountRow["role"][] = [
+  "support",
+  "social_media",
+  "viewer",
+];
 
 export function AdminRowActions({
   admin,
