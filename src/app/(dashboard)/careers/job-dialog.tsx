@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/rich-text-editor";
 import {
   Select,
   SelectContent,
@@ -49,12 +49,14 @@ export function JobDialog({ job }: { job?: JobOpeningRow }) {
   const dict = useDict();
   const t = dict.careers;
 
+  const plainLength = (html: string) =>
+    html.replace(/<[^>]*>/g, "").trim().length;
   const valid =
     title.trim().length >= 3 &&
     department.trim().length >= 2 &&
     location.trim().length >= 2 &&
-    description.trim().length >= 20 &&
-    requirements.trim().length >= 10;
+    plainLength(description) >= 20 &&
+    plainLength(requirements) >= 10;
 
   function handleSubmit() {
     startTransition(async () => {
@@ -155,21 +157,19 @@ export function JobDialog({ job }: { job?: JobOpeningRow }) {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="job-description">{t.fieldDescription}</Label>
-            <Textarea
-              id="job-description"
-              rows={5}
+            <RichTextEditor
               value={description}
-              onChange={(event) => setDescription(event.target.value)}
+              onChange={setDescription}
+              minHeight={140}
             />
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="job-requirements">{t.fieldRequirements}</Label>
-            <Textarea
-              id="job-requirements"
-              rows={5}
-              placeholder={t.requirementsHint}
+            <RichTextEditor
               value={requirements}
-              onChange={(event) => setRequirements(event.target.value)}
+              onChange={setRequirements}
+              placeholder={t.requirementsHint}
+              minHeight={140}
             />
           </div>
         </div>

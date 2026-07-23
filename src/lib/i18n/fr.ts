@@ -58,6 +58,7 @@ export const fr: Dict = {
       "Le nouveau mot de passe doit être différent du mot de passe temporaire.",
     JOB_NOT_FOUND: "Offre d'emploi introuvable.",
     JOB_NOT_OPEN: "Cette offre n'accepte plus de candidatures.",
+    JOB_CONTENT_TOO_SHORT: "Ajoutez un peu plus de détails avant d'enregistrer.",
     APPLICATION_NOT_FOUND: "Candidature introuvable.",
     APPLICATION_ALREADY_SUBMITTED:
       "Ce candidat a déjà postulé pour ce poste.",
@@ -540,7 +541,7 @@ export const fr: Dict = {
     fieldEmploymentType: "Type de contrat",
     fieldDescription: "Description du poste",
     fieldRequirements: "Exigences",
-    requirementsHint: "Une exigence par ligne.",
+    requirementsHint: "Sélectionnez du texte pour le mettre en forme.",
     employmentTypes: {
       full_time: "Temps plein",
       part_time: "Temps partiel",

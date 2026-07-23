@@ -16,10 +16,16 @@ function ensureBlockStructure(html: string): string {
   if (/<(p|h1|h2|div)[\s>]/i.test(html)) {
     return html;
   }
-  const blocks = html
+  let blocks = html
     .split(/\r?\n\s*\r?\n/)
     .map((block) => block.trim())
     .filter(Boolean);
+  if (blocks.length <= 1 && /\r?\n/.test(html)) {
+    blocks = html
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
   if (blocks.length === 0) {
     return "";
   }

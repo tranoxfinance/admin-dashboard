@@ -51,6 +51,7 @@ export const en = {
       "Your new password must be different from the temporary one.",
     JOB_NOT_FOUND: "Job opening not found.",
     JOB_NOT_OPEN: "This job opening is not accepting applications.",
+    JOB_CONTENT_TOO_SHORT: "Add a bit more detail before saving.",
     APPLICATION_NOT_FOUND: "Application not found.",
     APPLICATION_ALREADY_SUBMITTED:
       "This candidate has already applied for this role.",
@@ -527,7 +528,7 @@ export const en = {
     fieldEmploymentType: "Employment type",
     fieldDescription: "Role description",
     fieldRequirements: "Requirements",
-    requirementsHint: "One requirement per line.",
+    requirementsHint: "Select text to format it.",
     employmentTypes: {
       full_time: "Full-time",
       part_time: "Part-time",
