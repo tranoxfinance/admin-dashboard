@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Activity, Globe2, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
@@ -39,7 +40,11 @@ export default async function UsersPage({
   const params = await searchParams;
   const dict = await getDict();
   const session = await getSession();
-  const canManage = session?.role !== "viewer";
+  if (session?.role === "hr" || session?.role === "social_media") {
+    redirect("/");
+  }
+  const canManage =
+    session?.role === "super_admin" || session?.role === "admin";
   const period = params.period ?? "30d";
   const { dateFrom, dateTo } = resolveDateRange({ period });
 

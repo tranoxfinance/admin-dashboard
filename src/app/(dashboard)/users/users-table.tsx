@@ -8,6 +8,7 @@ import type { Dict } from "@/lib/i18n";
 import { useDict } from "@/components/i18n-provider";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
+import { UserNotifyDialog } from "./user-notify-dialog";
 import { UserRestrictDialog } from "./user-restrict-dialog";
 import { UserStatusToggle } from "./user-status-toggle";
 
@@ -89,6 +90,24 @@ function buildColumns(
       },
     },
     {
+      accessorKey: "gender",
+      header: dict.users.colGender,
+      cell: ({ row }) => {
+        const gender = row.original.gender;
+        if (gender === "male") return dict.users.genderMale;
+        if (gender === "female") return dict.users.genderFemale;
+        return "—";
+      },
+    },
+    {
+      accessorKey: "dateOfBirth",
+      header: dict.users.colDob,
+      cell: ({ row }) =>
+        row.original.dateOfBirth
+          ? formatDate(row.original.dateOfBirth, dict.common.dateLocale)
+          : "—",
+    },
+    {
       accessorKey: "createdAt",
       header: dict.users.colJoined,
       cell: ({ row }) => formatDate(row.original.createdAt, dict.common.dateLocale),
@@ -100,6 +119,7 @@ function buildColumns(
       header: () => <div className="text-right">{dict.common.actions}</div>,
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-2">
+          <UserNotifyDialog userId={row.original.id} />
           {row.original.restrictionLevel === null ? (
             <UserRestrictDialog userId={row.original.id} />
           ) : null}

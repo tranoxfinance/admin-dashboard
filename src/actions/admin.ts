@@ -1,8 +1,25 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { adminApi, AdminApiError } from "@/lib/admin-api";
-import type { AdminAccountRow, SupportMessage } from "@/lib/types";
+import { adminApi, adminApiForm, AdminApiError } from "@/lib/admin-api";
+import type {
+  AdminAccountRow,
+  AdminNotificationChannel,
+  AdminNotificationRow,
+  AppConfigRow,
+  AppPlatform,
+  ArticleCategory,
+  ArticleRow,
+  ArticleStatus,
+  JobApplicationRow,
+  JobEmploymentType,
+  JobOpeningRow,
+  JobStatus,
+  ServiceName,
+  ServiceStatusLevel,
+  ServiceStatusRow,
+  SupportMessage,
+} from "@/lib/types";
 
 export interface MutationResult {
   ok: boolean;
@@ -237,6 +254,88 @@ export async function resolveSupportConversationAction(
   return { ok: true };
 }
 
+export interface SendNotificationResult extends MutationResult {
+  notification?: AdminNotificationRow;
+}
+
+export async function sendUserNotificationAction(
+  userId: string,
+  payload: { title: string; body: string; channels: AdminNotificationChannel[] },
+): Promise<SendNotificationResult> {
+  try {
+    const notification = await adminApi<AdminNotificationRow>(
+      `/admin/notifications/user/${userId}`,
+      { method: "POST", body: JSON.stringify(payload) },
+    );
+    return { ok: true, notification };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export async function broadcastNotificationAction(payload: {
+  title: string;
+  body: string;
+  channels: AdminNotificationChannel[];
+}): Promise<SendNotificationResult> {
+  try {
+    const notification = await adminApi<AdminNotificationRow>(
+      "/admin/notifications/broadcast",
+      { method: "POST", body: JSON.stringify(payload) },
+    );
+    revalidatePath("/notifications");
+    return { ok: true, notification };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface UpdateAppConfigResult extends MutationResult {
+  config?: AppConfigRow;
+}
+
+export async function updateAppConfigAction(
+  platform: AppPlatform,
+  changes: {
+    minimumVersion?: string;
+    latestVersion?: string;
+    maintenanceMode?: boolean;
+    maintenanceMessage?: string;
+    updateMessage?: string;
+  },
+): Promise<UpdateAppConfigResult> {
+  try {
+    const config = await adminApi<AppConfigRow>(
+      `/admin/app-config/${platform}`,
+      { method: "PUT", body: JSON.stringify(changes) },
+    );
+    revalidatePath("/app-config");
+    return { ok: true, config };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface UpdateServiceStatusResult extends MutationResult {
+  status?: ServiceStatusRow;
+}
+
+export async function updateServiceStatusAction(
+  service: ServiceName,
+  changes: { status: ServiceStatusLevel; message?: string },
+): Promise<UpdateServiceStatusResult> {
+  try {
+    const status = await adminApi<ServiceStatusRow>(
+      `/admin/service-status/${service}`,
+      { method: "PUT", body: JSON.stringify(changes) },
+    );
+    revalidatePath("/app-config");
+    return { ok: true, status };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
 export async function closeSupportConversationAction(
   conversationId: string,
 ): Promise<MutationResult> {
@@ -250,4 +349,170 @@ export async function closeSupportConversationAction(
   revalidatePath("/support");
   revalidatePath(`/support/${conversationId}`);
   return { ok: true };
+}
+
+export interface JobMutationResult extends MutationResult {
+  job?: JobOpeningRow;
+}
+
+export async function createJobAction(payload: {
+  title: string;
+  department: string;
+  location: string;
+  employmentType: JobEmploymentType;
+  description: string;
+  requirements: string;
+  closesAt?: string;
+}): Promise<JobMutationResult> {
+  try {
+    const job = await adminApi<JobOpeningRow>("/admin/careers/jobs", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    revalidatePath("/careers");
+    return { ok: true, job };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export async function updateJobAction(
+  jobId: string,
+  changes: {
+    title?: string;
+    department?: string;
+    location?: string;
+    employmentType?: JobEmploymentType;
+    description?: string;
+    requirements?: string;
+    status?: JobStatus;
+    closesAt?: string | null;
+  },
+): Promise<JobMutationResult> {
+  try {
+    const job = await adminApi<JobOpeningRow>(`/admin/careers/jobs/${jobId}`, {
+      method: "PATCH",
+      body: JSON.stringify(changes),
+    });
+    revalidatePath("/careers");
+    return { ok: true, job };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface ApplicationDetailResult extends MutationResult {
+  application?: JobApplicationRow;
+}
+
+export async function getApplicationAction(
+  applicationId: string,
+): Promise<ApplicationDetailResult> {
+  try {
+    const application = await adminApi<JobApplicationRow>(
+      `/admin/careers/applications/${applicationId}`,
+    );
+    return { ok: true, application };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export async function decideApplicationAction(
+  applicationId: string,
+  payload: {
+    decision: "interview" | "rejected" | "hired";
+    message?: string;
+    interviewAt?: string;
+    interviewLocation?: string;
+  },
+): Promise<ApplicationDetailResult> {
+  try {
+    const application = await adminApi<JobApplicationRow>(
+      `/admin/careers/applications/${applicationId}/decision`,
+      { method: "POST", body: JSON.stringify(payload) },
+    );
+    revalidatePath("/careers/applications");
+    return { ok: true, application };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface ArticleMutationResult extends MutationResult {
+  article?: ArticleRow;
+}
+
+export async function createArticleAction(payload: {
+  title: string;
+  excerpt?: string;
+  body: string;
+  category: ArticleCategory;
+}): Promise<ArticleMutationResult> {
+  try {
+    const article = await adminApi<ArticleRow>("/admin/articles", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    revalidatePath("/articles");
+    return { ok: true, article };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export async function updateArticleAction(
+  articleId: string,
+  changes: {
+    title?: string;
+    excerpt?: string;
+    body?: string;
+    category?: ArticleCategory;
+    status?: ArticleStatus;
+  },
+): Promise<ArticleMutationResult> {
+  try {
+    const article = await adminApi<ArticleRow>(`/admin/articles/${articleId}`, {
+      method: "PATCH",
+      body: JSON.stringify(changes),
+    });
+    revalidatePath("/articles");
+    revalidatePath(`/articles/${articleId}`);
+    return { ok: true, article };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export async function uploadArticleMediaAction(
+  articleId: string,
+  formData: FormData,
+): Promise<ArticleMutationResult> {
+  try {
+    const article = await adminApiForm<ArticleRow>(
+      `/admin/articles/${articleId}/media`,
+      "POST",
+      formData,
+    );
+    revalidatePath(`/articles/${articleId}`);
+    return { ok: true, article };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export async function removeArticleMediaAction(
+  articleId: string,
+  mediaId: string,
+): Promise<ArticleMutationResult> {
+  try {
+    const article = await adminApi<ArticleRow>(
+      `/admin/articles/${articleId}/media/${mediaId}`,
+      { method: "DELETE" },
+    );
+    revalidatePath(`/articles/${articleId}`);
+    return { ok: true, article };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
 }

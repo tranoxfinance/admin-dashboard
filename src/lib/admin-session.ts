@@ -5,9 +5,16 @@ export const ACCESS_COOKIE = "admin_access";
 export const REFRESH_COOKIE = "admin_refresh";
 export const ENROLLMENT_COOKIE = "admin_enrollment";
 export const MFA_COOKIE = "admin_mfa";
+export const PASSWORD_CHANGE_COOKIE = "admin_password_change";
 export const REFRESH_MAX_AGE_SECONDS = 12 * 60 * 60;
 
-export type AdminRole = "super_admin" | "admin" | "viewer";
+export type AdminRole =
+  | "super_admin"
+  | "admin"
+  | "support"
+  | "hr"
+  | "social_media"
+  | "viewer";
 
 export interface AdminAccessPayload {
   sub: string;

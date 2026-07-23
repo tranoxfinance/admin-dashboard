@@ -46,6 +46,27 @@ export async function adminApiPublic<T>(
   return (await response.json()) as T;
 }
 
+export async function adminApiForm<T>(
+  path: string,
+  method: string,
+  formData: FormData,
+): Promise<T> {
+  const token = await getAccessToken();
+  if (!token) {
+    throw new AdminApiError("ADMIN_SESSION_EXPIRED", 401);
+  }
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    await parseError(response);
+  }
+  return (await response.json()) as T;
+}
+
 export async function adminApi<T>(
   path: string,
   init?: RequestInit,

@@ -1,4 +1,5 @@
 import { ArrowLeftRight, Banknote, PiggyBank } from "lucide-react";
+import { redirect } from "next/navigation";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
 import { formatVolumeSummary } from "@/lib/format";
@@ -29,6 +30,9 @@ export default async function TransactionsPage({
   const params = await searchParams;
   const dict = await getDict();
   const session = await getSession();
+  if (session?.role === "support" || session?.role === "hr" || session?.role === "social_media") {
+    redirect("/");
+  }
   const canManage = session?.role !== "viewer";
   const statusGroups = [
     {

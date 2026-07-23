@@ -30,11 +30,24 @@ import {
 
 const ROLE_VALUES: AdminAccountRow["role"][] = [
   "viewer",
+  "support",
+  "social_media",
+  "hr",
   "admin",
   "super_admin",
 ];
 
-export function CreateAdminDialog() {
+const HR_ROLE_VALUES: AdminAccountRow["role"][] = [
+  "viewer",
+  "support",
+  "social_media",
+];
+
+export function CreateAdminDialog({
+  currentRole,
+}: {
+  currentRole: AdminAccountRow["role"];
+}) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,6 +55,7 @@ export function CreateAdminDialog() {
   const [isPending, startTransition] = useTransition();
   const dict = useDict();
   const t = dict.admins.dialog;
+  const roleOptions = currentRole === "hr" ? HR_ROLE_VALUES : ROLE_VALUES;
 
   function handleCreate() {
     startTransition(async () => {
@@ -108,7 +122,7 @@ export function CreateAdminDialog() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {ROLE_VALUES.map((value) => (
+                {roleOptions.map((value) => (
                   <SelectItem key={value} value={value}>
                     {dict.admins.roles[value]}
                   </SelectItem>

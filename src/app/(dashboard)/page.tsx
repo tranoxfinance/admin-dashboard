@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   Users,
   Activity,
@@ -7,6 +8,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
+import { getSession } from "@/lib/admin-session";
 import { resolveDateRange } from "@/lib/date-range";
 import { formatCurrency } from "@/lib/format";
 import { getDict } from "@/lib/i18n/server";
@@ -51,6 +53,16 @@ export default async function OverviewPage({
 }: {
   searchParams: Promise<{ period?: string; topPeriod?: string }>;
 }) {
+  const session = await getSession();
+  if (session?.role === "support") {
+    redirect("/support");
+  }
+  if (session?.role === "hr") {
+    redirect("/careers");
+  }
+  if (session?.role === "social_media") {
+    redirect("/articles");
+  }
   const params = await searchParams;
   const dict = await getDict();
   const period = params.period ?? "30d";
