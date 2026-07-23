@@ -415,3 +415,13 @@ export interface ArticleRow {
   updatedAt: string;
   media: ArticleMediaItem[];
 }
+
+export interface FaqRow {
+  id: string;
+  question: string;
+  answer: string;
+  sortOrder: number;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

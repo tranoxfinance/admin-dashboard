@@ -11,6 +11,7 @@ import type {
   ArticleCategory,
   ArticleRow,
   ArticleStatus,
+  FaqRow,
   JobApplicationRow,
   JobEmploymentType,
   JobOpeningRow,
@@ -512,6 +513,61 @@ export async function removeArticleMediaAction(
     );
     revalidatePath(`/articles/${articleId}`);
     return { ok: true, article };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface FaqMutationResult extends MutationResult {
+  faq?: FaqRow;
+}
+
+export async function createFaqAction(payload: {
+  question: string;
+  answer: string;
+  sortOrder?: number;
+  isPublished?: boolean;
+}): Promise<FaqMutationResult> {
+  try {
+    const faq = await adminApi<FaqRow>("/admin/faqs", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    revalidatePath("/faq");
+    return { ok: true, faq };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export async function updateFaqAction(
+  faqId: string,
+  changes: {
+    question?: string;
+    answer?: string;
+    sortOrder?: number;
+    isPublished?: boolean;
+  },
+): Promise<FaqMutationResult> {
+  try {
+    const faq = await adminApi<FaqRow>(`/admin/faqs/${faqId}`, {
+      method: "PATCH",
+      body: JSON.stringify(changes),
+    });
+    revalidatePath("/faq");
+    return { ok: true, faq };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export async function deleteFaqAction(
+  faqId: string,
+): Promise<MutationResult> {
+  try {
+    await adminApi<void>(`/admin/faqs/${faqId}`, { method: "DELETE" });
+    revalidatePath("/faq");
+    return { ok: true };
   } catch (error) {
     return { ok: false, error: describeError(error) };
   }
