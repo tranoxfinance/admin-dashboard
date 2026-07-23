@@ -10,6 +10,7 @@ import {
   getRefreshToken,
   getShortLivedCookie,
   MFA_COOKIE,
+  PASSWORD_CHANGE_COOKIE,
   REFRESH_MAX_AGE_SECONDS,
   setSessionCookies,
   setShortLivedCookie,
@@ -64,7 +65,12 @@ export async function loginAction(
 ): Promise<ActionState> {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
-  let result: { status: string; enrollmentToken?: string; mfaToken?: string };
+  let result: {
+    status: string;
+    enrollmentToken?: string;
+    mfaToken?: string;
+    changeToken?: string;
+  };
   try {
     result = await adminApiPublic("/admin/auth/login", {
       method: "POST",
@@ -73,6 +79,45 @@ export async function loginAction(
   } catch (error) {
     return { error: describeError(error) };
   }
+  if (result.status === "password_change_required" && result.changeToken) {
+    await setShortLivedCookie(PASSWORD_CHANGE_COOKIE, result.changeToken);
+    redirect("/change-password");
+  }
+  if (result.status === "enrollment_required" && result.enrollmentToken) {
+    await setShortLivedCookie(ENROLLMENT_COOKIE, result.enrollmentToken);
+    redirect("/setup");
+  }
+  if (result.status === "mfa_required" && result.mfaToken) {
+    await setShortLivedCookie(MFA_COOKIE, result.mfaToken);
+    redirect("/login/verify");
+  }
+  return { error: "UNEXPECTED_RESPONSE" };
+}
+
+export async function changeTempPasswordAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const password = String(formData.get("password") ?? "");
+  const changeToken = await getShortLivedCookie(PASSWORD_CHANGE_COOKIE);
+  if (!changeToken) {
+    return { error: "LOGIN_SESSION_EXPIRED" };
+  }
+  let result: {
+    status: string;
+    enrollmentToken?: string;
+    mfaToken?: string;
+  };
+  try {
+    result = await adminApiPublic("/admin/auth/change-password", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${changeToken}` },
+      body: JSON.stringify({ password }),
+    });
+  } catch (error) {
+    return { error: describeError(error) };
+  }
+  await clearShortLivedCookie(PASSWORD_CHANGE_COOKIE);
   if (result.status === "enrollment_required" && result.enrollmentToken) {
     await setShortLivedCookie(ENROLLMENT_COOKIE, result.enrollmentToken);
     redirect("/setup");
