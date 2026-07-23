@@ -4,7 +4,7 @@ import { Briefcase, FileText, Inbox, Users } from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
-import type { JobApplicationRow, JobOpeningRow } from "@/lib/types";
+import type { JobApplicationRow, JobOpeningRow, Paginated } from "@/lib/types";
 import { StatCard } from "@/components/overview/stat-card";
 import { Button } from "@/components/ui/button";
 import { JobsTable } from "./jobs-table";
@@ -18,10 +18,14 @@ export default async function CareersPage() {
   }
   const canManage = role === "super_admin" || role === "hr";
   const dict = await getDict();
-  const [jobs, applications] = await Promise.all([
-    adminApi<JobOpeningRow[]>("/admin/careers/jobs"),
-    adminApi<JobApplicationRow[]>("/admin/careers/applications"),
+  const [jobsPage, applicationsPage] = await Promise.all([
+    adminApi<Paginated<JobOpeningRow>>("/admin/careers/jobs?page=1&limit=50"),
+    adminApi<Paginated<JobApplicationRow>>(
+      "/admin/careers/applications?page=1&limit=50",
+    ),
   ]);
+  const jobs = jobsPage.items;
+  const applications = applicationsPage.items;
 
   const openJobs = jobs.filter((job) => job.status === "open").length;
   const pendingApplications = applications.filter(
@@ -63,7 +67,7 @@ export default async function CareersPage() {
         <StatCard
           icon={Users}
           label={dict.careers.statApplications}
-          value={applications.length.toLocaleString()}
+          value={applicationsPage.total.toLocaleString()}
           color="#00407a"
         />
         <StatCard

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
-import type { JobApplicationRow, JobOpeningRow } from "@/lib/types";
+import type { JobApplicationRow, JobOpeningRow, Paginated } from "@/lib/types";
 import { ApplicationsTable } from "./applications-table";
 
 export default async function ApplicationsPage({
@@ -18,16 +18,15 @@ export default async function ApplicationsPage({
   const canManage = role === "super_admin" || role === "hr";
   const params = await searchParams;
   const dict = await getDict();
-  const query = new URLSearchParams();
+  const query = new URLSearchParams({ page: "1", limit: "50" });
   if (params.jobId) query.set("jobId", params.jobId);
   if (params.status) query.set("status", params.status);
-  const queryString = query.toString();
 
-  const [applications, jobs] = await Promise.all([
-    adminApi<JobApplicationRow[]>(
-      `/admin/careers/applications${queryString ? `?${queryString}` : ""}`,
+  const [applicationsPage, jobsPage] = await Promise.all([
+    adminApi<Paginated<JobApplicationRow>>(
+      `/admin/careers/applications?${query.toString()}`,
     ),
-    adminApi<JobOpeningRow[]>("/admin/careers/jobs"),
+    adminApi<Paginated<JobOpeningRow>>("/admin/careers/jobs?page=1&limit=50"),
   ]);
 
   return (
@@ -37,13 +36,13 @@ export default async function ApplicationsPage({
           {dict.careers.applicationsTitle}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {dict.careers.applicationsSubtitle(applications.length)}
+          {dict.careers.applicationsSubtitle(applicationsPage.total)}
         </p>
       </div>
 
       <ApplicationsTable
-        data={applications}
-        jobs={jobs.map((job) => ({ id: job.id, title: job.title }))}
+        data={applicationsPage.items}
+        jobs={jobsPage.items.map((job) => ({ id: job.id, title: job.title }))}
         activeJobId={params.jobId}
         activeStatus={params.status}
         canManage={canManage}

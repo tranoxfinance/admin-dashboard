@@ -4,7 +4,7 @@ import { PenSquare } from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
-import type { ArticleRow } from "@/lib/types";
+import type { ArticleRow, Paginated } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { ArticlesTable } from "./articles-table";
 
@@ -23,16 +23,15 @@ export default async function ArticlesPage({
   const params = await searchParams;
   const status = params.status && params.status !== "all" ? params.status : undefined;
 
-  const [articles, allArticles] = await Promise.all([
-    adminApi<ArticleRow[]>(
-      `/admin/articles${status ? `?status=${status}` : ""}`,
+  const [articlesPage, allCount, publishedCount] = await Promise.all([
+    adminApi<Paginated<ArticleRow>>(
+      `/admin/articles?page=1&limit=50${status ? `&status=${status}` : ""}`,
     ),
-    status
-      ? adminApi<ArticleRow[]>("/admin/articles")
-      : Promise.resolve<ArticleRow[] | null>(null),
+    adminApi<Paginated<ArticleRow>>("/admin/articles?page=1&limit=1"),
+    adminApi<Paginated<ArticleRow>>(
+      "/admin/articles?page=1&limit=1&status=published",
+    ),
   ]);
-  const all = allArticles ?? articles;
-  const published = all.filter((article) => article.status === "published").length;
 
   return (
     <div className="flex flex-col gap-6">
@@ -42,7 +41,7 @@ export default async function ArticlesPage({
             {dict.articles.title}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {dict.articles.subtitle(all.length, published)}
+            {dict.articles.subtitle(allCount.total, publishedCount.total)}
           </p>
         </div>
         {canManage ? (
@@ -53,7 +52,7 @@ export default async function ArticlesPage({
         ) : null}
       </div>
 
-      <ArticlesTable data={articles} activeStatus={params.status} />
+      <ArticlesTable data={articlesPage.items} activeStatus={params.status} />
     </div>
   );
 }
