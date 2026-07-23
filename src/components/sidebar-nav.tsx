@@ -9,6 +9,7 @@ import {
   Activity,
   ArrowLeftRight,
   Briefcase,
+  HelpCircle,
   Inbox,
   Newspaper,
   ShieldAlert,
@@ -49,6 +50,12 @@ const CONTENT_ROLES: AdminRole[] = [
   "admin",
   "viewer",
   "social_media",
+];
+const FAQ_ROLES: AdminRole[] = [
+  "super_admin",
+  "admin",
+  "viewer",
+  "support",
 ];
 
 function buildNavItems(dict: Dict): NavItem[] {
@@ -123,6 +130,12 @@ function buildNavItems(dict: Dict): NavItem[] {
       label: dict.nav.articles,
       icon: Newspaper,
       roles: CONTENT_ROLES,
+    },
+    {
+      href: "/faq",
+      label: dict.nav.faq,
+      icon: HelpCircle,
+      roles: FAQ_ROLES,
     },
     {
       href: "/app-config",
