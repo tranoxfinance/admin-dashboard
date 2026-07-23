@@ -3,6 +3,18 @@ export const CATEGORICAL_DARK = ["#3987e5", "#199e70", "#c98500"];
 
 export const KYC_TIER_RAMP = ["#6da7ec", "#2a78d6", "#184f95"];
 
+export const ACTIVITY_CATEGORICAL = [
+  "#2a78d6",
+  "#1baf7a",
+  "#eda100",
+  "#d03b3b",
+  "#4a6fb5",
+  "#898781",
+];
+
+export const WARM_RAMP = ["#f5cd6d", "#e9a028", "#d03b3b"];
+export const WARM_CATEGORICAL = ["#d03b3b", "#e9a028", "#f5cd6d", "#f5975e"];
+
 export const STATUS_COLORS: Record<string, string> = {
   completed: "#0ca30c",
   inProgress: "#fab219",

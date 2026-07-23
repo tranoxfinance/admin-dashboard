@@ -1,82 +1,79 @@
+"use client";
+
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { useDict } from "@/components/i18n-provider";
+import type { Dict } from "@/lib/i18n";
 import type { ActivityItem } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 const TYPE_META: Record<
   ActivityItem["type"],
   {
-    label: string;
     icon: typeof ArrowLeftRight;
-    iconClass: string;
-    amountClass: string;
-    sign: string;
+    gradient: string;
   }
 > = {
   topup: {
-    label: "Deposit",
     icon: ArrowDownLeft,
-    iconClass: "bg-[#0ca30c]/10 text-[#0ca30c]",
-    amountClass: "text-[#0ca30c]",
-    sign: "+",
+    gradient: "linear-gradient(90deg, #0ca30c, #7bd66f)",
   },
   withdrawal: {
-    label: "Withdrawal",
     icon: ArrowUpRight,
-    iconClass: "bg-[#d03b3b]/10 text-[#d03b3b]",
-    amountClass: "text-[#d03b3b]",
-    sign: "-",
+    gradient: "linear-gradient(90deg, #d03b3b, #f5975e)",
   },
   transfer: {
-    label: "Transfer",
     icon: ArrowLeftRight,
-    iconClass: "bg-primary/10 text-primary",
-    amountClass: "text-foreground",
-    sign: "",
+    gradient: "linear-gradient(90deg, #00407a, #0d8fd2)",
   },
 };
 
+function typeLabel(dict: Dict, type: ActivityItem["type"]): string {
+  if (type === "topup") return dict.transactions.typeDeposit;
+  if (type === "withdrawal") return dict.transactions.typeWithdrawal;
+  return dict.transactions.typeTransfer;
+}
+
 export function ActivityFeedCard({ data }: { data: ActivityItem[] }) {
+  const dict = useDict();
+
   if (!data.length) {
     return (
       <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
-        No activity in this period.
+        {dict.common.noActivity}
       </div>
     );
   }
 
+  const maxAmount = Math.max(...data.map((item) => Number(item.amount)));
+
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-3">
       {data.map((item) => {
         const meta = TYPE_META[item.type];
+        const fillPercent = maxAmount
+          ? Math.max(28, Math.round((Number(item.amount) / maxAmount) * 100))
+          : 28;
         return (
-          <div
-            key={item.id}
-            className="flex items-center gap-3 border-b py-2.5 last:border-0"
-          >
-            <span
-              className={cn(
-                "flex size-9 shrink-0 items-center justify-center rounded-full",
-                meta.iconClass,
-              )}
-            >
-              <meta.icon className="size-4" />
-            </span>
-            <div className="flex min-w-0 flex-1 flex-col">
-              <span className="text-sm font-medium">{meta.label}</span>
-              <span className="text-xs text-muted-foreground">
-                {formatDate(item.initiatedAt)}
+          <div key={item.id} className="flex items-center gap-3">
+            <div className="h-11 flex-1 overflow-hidden rounded-full bg-muted">
+              <div
+                className="flex h-full items-center gap-2 rounded-full px-3.5"
+                style={{ width: `${fillPercent}%`, backgroundImage: meta.gradient }}
+              >
+                <meta.icon className="size-3.5 shrink-0 text-white" />
+                <span className="truncate text-sm font-medium text-white">
+                  {typeLabel(dict, item.type)}
+                </span>
+              </div>
+            </div>
+            <div className="flex shrink-0 flex-col items-end rounded-full bg-card px-3 py-1.5 text-right shadow-sm ring-1 ring-foreground/10">
+              <span className="text-sm font-semibold tabular-nums">
+                {formatCurrency(item.amount, item.currency)}
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                {formatDate(item.initiatedAt, dict.common.dateLocale)}
               </span>
             </div>
-            <span
-              className={cn(
-                "shrink-0 text-sm font-medium tabular-nums",
-                meta.amountClass,
-              )}
-            >
-              {meta.sign}
-              {formatCurrency(item.amount, item.currency)}
-            </span>
           </div>
         );
       })}

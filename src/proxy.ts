@@ -9,6 +9,7 @@ const REFRESH_MAX_AGE_SECONDS = 12 * 60 * 60;
 const PUBLIC_PATHS = [
   "/login",
   "/login/verify",
+  "/change-password",
   "/setup",
   "/forgot-password",
   "/reset-password",

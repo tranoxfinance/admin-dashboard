@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { resetPasswordAction } from "@/actions/auth";
+import { describeApiError } from "@/lib/i18n";
+import { useDict } from "@/components/i18n-provider";
 import { AuthCard } from "@/components/auth-card";
 import { PasswordInput } from "@/components/password-input";
 import { FormError } from "@/components/form-error";
@@ -17,11 +19,12 @@ function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [matchError, setMatchError] = useState<string>();
+  const dict = useDict();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     if (password !== confirmPassword) {
       event.preventDefault();
-      setMatchError("Passwords do not match.");
+      setMatchError(dict.auth.passwordsDoNotMatch);
       return;
     }
     setMatchError(undefined);
@@ -29,17 +32,16 @@ function ResetPasswordForm() {
 
   if (state.success) {
     return (
-      <AuthCard title="Password updated">
+      <AuthCard title={dict.auth.passwordUpdatedTitle}>
         <div className="flex flex-col items-center gap-3 rounded-lg bg-muted/50 px-4 py-6 text-center">
           <CheckCircle2 className="size-8 text-green" />
           <p className="text-sm text-muted-foreground">
-            Your password has been reset. You can now sign in with your new
-            password.
+            {dict.auth.passwordUpdatedBody}
           </p>
         </div>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           <Link href="/login" className="text-primary hover:underline">
-            Back to sign in
+            {dict.auth.backToSignIn}
           </Link>
         </p>
       </AuthCard>
@@ -48,11 +50,11 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <AuthCard title="Reset link invalid">
-        <FormError message="This reset link is missing its token. Request a new one." />
+      <AuthCard title={dict.auth.resetInvalidTitle}>
+        <FormError message={dict.auth.resetInvalidBody} />
         <p className="mt-6 text-center text-sm text-muted-foreground">
           <Link href="/forgot-password" className="text-primary hover:underline">
-            Request a new link
+            {dict.auth.requestNewLink}
           </Link>
         </p>
       </AuthCard>
@@ -61,13 +63,13 @@ function ResetPasswordForm() {
 
   return (
     <AuthCard
-      title="Set a new password"
-      description="Choose a new password for your admin account"
+      title={dict.auth.resetTitle}
+      description={dict.auth.resetDescription}
     >
       <form action={action} onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input type="hidden" name="token" value={token} />
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="password">New password</Label>
+          <Label htmlFor="password">{dict.auth.newPassword}</Label>
           <PasswordInput
             id="password"
             name="password"
@@ -78,11 +80,13 @@ function ResetPasswordForm() {
             onChange={(event) => setPassword(event.target.value)}
           />
           <p className="text-xs text-muted-foreground">
-            At least 12 characters, with upper, lower, digit, and symbol.
+            {dict.auth.passwordRules}
           </p>
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="confirmPassword">Confirm new password</Label>
+          <Label htmlFor="confirmPassword">
+            {dict.auth.confirmNewPassword}
+          </Label>
           <PasswordInput
             id="confirmPassword"
             name="confirmPassword"
@@ -92,8 +96,15 @@ function ResetPasswordForm() {
             onChange={(event) => setConfirmPassword(event.target.value)}
           />
         </div>
-        <FormError message={matchError ?? state.error} />
-        <SubmitButton pendingText="Updating…">Update password</SubmitButton>
+        <FormError
+          message={
+            matchError ??
+            (state.error ? describeApiError(dict, state.error) : undefined)
+          }
+        />
+        <SubmitButton pendingText={dict.auth.updating}>
+          {dict.auth.updatePassword}
+        </SubmitButton>
       </form>
     </AuthCard>
   );
