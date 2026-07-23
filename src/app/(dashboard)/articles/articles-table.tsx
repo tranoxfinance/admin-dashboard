@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpRight } from "lucide-react";
 import { formatDate } from "@/lib/format";
@@ -11,6 +12,20 @@ import type { ArticleRow, ArticleStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const STATUS_FILTERS: (ArticleStatus | "all")[] = [
+  "all",
+  "draft",
+  "published",
+  "archived",
+];
 
 export function ArticleStatusBadge({
   status,
@@ -89,15 +104,49 @@ function buildColumns(dict: Dict): ColumnDef<ArticleRow>[] {
   ];
 }
 
-export function ArticlesTable({ data }: { data: ArticleRow[] }) {
+export function ArticlesTable({
+  data,
+  activeStatus,
+}: {
+  data: ArticleRow[];
+  activeStatus?: string;
+}) {
   const dict = useDict();
+  const router = useRouter();
   const columns = useMemo(() => buildColumns(dict), [dict]);
+
+  function applyFilter(status: string) {
+    router.push(status === "all" ? "/articles" : `/articles?status=${status}`);
+  }
+
   return (
-    <DataTable
-      columns={columns}
-      data={data}
-      searchPlaceholder={dict.articles.search}
-      emptyMessage={dict.articles.empty}
-    />
+    <div className="flex flex-col gap-4">
+      <Select
+        value={activeStatus ?? "all"}
+        onValueChange={(value) => {
+          if (value) applyFilter(value);
+        }}
+      >
+        <SelectTrigger className="h-8 w-44">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {STATUS_FILTERS.map((status) => (
+            <SelectItem key={status} value={status}>
+              {status === "all"
+                ? dict.articles.filterAllStatuses
+                : dict.articles.statuses[status]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <DataTable
+        columns={columns}
+        data={data}
+        searchPlaceholder={dict.articles.search}
+        emptyMessage={dict.articles.empty}
+      />
+    </div>
   );
 }

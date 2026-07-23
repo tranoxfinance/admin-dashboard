@@ -67,6 +67,7 @@ export const fr: Dict = {
       "Une décision finale a déjà été envoyée pour cette candidature.",
     ARTICLE_NOT_FOUND: "Article introuvable.",
     ARTICLE_MEDIA_INVALID: "Fichier média non pris en charge pour cet article.",
+    ARTICLE_BODY_TOO_SHORT: "Ajoutez un peu plus de contenu avant d'enregistrer.",
     STORAGE_UPLOAD_FAILED:
       "Le fichier n'a pas pu être téléversé. Veuillez réessayer.",
     ADMIN_EMAIL_IN_USE: "Un administrateur avec cet email existe déjà.",
@@ -605,12 +606,14 @@ export const fr: Dict = {
     subtitle: (total: number, published: number) =>
       `${total} article${total === 1 ? "" : "s"} · ${published} publié${published === 1 ? "" : "s"}`,
     newArticle: "Nouvel article",
+    backToArticles: "Tous les articles",
     editTitle: "Modifier l'article",
     colTitle: "Titre",
     colCategory: "Catégorie",
     colPublished: "Publié",
     colUpdated: "Mis à jour",
     openArticle: "Ouvrir l'article",
+    filterAllStatuses: "Tous les statuts",
     search: "Rechercher par titre, slug…",
     empty: "Aucun article pour le moment. Rédigez le premier.",
     statuses: {
@@ -639,7 +642,7 @@ export const fr: Dict = {
     excerptHint: "Résumé court affiché sur la liste du site.",
     fieldBody: "Contenu",
     bodyHint:
-      "Rédigez le contenu de l'article. Une ligne vide commence un nouveau paragraphe.",
+      "Rédigez le contenu de l'article. Sélectionnez du texte pour le mettre en forme.",
     fieldCategory: "Catégorie",
     coverImage: "Image de couverture",
     noCover: "Pas d'image de couverture",

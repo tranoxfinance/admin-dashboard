@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ImagePlus, Trash2, Upload } from "lucide-react";
+import { ArrowLeft, ImagePlus, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import {
   createArticleAction,
@@ -16,6 +17,7 @@ import type { ArticleCategory, ArticleRow, ArticleStatus } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RichTextEditor } from "@/components/rich-text-editor";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -51,7 +53,8 @@ export function ArticleForm({
   const coverInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  const valid = title.trim().length >= 3 && body.trim().length >= 20;
+  const bodyPlainLength = body.replace(/<[^>]*>/g, "").trim().length;
+  const valid = title.trim().length >= 3 && bodyPlainLength >= 20;
   const readOnly = !canManage;
 
   function handleSave() {
@@ -134,6 +137,13 @@ export function ArticleForm({
 
   return (
     <div className="flex flex-col gap-6">
+      <Link
+        href="/articles"
+        className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeft className="size-3.5" />
+        {t.backToArticles}
+      </Link>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <h1 className="font-heading text-2xl font-semibold">
@@ -197,13 +207,11 @@ export function ArticleForm({
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="article-body">{t.fieldBody}</Label>
-            <Textarea
-              id="article-body"
-              rows={16}
-              disabled={readOnly}
-              placeholder={t.bodyHint}
+            <RichTextEditor
               value={body}
-              onChange={(event) => setBody(event.target.value)}
+              onChange={setBody}
+              placeholder={t.bodyHint}
+              editable={!readOnly}
             />
           </div>
         </div>
