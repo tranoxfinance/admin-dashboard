@@ -327,7 +327,7 @@ export interface SupportConversationDetail {
 export interface AdminAccountRow {
   id: string;
   email: string;
-  role: "super_admin" | "admin" | "viewer";
+  role: "super_admin" | "admin" | "support" | "hr" | "viewer";
   isActive: boolean;
   totpEnabled: boolean;
   lastLoginAt: string | null;

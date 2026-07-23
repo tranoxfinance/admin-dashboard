@@ -8,7 +8,7 @@ import { CreateAdminDialog } from "./create-admin-dialog";
 
 export default async function AdminsPage() {
   const session = await getSession();
-  if (session?.role !== "super_admin") {
+  if (session?.role !== "super_admin" && session?.role !== "hr") {
     redirect("/");
   }
   const dict = await getDict();
@@ -25,10 +25,14 @@ export default async function AdminsPage() {
             {dict.admins.subtitle(admins.length)}
           </p>
         </div>
-        <CreateAdminDialog />
+        <CreateAdminDialog currentRole={session.role} />
       </div>
 
-      <AdminsTable data={admins} currentAdminId={session.sub} />
+      <AdminsTable
+        data={admins}
+        currentAdminId={session.sub}
+        currentRole={session.role}
+      />
     </div>
   );
 }

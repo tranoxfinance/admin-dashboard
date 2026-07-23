@@ -13,6 +13,7 @@ import { AdminRowActions } from "./admin-row-actions";
 function buildColumns(
   dict: Dict,
   currentAdminId: string,
+  currentRole: AdminAccountRow["role"],
 ): ColumnDef<AdminAccountRow>[] {
   return [
     {
@@ -81,7 +82,7 @@ function buildColumns(
       cell: ({ row }) => (
         <div className="text-right">
           {row.original.id === currentAdminId ? null : (
-            <AdminRowActions admin={row.original} />
+            <AdminRowActions admin={row.original} currentRole={currentRole} />
           )}
         </div>
       ),
@@ -92,14 +93,16 @@ function buildColumns(
 export function AdminsTable({
   data,
   currentAdminId,
+  currentRole,
 }: {
   data: AdminAccountRow[];
   currentAdminId: string;
+  currentRole: AdminAccountRow["role"];
 }) {
   const dict = useDict();
   const columns = useMemo(
-    () => buildColumns(dict, currentAdminId),
-    [dict, currentAdminId],
+    () => buildColumns(dict, currentAdminId, currentRole),
+    [dict, currentAdminId, currentRole],
   );
   return (
     <DataTable

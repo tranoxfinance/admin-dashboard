@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
 import { adminApi } from "@/lib/admin-api";
 import { humanizeAction } from "@/lib/activity";
+import { getSession } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
 import type { AuditLog, Paginated } from "@/lib/types";
 import { InsightCard } from "@/components/insight-card";
@@ -13,6 +15,10 @@ export default async function AuditLogsPage({
   searchParams: Promise<{ userId?: string }>;
 }) {
   const params = await searchParams;
+  const session = await getSession();
+  if (session?.role === "support" || session?.role === "hr") {
+    redirect("/");
+  }
   const dict = await getDict();
   const query = new URLSearchParams({ page: "1", limit: "100" });
   if (params.userId) query.set("userId", params.userId);

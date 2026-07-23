@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
@@ -8,6 +9,9 @@ import { NotificationsHistoryTable } from "./notifications-history-table";
 export default async function NotificationsPage() {
   const dict = await getDict();
   const session = await getSession();
+  if (session?.role === "support" || session?.role === "hr") {
+    redirect("/");
+  }
   const canManage = session?.role !== "viewer";
   const { items } = await adminApi<{
     items: AdminNotificationRow[];

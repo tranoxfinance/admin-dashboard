@@ -52,6 +52,8 @@ export const fr: Dict = {
     UNEXPECTED_RESPONSE: "Réponse inattendue du serveur. Veuillez réessayer.",
     NETWORK_ERROR: "Impossible de joindre le serveur. Veuillez réessayer.",
     ADMIN_ROLE_FORBIDDEN: "Votre rôle ne permet pas cette action.",
+    ADMIN_ROLE_NOT_ALLOWED:
+      "Votre rôle ne permet pas de gérer ce compte administrateur.",
     ADMIN_EMAIL_IN_USE: "Un administrateur avec cet email existe déjà.",
     ADMIN_CANNOT_MODIFY_SELF: "Vous ne pouvez pas modifier votre propre compte.",
     ADMIN_NOT_FOUND: "Compte administrateur introuvable.",
@@ -511,11 +513,16 @@ export const fr: Dict = {
     roles: {
       super_admin: "Super admin",
       admin: "Admin",
+      support: "Support",
+      hr: "RH",
       viewer: "Lecture seule",
     } as Record<string, string>,
     roleHints: {
       super_admin: "Accès complet, y compris la gestion des admins",
       admin: "Peut agir sur les utilisateurs, le support et les transactions",
+      support:
+        "Gère les conversations du support et peut consulter les clients",
+      hr: "Gère les comptes du personnel support et lecture seule ainsi que le journal admin",
       viewer: "Accès en lecture seule à toutes les pages",
     } as Record<string, string>,
     twoFactorEnabled: "Activée",

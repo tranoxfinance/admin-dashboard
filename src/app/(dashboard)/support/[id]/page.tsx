@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { adminApi, AdminApiError } from "@/lib/admin-api";
 import { getAccessToken, getSession } from "@/lib/admin-session";
 import type { SupportConversationDetail } from "@/lib/types";
@@ -10,6 +10,10 @@ export default async function SupportConversationPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await getSession();
+  if (session?.role === "hr") {
+    redirect("/");
+  }
   let detail: SupportConversationDetail;
   try {
     detail = await adminApi<SupportConversationDetail>(
@@ -22,7 +26,6 @@ export default async function SupportConversationPage({
     throw error;
   }
   const accessToken = await getAccessToken();
-  const session = await getSession();
 
   return (
     <SupportThread

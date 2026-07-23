@@ -18,12 +18,24 @@ import {
 const ROLE_VALUES: AdminAccountRow["role"][] = [
   "super_admin",
   "admin",
+  "hr",
+  "support",
   "viewer",
 ];
 
-export function AdminRowActions({ admin }: { admin: AdminAccountRow }) {
+const HR_ROLE_VALUES: AdminAccountRow["role"][] = ["support", "viewer"];
+
+export function AdminRowActions({
+  admin,
+  currentRole,
+}: {
+  admin: AdminAccountRow;
+  currentRole: AdminAccountRow["role"];
+}) {
   const [isPending, startTransition] = useTransition();
   const dict = useDict();
+  const isHr = currentRole === "hr";
+  const roleOptions = isHr ? HR_ROLE_VALUES : ROLE_VALUES;
 
   function update(changes: {
     role?: AdminAccountRow["role"];
@@ -37,6 +49,10 @@ export function AdminRowActions({ admin }: { admin: AdminAccountRow }) {
         toast.error(describeApiError(dict, result.error));
       }
     });
+  }
+
+  if (isHr && !HR_ROLE_VALUES.includes(admin.role)) {
+    return null;
   }
 
   return (
@@ -53,7 +69,7 @@ export function AdminRowActions({ admin }: { admin: AdminAccountRow }) {
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {ROLE_VALUES.map((role) => (
+          {roleOptions.map((role) => (
             <SelectItem key={role} value={role}>
               {dict.admins.roles[role]}
             </SelectItem>

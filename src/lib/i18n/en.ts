@@ -46,6 +46,7 @@ export const en = {
     UNEXPECTED_RESPONSE: "Unexpected response from the server. Please try again.",
     NETWORK_ERROR: "Could not reach the server. Please try again.",
     ADMIN_ROLE_FORBIDDEN: "Your role does not allow this action.",
+    ADMIN_ROLE_NOT_ALLOWED: "Your role cannot manage this admin account.",
     ADMIN_EMAIL_IN_USE: "An admin with this email already exists.",
     ADMIN_CANNOT_MODIFY_SELF: "You cannot change your own account.",
     ADMIN_NOT_FOUND: "Admin account not found.",
@@ -501,11 +502,15 @@ export const en = {
     roles: {
       super_admin: "Super admin",
       admin: "Admin",
+      support: "Support",
+      hr: "HR",
       viewer: "View only",
     } as Record<string, string>,
     roleHints: {
       super_admin: "Full access, including admin management",
       admin: "Can operate on users, support, and transactions",
+      support: "Handles support conversations and can look up customers",
+      hr: "Manages support and view-only staff accounts and admin logs",
       viewer: "Read-only access to all pages",
     } as Record<string, string>,
     twoFactorEnabled: "Enrolled",

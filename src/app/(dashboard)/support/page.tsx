@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Bot, MessagesSquare, TicketCheck, UserRoundSearch } from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
+import { getSession } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
 import { cn } from "@/lib/utils";
 import type {
@@ -33,6 +35,10 @@ export default async function SupportPage({
   searchParams: Promise<{ status?: string; kind?: string; view?: string }>;
 }) {
   const params = await searchParams;
+  const session = await getSession();
+  if (session?.role === "hr") {
+    redirect("/");
+  }
   const dict = await getDict();
   const statusFilters: {
     label: string;

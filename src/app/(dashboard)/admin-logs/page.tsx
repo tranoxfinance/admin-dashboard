@@ -7,7 +7,7 @@ import { AdminLogsTable } from "./admin-logs-table";
 
 export default async function AdminLogsPage() {
   const session = await getSession();
-  if (session?.role !== "super_admin") {
+  if (session?.role !== "super_admin" && session?.role !== "hr") {
     redirect("/");
   }
   const dict = await getDict();

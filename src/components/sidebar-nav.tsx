@@ -28,24 +28,45 @@ interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
-  superAdminOnly?: boolean;
+  roles?: AdminRole[];
   children?: NavItem[];
 }
 
+const OPS_ROLES: AdminRole[] = ["super_admin", "admin", "viewer"];
+const OPS_AND_SUPPORT_ROLES: AdminRole[] = [
+  "super_admin",
+  "admin",
+  "viewer",
+  "support",
+];
+const STAFF_ROLES: AdminRole[] = ["super_admin", "hr"];
+
 function buildNavItems(dict: Dict): NavItem[] {
   return [
-    { href: "/", label: dict.nav.overview, icon: LayoutDashboard },
+    { href: "/", label: dict.nav.overview, icon: LayoutDashboard, roles: OPS_ROLES },
     {
       href: "/users",
       label: dict.nav.users,
       icon: Users,
+      roles: OPS_AND_SUPPORT_ROLES,
       children: [
-        { href: "/users", label: dict.nav.all, icon: Users },
-        { href: "/users/activity", label: dict.nav.activity, icon: Activity },
+        {
+          href: "/users",
+          label: dict.nav.all,
+          icon: Users,
+          roles: OPS_AND_SUPPORT_ROLES,
+        },
+        {
+          href: "/users/activity",
+          label: dict.nav.activity,
+          icon: Activity,
+          roles: OPS_AND_SUPPORT_ROLES,
+        },
         {
           href: "/restrictions",
           label: dict.nav.restrictions,
           icon: ShieldBan,
+          roles: OPS_ROLES,
         },
       ],
     },
@@ -53,34 +74,55 @@ function buildNavItems(dict: Dict): NavItem[] {
       href: "/transactions",
       label: dict.nav.transactions,
       icon: ArrowLeftRight,
+      roles: OPS_ROLES,
     },
-    { href: "/support", label: dict.nav.support, icon: Headset },
-    { href: "/notifications", label: dict.nav.notifications, icon: Bell },
+    {
+      href: "/support",
+      label: dict.nav.support,
+      icon: Headset,
+      roles: OPS_AND_SUPPORT_ROLES,
+    },
+    {
+      href: "/notifications",
+      label: dict.nav.notifications,
+      icon: Bell,
+      roles: OPS_ROLES,
+    },
     {
       href: "/app-config",
       label: dict.nav.appConfig,
       icon: Smartphone,
-      superAdminOnly: true,
+      roles: ["super_admin"],
     },
-    { href: "/aml-flags", label: dict.nav.amlFlags, icon: ShieldAlert },
-    { href: "/audit-logs", label: dict.nav.auditLogs, icon: ScrollText },
+    {
+      href: "/aml-flags",
+      label: dict.nav.amlFlags,
+      icon: ShieldAlert,
+      roles: OPS_ROLES,
+    },
+    {
+      href: "/audit-logs",
+      label: dict.nav.auditLogs,
+      icon: ScrollText,
+      roles: OPS_ROLES,
+    },
     {
       href: "/admins",
       label: dict.nav.admins,
       icon: UserCog,
-      superAdminOnly: true,
+      roles: STAFF_ROLES,
       children: [
         {
           href: "/admins",
           label: dict.nav.all,
           icon: UserCog,
-          superAdminOnly: true,
+          roles: STAFF_ROLES,
         },
         {
           href: "/admin-logs",
           label: dict.nav.adminLogs,
           icon: ShieldCheck,
-          superAdminOnly: true,
+          roles: STAFF_ROLES,
         },
       ],
     },
@@ -108,11 +150,11 @@ export function SidebarNav({
   );
 
   const navItems = buildNavItems(dict)
-    .filter((item) => !item.superAdminOnly || role === "super_admin")
+    .filter((item) => !item.roles || item.roles.includes(role))
     .map((item) => ({
       ...item,
       children: item.children?.filter(
-        (child) => !child.superAdminOnly || role === "super_admin",
+        (child) => !child.roles || child.roles.includes(role),
       ),
     }));
 

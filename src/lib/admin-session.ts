@@ -7,7 +7,7 @@ export const ENROLLMENT_COOKIE = "admin_enrollment";
 export const MFA_COOKIE = "admin_mfa";
 export const REFRESH_MAX_AGE_SECONDS = 12 * 60 * 60;
 
-export type AdminRole = "super_admin" | "admin" | "viewer";
+export type AdminRole = "super_admin" | "admin" | "support" | "hr" | "viewer";
 
 export interface AdminAccessPayload {
   sub: string;

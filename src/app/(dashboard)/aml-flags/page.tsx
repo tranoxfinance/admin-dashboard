@@ -1,4 +1,5 @@
 import { ShieldAlert, ShieldCheck, ShieldOff } from "lucide-react";
+import { redirect } from "next/navigation";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
@@ -13,6 +14,9 @@ import { AmlFlagsTable } from "./aml-flags-table";
 export default async function AmlFlagsPage() {
   const dict = await getDict();
   const session = await getSession();
+  if (session?.role === "support" || session?.role === "hr") {
+    redirect("/");
+  }
   const canManage = session?.role !== "viewer";
   const flags = await adminApi<AmlFlag[]>("/admin/aml-flags");
 

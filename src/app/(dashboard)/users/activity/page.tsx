@@ -1,5 +1,7 @@
 import { Activity, Flame, MousePointerClick, UserCheck } from "lucide-react";
+import { redirect } from "next/navigation";
 import { adminApi } from "@/lib/admin-api";
+import { getSession } from "@/lib/admin-session";
 import { buildCategoryBreakdown, humanizeAction } from "@/lib/activity";
 import { resolveDateRange } from "@/lib/date-range";
 import { getDict } from "@/lib/i18n/server";
@@ -34,6 +36,10 @@ export default async function UserActivityPage({
   searchParams: Promise<{ period?: string }>;
 }) {
   const params = await searchParams;
+  const session = await getSession();
+  if (session?.role === "hr") {
+    redirect("/");
+  }
   const dict = await getDict();
   const period = params.period ?? "30d";
   const { dateFrom, dateTo } = resolveDateRange({ period });
