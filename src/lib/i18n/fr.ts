@@ -74,6 +74,8 @@ export const fr: Dict = {
     ADMIN_EMAIL_IN_USE: "Un administrateur avec cet email existe déjà.",
     ADMIN_CANNOT_MODIFY_SELF: "Vous ne pouvez pas modifier votre propre compte.",
     ADMIN_NOT_FOUND: "Compte administrateur introuvable.",
+    ADMIN_EMAIL_DOMAIN_NOT_ALLOWED:
+      "Les comptes administrateurs doivent utiliser une adresse @tranoxfinance.com.",
     ADMIN_SESSION_EXPIRED: "Votre session a expiré. Veuillez vous reconnecter.",
     TRANSLATION_FAILED: "La traduction est indisponible pour le moment.",
     RESTRICTION_ALREADY_ACTIVE:
