@@ -65,6 +65,8 @@ export const en = {
     ADMIN_EMAIL_IN_USE: "An admin with this email already exists.",
     ADMIN_CANNOT_MODIFY_SELF: "You cannot change your own account.",
     ADMIN_NOT_FOUND: "Admin account not found.",
+    ADMIN_EMAIL_DOMAIN_NOT_ALLOWED:
+      "Admin accounts must use a @tranoxfinance.com email address.",
     ADMIN_SESSION_EXPIRED: "Your session has expired. Please sign in again.",
     TRANSLATION_FAILED: "Translation is unavailable right now.",
     RESTRICTION_ALREADY_ACTIVE: "This user already has an active restriction.",
