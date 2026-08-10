@@ -88,6 +88,13 @@ export const fr: Dict = {
     APPEAL_NOT_FOUND: "Recours introuvable ou déjà examiné.",
     fallback: "Une erreur est survenue. Veuillez réessayer.",
   } as Record<string, string>,
+  errorBoundary: {
+    title: "Une erreur est survenue",
+    body: "Une erreur inattendue s'est produite et notre équipe a été notifiée.",
+    errorId: (digest: string) => `ID de l'erreur : ${digest}`,
+    retry: "Réessayer",
+    backToOverview: "Retour à l'aperçu",
+  },
   nav: {
     overview: "Vue d'ensemble",
     users: "Utilisateurs",

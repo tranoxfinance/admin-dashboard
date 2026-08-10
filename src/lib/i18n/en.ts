@@ -78,6 +78,13 @@ export const en = {
     APPEAL_NOT_FOUND: "Appeal not found or already reviewed.",
     fallback: "Something went wrong. Please try again.",
   } as Record<string, string>,
+  errorBoundary: {
+    title: "Something went wrong",
+    body: "An unexpected error occurred and our team has been notified.",
+    errorId: (digest: string) => `Error ID: ${digest}`,
+    retry: "Try again",
+    backToOverview: "Back to overview",
+  },
   nav: {
     overview: "Overview",
     users: "Users",
