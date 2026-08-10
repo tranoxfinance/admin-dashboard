@@ -287,6 +287,7 @@ export const en = {
   },
   support: {
     title: "Support",
+    backToConversations: "All conversations",
     subtitle: (shown: number, open: number) =>
       `${shown} conversation${shown === 1 ? "" : "s"} shown · ${open} open ticket${open === 1 ? "" : "s"}`,
     tabConversations: "Conversations",
@@ -780,6 +781,8 @@ export const en = {
     setupDescription:
       "Scan this QR code with Google Authenticator, Authy, or another TOTP app",
     qrAlt: "Scan with your authenticator app",
+    secretCopied: "Secret copied to clipboard",
+    secretCopyFailed: "Couldn't copy the secret",
     confirmEnable: "Confirm and enable",
     showPassword: "Show password",
     hidePassword: "Hide password",

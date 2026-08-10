@@ -300,6 +300,7 @@ export const fr: Dict = {
   },
   support: {
     title: "Support",
+    backToConversations: "Toutes les conversations",
     subtitle: (shown: number, open: number) =>
       `${shown} conversation${shown === 1 ? "" : "s"} affichée${shown === 1 ? "" : "s"} · ${open} ticket${open === 1 ? "" : "s"} ouvert${open === 1 ? "" : "s"}`,
     tabConversations: "Conversations",
@@ -801,6 +802,8 @@ export const fr: Dict = {
     setupDescription:
       "Scannez ce QR code avec Google Authenticator, Authy ou une autre application TOTP",
     qrAlt: "Scannez avec votre application d'authentification",
+    secretCopied: "Secret copié dans le presse-papiers",
+    secretCopyFailed: "Impossible de copier le secret",
     confirmEnable: "Confirmer et activer",
     showPassword: "Afficher le mot de passe",
     hidePassword: "Masquer le mot de passe",

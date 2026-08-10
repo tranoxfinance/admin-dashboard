@@ -5,6 +5,7 @@ import { getShortLivedCookie, ENROLLMENT_COOKIE } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
 import { AuthCard } from "@/components/auth-card";
 import { Separator } from "@/components/ui/separator";
+import { CopySecret } from "./copy-secret";
 import { EnrollForm } from "./enroll-form";
 
 interface TotpSetupResponse {
@@ -44,9 +45,7 @@ export default async function SetupPage() {
           className="rounded-lg ring-1 ring-foreground/10"
           unoptimized
         />
-        <p className="break-all text-center font-mono text-xs text-muted-foreground">
-          {setup.secret}
-        </p>
+        <CopySecret secret={setup.secret} />
       </div>
       <Separator className="my-4" />
       <EnrollForm />
