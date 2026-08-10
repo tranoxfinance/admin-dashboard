@@ -51,6 +51,7 @@ export const fr: Dict = {
       "Votre session de connexion a expiré. Veuillez vous reconnecter.",
     UNEXPECTED_RESPONSE: "Réponse inattendue du serveur. Veuillez réessayer.",
     NETWORK_ERROR: "Impossible de joindre le serveur. Veuillez réessayer.",
+    VALIDATION_ERROR: "Veuillez vérifier votre saisie et réessayer.",
     ADMIN_ROLE_FORBIDDEN: "Votre rôle ne permet pas cette action.",
     ADMIN_ROLE_NOT_ALLOWED:
       "Votre rôle ne permet pas de gérer ce compte administrateur.",
