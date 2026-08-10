@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { io, type Socket } from "socket.io-client";
-import { Languages } from "lucide-react";
+import { ArrowLeft, Languages } from "lucide-react";
 import { toast } from "sonner";
 import {
   assignSupportConversationAction,
@@ -236,6 +237,13 @@ export function SupportThread({
 
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col gap-4">
+      <Link
+        href="/support"
+        className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeft className="size-3.5" />
+        {dict.support.backToConversations}
+      </Link>
       <div className="flex items-start justify-between">
         <div>
           <h1 className="font-heading text-2xl font-semibold">

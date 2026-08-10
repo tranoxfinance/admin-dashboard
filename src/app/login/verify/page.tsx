@@ -5,8 +5,8 @@ import { verifyMfaAction } from "@/actions/auth";
 import { describeApiError } from "@/lib/i18n";
 import { useDict } from "@/components/i18n-provider";
 import { AuthCard } from "@/components/auth-card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { OtpCodeInput } from "@/components/otp-code-input";
 import { SubmitButton } from "@/components/submit-button";
 import { FormError } from "@/components/form-error";
 
@@ -25,8 +25,7 @@ export default function VerifyMfaPage() {
     }
   }
 
-  const handleCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const next = event.target.value.replace(/\D/g, "").slice(0, 6);
+  const handleCodeChange = (next: string) => {
     setCode(next);
     if (next.length < 6) {
       submittedRef.current = false;
@@ -46,18 +45,12 @@ export default function VerifyMfaPage() {
       <form ref={formRef} action={action} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="code">{dict.auth.verificationCode}</Label>
-          <Input
-            id="code"
+          <OtpCodeInput
             name="code"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={6}
-            pattern="\d{6}"
-            autoFocus
-            required
             value={code}
             onChange={handleCodeChange}
-            className="text-center text-lg tracking-[0.5em]"
+            autoFocus
+            disabled={isPending}
           />
         </div>
         <FormError
