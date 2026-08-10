@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { resetPasswordAction } from "@/actions/auth";
 import { describeApiError } from "@/lib/i18n";
+import { PASSWORD_PATTERN } from "@/lib/validation";
 import { useDict } from "@/components/i18n-provider";
 import { AuthCard } from "@/components/auth-card";
 import { PasswordInput } from "@/components/password-input";
@@ -76,6 +77,9 @@ function ResetPasswordForm() {
             autoComplete="new-password"
             required
             minLength={12}
+            maxLength={72}
+            pattern={PASSWORD_PATTERN}
+            title={dict.auth.passwordRules}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />

@@ -45,6 +45,7 @@ export const en = {
     LOGIN_SESSION_EXPIRED: "Your login session expired. Please sign in again.",
     UNEXPECTED_RESPONSE: "Unexpected response from the server. Please try again.",
     NETWORK_ERROR: "Could not reach the server. Please try again.",
+    VALIDATION_ERROR: "Please check your input and try again.",
     ADMIN_ROLE_FORBIDDEN: "Your role does not allow this action.",
     ADMIN_ROLE_NOT_ALLOWED: "Your role cannot manage this admin account.",
     ADMIN_PASSWORD_SAME_AS_OLD:

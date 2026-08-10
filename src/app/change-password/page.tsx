@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { changeTempPasswordAction } from "@/actions/auth";
 import { describeApiError } from "@/lib/i18n";
+import { PASSWORD_PATTERN } from "@/lib/validation";
 import { useDict } from "@/components/i18n-provider";
 import { AuthCard } from "@/components/auth-card";
 import { PasswordInput } from "@/components/password-input";
@@ -34,6 +35,8 @@ export default function ChangePasswordPage() {
             required
             minLength={12}
             maxLength={72}
+            pattern={PASSWORD_PATTERN}
+            title={t.passwordRules}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />

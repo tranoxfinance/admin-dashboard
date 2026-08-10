@@ -5,6 +5,7 @@ import { UserRoundPlus } from "lucide-react";
 import { toast } from "sonner";
 import { createAdminAction } from "@/actions/admin";
 import { describeApiError } from "@/lib/i18n";
+import { PASSWORD_PATTERN } from "@/lib/validation";
 import { useDict } from "@/components/i18n-provider";
 import type { AdminAccountRow } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -105,6 +106,8 @@ export function CreateAdminDialog({
               autoComplete="new-password"
               minLength={12}
               maxLength={72}
+              pattern={PASSWORD_PATTERN}
+              title={t.passwordHint}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
