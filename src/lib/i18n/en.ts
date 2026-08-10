@@ -49,6 +49,8 @@ export const en = {
     ADMIN_ROLE_NOT_ALLOWED: "Your role cannot manage this admin account.",
     ADMIN_PASSWORD_SAME_AS_OLD:
       "Your new password must be different from the temporary one.",
+    ADMIN_PASSWORD_PWNED:
+      "This password has appeared in a known data breach. Please choose a different one.",
     JOB_NOT_FOUND: "Job opening not found.",
     JOB_NOT_OPEN: "This job opening is not accepting applications.",
     JOB_CONTENT_TOO_SHORT: "Add a bit more detail before saving.",

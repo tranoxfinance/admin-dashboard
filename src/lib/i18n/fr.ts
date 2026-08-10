@@ -56,6 +56,8 @@ export const fr: Dict = {
       "Votre rôle ne permet pas de gérer ce compte administrateur.",
     ADMIN_PASSWORD_SAME_AS_OLD:
       "Le nouveau mot de passe doit être différent du mot de passe temporaire.",
+    ADMIN_PASSWORD_PWNED:
+      "Ce mot de passe est apparu dans une fuite de données connue. Veuillez en choisir un autre.",
     JOB_NOT_FOUND: "Offre d'emploi introuvable.",
     JOB_NOT_OPEN: "Cette offre n'accepte plus de candidatures.",
     JOB_CONTENT_TOO_SHORT: "Ajoutez un peu plus de détails avant d'enregistrer.",

@@ -204,6 +204,22 @@ export async function translateTextsAction(
   }
 }
 
+export interface SupportSocketTicketResult extends MutationResult {
+  ticket?: string;
+}
+
+export async function getSupportSocketTicketAction(): Promise<SupportSocketTicketResult> {
+  try {
+    const result = await adminApi<{ ticket: string }>(
+      "/admin/support/socket-ticket",
+      { method: "POST" },
+    );
+    return { ok: true, ticket: result.ticket };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
 export interface SendSupportReplyResult extends MutationResult {
   message?: SupportMessage;
 }
