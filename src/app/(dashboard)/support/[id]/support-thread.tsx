@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import {
   assignSupportConversationAction,
   closeSupportConversationAction,
+  getSupportSocketTicketAction,
   resolveSupportConversationAction,
   sendSupportReplyAction,
   translateTextsAction,
@@ -38,12 +39,10 @@ const STATUS_VARIANT: Record<
 export function SupportThread({
   initialDetail,
   conversationId,
-  accessToken,
   canManage,
 }: {
   initialDetail: SupportConversationDetail;
   conversationId: string;
-  accessToken: string;
   canManage: boolean;
 }) {
   const router = useRouter();
@@ -75,29 +74,38 @@ export function SupportThread({
   }
 
   useEffect(() => {
-    if (!accessToken) {
-      return;
-    }
-    const socket: Socket = io(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/support`,
-      { transports: ["websocket"], auth: { token: accessToken } },
-    );
-    socket.on("connect", () => {
-      socket.emit("join", { conversationId });
-    });
-    socket.on("message", (message: SupportMessage) => {
-      appendMessage(message);
-    });
-    socket.on("status", ({ status }: { status: SupportConversationStatus }) => {
-      setDetail((current) => ({
-        ...current,
-        conversation: { ...current.conversation, status },
-      }));
-    });
+    let socket: Socket | null = null;
+    let cancelled = false;
+    (async () => {
+      const result = await getSupportSocketTicketAction();
+      if (cancelled || !result.ok || !result.ticket) {
+        return;
+      }
+      socket = io(`${process.env.NEXT_PUBLIC_API_BASE_URL}/support`, {
+        transports: ["websocket"],
+        auth: { token: result.ticket },
+      });
+      socket.on("connect", () => {
+        socket?.emit("join", { conversationId });
+      });
+      socket.on("message", (message: SupportMessage) => {
+        appendMessage(message);
+      });
+      socket.on(
+        "status",
+        ({ status }: { status: SupportConversationStatus }) => {
+          setDetail((current) => ({
+            ...current,
+            conversation: { ...current.conversation, status },
+          }));
+        },
+      );
+    })();
     return () => {
-      socket.disconnect();
+      cancelled = true;
+      socket?.disconnect();
     };
-  }, [accessToken, conversationId]);
+  }, [conversationId]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
