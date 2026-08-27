@@ -62,7 +62,9 @@ function buildColumns(
               ? dict.users.statusLocked
               : row.isActive
                 ? dict.users.statusActive
-                : dict.users.statusInactive,
+                : row.closedAt
+                  ? dict.users.statusClosed
+                  : dict.users.statusInactive,
       cell: ({ row }) => {
         const user = row.original;
         if (user.restrictionLevel === "suspended") {
@@ -80,13 +82,28 @@ function buildColumns(
         if (user.isLocked) {
           return <Badge variant="destructive">{dict.users.statusLocked}</Badge>;
         }
-        return user.isActive ? (
-          <Badge className="bg-green text-white">
-            {dict.users.statusActive}
-          </Badge>
-        ) : (
-          <Badge variant="outline">{dict.users.statusInactive}</Badge>
-        );
+        if (user.isActive) {
+          return (
+            <Badge className="bg-green text-white">
+              {dict.users.statusActive}
+            </Badge>
+          );
+        }
+        if (user.closedAt) {
+          return (
+            <div className="flex flex-col gap-0.5">
+              <Badge variant="outline">{dict.users.statusClosed}</Badge>
+              {user.retentionPurgeAt ? (
+                <span className="text-xs text-muted-foreground">
+                  {dict.users.retainedUntil(
+                    formatDate(user.retentionPurgeAt, dict.common.dateLocale),
+                  )}
+                </span>
+              ) : null}
+            </div>
+          );
+        }
+        return <Badge variant="outline">{dict.users.statusInactive}</Badge>;
       },
     },
     {

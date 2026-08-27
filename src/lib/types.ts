@@ -12,6 +12,8 @@ export interface AdminUserRow {
   gender: "male" | "female" | null;
   dateOfBirth: string | null;
   createdAt: string;
+  closedAt: string | null;
+  retentionPurgeAt: string | null;
 }
 
 export type AppPlatform = "ios" | "android";
