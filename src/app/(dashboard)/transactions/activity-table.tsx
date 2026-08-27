@@ -4,11 +4,12 @@ import { useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
-import type { ActivityItem } from "@/lib/types";
+import type { ActivityItem, RiskLevel } from "@/lib/types";
 import type { Dict } from "@/lib/i18n";
 import { useDict } from "@/components/i18n-provider";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
+import { HoldReviewActions } from "./hold-review-actions";
 import { ReverseTransactionButton } from "./reverse-transaction-button";
 
 const STATUS_VARIANT: Record<
@@ -20,7 +21,20 @@ const STATUS_VARIANT: Record<
   reversed: "destructive",
   pending: "outline",
   processing: "outline",
+  on_hold: "outline",
 };
+
+const RISK_VARIANT: Record<RiskLevel, "secondary" | "destructive" | "outline"> = {
+  low: "secondary",
+  medium: "outline",
+  high: "destructive",
+};
+
+function riskLabel(dict: Dict, level: RiskLevel): string {
+  if (level === "high") return dict.transactions.riskHigh;
+  if (level === "medium") return dict.transactions.riskMedium;
+  return dict.transactions.riskLow;
+}
 
 function buildColumns(
   dict: Dict,
@@ -43,6 +57,7 @@ function buildColumns(
     reversed: dict.transactions.statusReversed,
     pending: dict.transactions.statusPending,
     processing: dict.transactions.statusProcessing,
+    on_hold: dict.transactions.statusOnHold,
   };
   const columns: ColumnDef<ActivityItem>[] = [
     {
@@ -78,11 +93,37 @@ function buildColumns(
     {
       accessorKey: "status",
       header: dict.common.status,
-      cell: ({ row }) => (
-        <Badge variant={STATUS_VARIANT[row.original.status] ?? "outline"}>
-          {statusLabels[row.original.status] ?? row.original.status}
-        </Badge>
-      ),
+      cell: ({ row }) =>
+        row.original.status === "on_hold" ? (
+          <div className="flex flex-col gap-1">
+            <Badge className="w-fit bg-amber-500 text-white">
+              {dict.transactions.statusOnHold}
+            </Badge>
+            {row.original.heldReason ? (
+              <span className="max-w-xs text-wrap text-xs text-muted-foreground">
+                {row.original.heldReason}
+              </span>
+            ) : null}
+          </div>
+        ) : (
+          <Badge variant={STATUS_VARIANT[row.original.status] ?? "outline"}>
+            {statusLabels[row.original.status] ?? row.original.status}
+          </Badge>
+        ),
+    },
+    {
+      id: "risk",
+      header: dict.transactions.colRisk,
+      accessorFn: (row) => row.riskLevel ?? "",
+      cell: ({ row }) => {
+        const level = row.original.riskLevel;
+        if (!level) {
+          return "—";
+        }
+        return (
+          <Badge variant={RISK_VARIANT[level]}>{riskLabel(dict, level)}</Badge>
+        );
+      },
     },
     {
       accessorKey: "initiatedAt",
@@ -98,7 +139,10 @@ function buildColumns(
       cell: ({ row }) => (
         <div className="text-right">
           {row.original.type === "transfer" &&
-          row.original.status === "completed" ? (
+          row.original.status === "on_hold" ? (
+            <HoldReviewActions transactionId={row.original.id} />
+          ) : row.original.type === "transfer" &&
+            row.original.status === "completed" ? (
             <ReverseTransactionButton transactionId={row.original.id} />
           ) : null}
         </div>
@@ -111,9 +155,11 @@ function buildColumns(
 export function ActivityTable({
   data,
   canManage,
+  emptyMessage,
 }: {
   data: ActivityItem[];
   canManage: boolean;
+  emptyMessage?: string;
 }) {
   const dict = useDict();
   const columns = useMemo(
@@ -125,7 +171,7 @@ export function ActivityTable({
       columns={columns}
       data={data}
       searchPlaceholder={dict.transactions.search}
-      emptyMessage={dict.transactions.empty}
+      emptyMessage={emptyMessage ?? dict.transactions.empty}
     />
   );
 }

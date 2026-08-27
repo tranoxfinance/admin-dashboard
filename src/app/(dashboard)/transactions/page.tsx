@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Banknote, PiggyBank } from "lucide-react";
+import { ArrowLeftRight, Banknote, PauseCircle, PiggyBank } from "lucide-react";
 import { redirect } from "next/navigation";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
@@ -51,6 +51,11 @@ export default async function TransactionsPage({
       statuses: ["failed"],
     },
     {
+      key: "held",
+      label: dict.transactions.statusOnHold,
+      statuses: ["on_hold"],
+    },
+    {
       key: "reversed",
       label: dict.transactions.statusReversed,
       statuses: ["reversed"],
@@ -66,12 +71,22 @@ export default async function TransactionsPage({
   if (dateFrom) statsQuery.set("dateFrom", dateFrom);
   if (dateTo) statsQuery.set("dateTo", dateTo);
 
-  const [activity, stats, overview] = await Promise.all([
+  const heldQuery = new URLSearchParams({
+    page: "1",
+    limit: "50",
+    type: "transfer",
+    status: "on_hold",
+  });
+
+  const [activity, stats, overview, held] = await Promise.all([
     adminApi<Paginated<ActivityItem>>(
       `/admin/transactions?${activityQuery.toString()}`,
     ),
     adminApi<ActivityStats>(`/admin/transactions/stats?${statsQuery.toString()}`),
     adminApi<OverviewStats>(`/admin/overview/stats?${statsQuery.toString()}`),
+    adminApi<Paginated<ActivityItem>>(
+      `/admin/transactions?${heldQuery.toString()}`,
+    ),
   ]);
 
   const transferCount = stats.totals.transfers.reduce(
@@ -126,16 +141,20 @@ export default async function TransactionsPage({
 
       <PeriodFilters period={period} />
 
-      <Tabs defaultValue="analytics">
+      <Tabs defaultValue={held.total > 0 ? "held" : "analytics"}>
         <TabsList>
           <TabsTrigger value="analytics">{dict.common.analytics}</TabsTrigger>
           <TabsTrigger value="transactions">
             {dict.transactions.tabTransactions}
           </TabsTrigger>
+          <TabsTrigger value="held">
+            {dict.transactions.tabHeld}
+            {held.total > 0 ? ` (${held.total})` : ""}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics" className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
             <StatCard
               icon={ArrowLeftRight}
               label={dict.common.transfers}
@@ -155,6 +174,13 @@ export default async function TransactionsPage({
               label={dict.common.withdrawals}
               value={withdrawalCount.toLocaleString()}
               secondary={formatVolumeSummary(stats.totals.withdrawals, dict.common.noVolumeShort)}
+              color="#e9a028"
+            />
+            <StatCard
+              icon={PauseCircle}
+              label={dict.transactions.heldForReview}
+              value={held.total.toLocaleString()}
+              secondary={dict.transactions.heldForReviewSubtitle}
               color="#e9a028"
             />
           </div>
@@ -197,6 +223,14 @@ export default async function TransactionsPage({
 
         <TabsContent value="transactions">
           <ActivityTable data={activity.items} canManage={canManage} />
+        </TabsContent>
+
+        <TabsContent value="held">
+          <ActivityTable
+            data={held.items}
+            canManage={canManage}
+            emptyMessage={dict.transactions.heldEmpty}
+          />
         </TabsContent>
       </Tabs>
     </div>
