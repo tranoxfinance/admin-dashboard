@@ -106,6 +106,8 @@ export interface RestrictionAppealRow {
 
 export type ActivityType = "transfer" | "topup" | "withdrawal";
 
+export type RiskLevel = "low" | "medium" | "high";
+
 export interface ActivityItem {
   id: string;
   type: ActivityType;
@@ -116,6 +118,9 @@ export interface ActivityItem {
   status: string;
   initiatedAt: string;
   completedAt: string | null;
+  riskScore?: number | null;
+  riskLevel?: RiskLevel | null;
+  heldReason?: string | null;
 }
 
 export interface ActivityDailyPoint {

@@ -64,6 +64,36 @@ export async function reverseTransactionAction(
   return { ok: true };
 }
 
+export async function releaseHoldAction(
+  transactionId: string,
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/transactions/${transactionId}/release-hold`, {
+      method: "POST",
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/transactions");
+  return { ok: true };
+}
+
+export async function rejectHoldAction(
+  transactionId: string,
+  reason: string,
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/transactions/${transactionId}/reject-hold`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/transactions");
+  return { ok: true };
+}
+
 export async function reviewFlagAction(
   flagId: string,
   status: "reviewed" | "dismissed",

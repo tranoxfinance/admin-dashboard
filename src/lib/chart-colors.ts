@@ -18,8 +18,15 @@ export const WARM_CATEGORICAL = ["#d03b3b", "#e9a028", "#f5cd6d", "#f5975e"];
 export const STATUS_COLORS: Record<string, string> = {
   completed: "#0ca30c",
   inProgress: "#fab219",
+  held: "#e9a028",
   failed: "#d03b3b",
   reversed: "#ec835a",
+};
+
+export const RISK_LEVEL_COLORS: Record<"low" | "medium" | "high", string> = {
+  low: "#0ca30c",
+  medium: "#e9a028",
+  high: "#d03b3b",
 };
 
 export const CHART_CHROME = {
