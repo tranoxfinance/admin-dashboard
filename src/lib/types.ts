@@ -16,6 +16,23 @@ export interface AdminUserRow {
   retentionPurgeAt: string | null;
 }
 
+export type KycDocumentStatus =
+  | "pending"
+  | "in_review"
+  | "approved"
+  | "declined"
+  | "expired";
+
+export interface KycDocumentRow {
+  id: string;
+  type: string | null;
+  purpose: string;
+  status: KycDocumentStatus;
+  diditRef: string | null;
+  verifiedAt: string | null;
+  createdAt: string;
+}
+
 export type AppPlatform = "ios" | "android";
 
 export interface AppConfigRow {
