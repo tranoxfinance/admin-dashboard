@@ -16,6 +16,14 @@ export interface AdminUserRow {
   retentionPurgeAt: string | null;
 }
 
+export interface UserSummary {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  phone: string;
+  email: string | null;
+}
+
 export type KycDocumentStatus =
   | "pending"
   | "in_review"

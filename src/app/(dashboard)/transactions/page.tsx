@@ -1,4 +1,5 @@
-import { ArrowLeftRight, Banknote, PauseCircle, PiggyBank } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeftRight, Banknote, PauseCircle, PiggyBank, X } from "lucide-react";
 import { redirect } from "next/navigation";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
@@ -10,12 +11,14 @@ import type {
   ActivityStats,
   OverviewStats,
   Paginated,
+  UserSummary,
 } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InsightCard } from "@/components/insight-card";
 import { PeriodFilters } from "@/components/period-filters";
 import { StatCard } from "@/components/overview/stat-card";
 import { DonutStatCard } from "@/components/overview/donut-stat-card";
+import { Button } from "@/components/ui/button";
 import { STATUS_COLORS } from "@/lib/chart-colors";
 import { ActivityLineChart } from "./activity-line-chart";
 import { ActivityStatusChart } from "./activity-status-chart";
@@ -25,7 +28,12 @@ import { VolumeTrendChart } from "./volume-trend-chart";
 export default async function TransactionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string; from?: string; to?: string }>;
+  searchParams: Promise<{
+    period?: string;
+    from?: string;
+    to?: string;
+    userId?: string;
+  }>;
 }) {
   const params = await searchParams;
   const dict = await getDict();
@@ -34,6 +42,48 @@ export default async function TransactionsPage({
     redirect("/");
   }
   const canManage = session?.role !== "viewer";
+
+  if (params.userId) {
+    const [user, activity] = await Promise.all([
+      adminApi<UserSummary>(`/admin/users/${params.userId}`),
+      adminApi<Paginated<ActivityItem>>(
+        `/admin/transactions?page=1&limit=50&userId=${params.userId}`,
+      ),
+    ]);
+    const userName =
+      [user.firstName, user.lastName].filter(Boolean).join(" ") || user.phone;
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="font-heading text-2xl font-semibold">
+              {dict.transactions.filteredTitle(userName)}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {dict.transactions.userFilterSubtitle(
+                activity.total.toLocaleString(),
+                activity.total === 1,
+              )}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<Link href="/transactions" />}
+          >
+            <X className="size-3.5" />
+            {dict.transactions.clearUserFilter}
+          </Button>
+        </div>
+        <ActivityTable
+          data={activity.items}
+          canManage={canManage}
+          emptyMessage={dict.transactions.userFilterEmpty}
+        />
+      </div>
+    );
+  }
   const statusGroups = [
     {
       key: "completed",
