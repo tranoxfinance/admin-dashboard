@@ -16,6 +16,7 @@ import type {
   JobEmploymentType,
   JobOpeningRow,
   JobStatus,
+  KycDocumentRow,
   ServiceName,
   ServiceStatusLevel,
   ServiceStatusRow,
@@ -145,6 +146,39 @@ export async function liftRestrictionAction(
   revalidatePath("/users");
   revalidatePath("/restrictions");
   revalidatePath("/aml-flags");
+  return { ok: true };
+}
+
+export interface KycDocumentsResult extends MutationResult {
+  documents?: KycDocumentRow[];
+}
+
+export async function getUserKycDocumentsAction(
+  userId: string,
+): Promise<KycDocumentsResult> {
+  try {
+    const documents = await adminApi<KycDocumentRow[]>(
+      `/admin/kyc/users/${userId}`,
+    );
+    return { ok: true, documents };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export async function cancelKycDocumentAction(
+  documentId: string,
+  reason?: string,
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/kyc/documents/${documentId}/cancel`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/users");
   return { ok: true };
 }
 

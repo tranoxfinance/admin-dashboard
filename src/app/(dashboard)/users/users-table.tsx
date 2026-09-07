@@ -8,6 +8,7 @@ import type { Dict } from "@/lib/i18n";
 import { useDict } from "@/components/i18n-provider";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
+import { UserKycDialog } from "./user-kyc-dialog";
 import { UserNotifyDialog } from "./user-notify-dialog";
 import { UserRestrictDialog } from "./user-restrict-dialog";
 import { UserStatusToggle } from "./user-status-toggle";
@@ -136,6 +137,7 @@ function buildColumns(
       header: () => <div className="text-right">{dict.common.actions}</div>,
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-2">
+          <UserKycDialog userId={row.original.id} />
           <UserNotifyDialog userId={row.original.id} />
           {row.original.restrictionLevel === null ? (
             <UserRestrictDialog userId={row.original.id} />
