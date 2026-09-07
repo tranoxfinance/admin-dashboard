@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { adminApi, adminApiForm, AdminApiError } from "@/lib/admin-api";
 import type {
+  ActivityItem,
   AdminAccountRow,
   AdminNotificationChannel,
   AdminNotificationRow,
@@ -17,6 +18,7 @@ import type {
   JobOpeningRow,
   JobStatus,
   KycDocumentRow,
+  Paginated,
   ServiceName,
   ServiceStatusLevel,
   ServiceStatusRow,
@@ -48,6 +50,7 @@ export async function setUserActiveAction(
     return { ok: false, error: describeError(error) };
   }
   revalidatePath("/users");
+  revalidatePath(`/users/${userId}`);
   return { ok: true };
 }
 
@@ -128,6 +131,7 @@ export async function createRestrictionAction(
     return { ok: false, error: describeError(error) };
   }
   revalidatePath("/users");
+  revalidatePath(`/users/${userId}`);
   revalidatePath("/restrictions");
   revalidatePath("/aml-flags");
   return { ok: true };
@@ -180,6 +184,29 @@ export async function cancelKycDocumentAction(
   }
   revalidatePath("/users");
   return { ok: true };
+}
+
+export interface UserTransactionsResult extends MutationResult {
+  data?: Paginated<ActivityItem>;
+}
+
+export async function getUserTransactionsAction(
+  userId: string,
+  filters: { type?: string; status?: string; dateFrom?: string; dateTo?: string },
+): Promise<UserTransactionsResult> {
+  const query = new URLSearchParams({ page: "1", limit: "50", userId });
+  if (filters.type) query.set("type", filters.type);
+  if (filters.status) query.set("status", filters.status);
+  if (filters.dateFrom) query.set("dateFrom", filters.dateFrom);
+  if (filters.dateTo) query.set("dateTo", filters.dateTo);
+  try {
+    const data = await adminApi<Paginated<ActivityItem>>(
+      `/admin/transactions?${query.toString()}`,
+    );
+    return { ok: true, data };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
 }
 
 export async function escalateRestrictionAction(

@@ -16,12 +16,37 @@ export interface AdminUserRow {
   retentionPurgeAt: string | null;
 }
 
-export interface UserSummary {
+export interface UserWalletBalance {
+  currency: string;
+  balance: string;
+  lockedBalance: string;
+}
+
+export interface UserProfile {
   id: string;
   firstName: string | null;
   lastName: string | null;
   phone: string;
   email: string | null;
+  country: string;
+  gender: "male" | "female" | null;
+  dateOfBirth: string | null;
+  kycTier: number;
+  isActive: boolean;
+  isLocked: boolean;
+  restrictionLevel: RestrictionLevel | null;
+  riskScore: number;
+  riskLevel: RiskLevel;
+  customDailyLimits: { NGN?: string; XOF?: string } | null;
+  createdAt: string;
+  closedAt: string | null;
+  retentionPurgeAt: string | null;
+  wallets: UserWalletBalance[];
+  totals: {
+    deposits: ActivityCurrencyTotal[];
+    withdrawals: ActivityCurrencyTotal[];
+    transfersSent: ActivityCurrencyTotal[];
+  };
 }
 
 export type KycDocumentStatus =
