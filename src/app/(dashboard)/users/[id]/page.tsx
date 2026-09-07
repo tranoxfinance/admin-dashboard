@@ -48,28 +48,30 @@ export default async function UserProfilePage({
   const canViewFinancials = session?.role !== "support";
 
   let profile: UserProfile;
+  let kycDocuments: KycDocumentRow[];
+  let activity: Paginated<ActivityItem> | null;
+  let auditLogs: Paginated<AuditLog> | null;
   try {
-    profile = await adminApi<UserProfile>(`/admin/users/${id}`);
+    [profile, kycDocuments, activity, auditLogs] = await Promise.all([
+      adminApi<UserProfile>(`/admin/users/${id}`),
+      adminApi<KycDocumentRow[]>(`/admin/kyc/users/${id}`),
+      canViewFinancials
+        ? adminApi<Paginated<ActivityItem>>(
+            `/admin/transactions?page=1&limit=50&userId=${id}`,
+          )
+        : Promise.resolve(null),
+      canViewFinancials
+        ? adminApi<Paginated<AuditLog>>(
+            `/admin/audit-logs?page=1&limit=20&userId=${id}`,
+          )
+        : Promise.resolve(null),
+    ]);
   } catch (error) {
     if (error instanceof AdminApiError && error.status === 404) {
       notFound();
     }
     throw error;
   }
-
-  const [kycDocuments, activity, auditLogs] = await Promise.all([
-    adminApi<KycDocumentRow[]>(`/admin/kyc/users/${id}`),
-    canViewFinancials
-      ? adminApi<Paginated<ActivityItem>>(
-          `/admin/transactions?page=1&limit=50&userId=${id}`,
-        )
-      : Promise.resolve(null),
-    canViewFinancials
-      ? adminApi<Paginated<AuditLog>>(
-          `/admin/audit-logs?page=1&limit=20&userId=${id}`,
-        )
-      : Promise.resolve(null),
-  ]);
 
   const t = dict.userProfile;
   const name =
