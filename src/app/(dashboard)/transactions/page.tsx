@@ -11,7 +11,7 @@ import type {
   ActivityStats,
   OverviewStats,
   Paginated,
-  UserSummary,
+  UserProfile,
 } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InsightCard } from "@/components/insight-card";
@@ -45,7 +45,7 @@ export default async function TransactionsPage({
 
   if (params.userId) {
     const [user, activity] = await Promise.all([
-      adminApi<UserSummary>(`/admin/users/${params.userId}`),
+      adminApi<UserProfile>(`/admin/users/${params.userId}`),
       adminApi<Paginated<ActivityItem>>(
         `/admin/transactions?page=1&limit=50&userId=${params.userId}`,
       ),
