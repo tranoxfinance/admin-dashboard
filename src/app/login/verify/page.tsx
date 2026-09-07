@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { verifyMfaAction } from "@/actions/auth";
 import { describeApiError } from "@/lib/i18n";
 import { useDict } from "@/components/i18n-provider";
@@ -25,9 +25,8 @@ export default function VerifyMfaPage() {
     }
   }
 
-  const handleCodeChange = (next: string) => {
-    setCode(next);
-    if (next.length < 6) {
+  useEffect(() => {
+    if (code.length < 6) {
       submittedRef.current = false;
       return;
     }
@@ -35,7 +34,7 @@ export default function VerifyMfaPage() {
       submittedRef.current = true;
       formRef.current?.requestSubmit();
     }
-  };
+  }, [code, isPending]);
 
   return (
     <AuthCard
@@ -48,7 +47,7 @@ export default function VerifyMfaPage() {
           <OtpCodeInput
             name="code"
             value={code}
-            onChange={handleCodeChange}
+            onChange={setCode}
             autoFocus
             disabled={isPending}
           />
