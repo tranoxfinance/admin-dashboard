@@ -193,6 +193,7 @@ export const en = {
     activate: "Activate",
     deactivate: "Deactivate",
     restrict: "Restrict",
+    viewTransactions: "Transactions",
     userActivated: "User activated",
     userDeactivated: "User deactivated",
     search: "Search by name, phone, email, country…",
@@ -348,6 +349,11 @@ export const en = {
     rejectConfirm: "Reject transfer",
     rejecting: "Rejecting…",
     rejectSuccess: "Transfer rejected and funds released",
+    filteredTitle: (name: string) => `Transactions — ${name}`,
+    userFilterSubtitle: (total: string, one: boolean) =>
+      `${total} activity record${one ? "" : "s"} for this user`,
+    userFilterEmpty: "This user has no recorded activity.",
+    clearUserFilter: "Clear filter",
   },
   support: {
     title: "Support",

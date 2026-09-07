@@ -203,6 +203,7 @@ export const fr: Dict = {
     activate: "Activer",
     deactivate: "Désactiver",
     restrict: "Restreindre",
+    viewTransactions: "Transactions",
     userActivated: "Utilisateur activé",
     userDeactivated: "Utilisateur désactivé",
     search: "Rechercher par nom, téléphone, email, pays…",
@@ -361,6 +362,11 @@ export const fr: Dict = {
     rejectConfirm: "Rejeter le transfert",
     rejecting: "Rejet…",
     rejectSuccess: "Transfert rejeté et fonds libérés",
+    filteredTitle: (name: string) => `Transactions — ${name}`,
+    userFilterSubtitle: (total: string, one: boolean) =>
+      `${total} activité${one ? "" : "s"} enregistrée${one ? "" : "s"} pour cet utilisateur`,
+    userFilterEmpty: "Cet utilisateur n'a aucune activité enregistrée.",
+    clearUserFilter: "Effacer le filtre",
   },
   support: {
     title: "Support",

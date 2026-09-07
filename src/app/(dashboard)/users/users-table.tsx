@@ -1,12 +1,15 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
+import { ArrowLeftRight } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { formatDate } from "@/lib/format";
 import type { AdminUserRow } from "@/lib/types";
 import type { Dict } from "@/lib/i18n";
 import { useDict } from "@/components/i18n-provider";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
 import { UserKycDialog } from "./user-kyc-dialog";
 import { UserNotifyDialog } from "./user-notify-dialog";
@@ -137,6 +140,15 @@ function buildColumns(
       header: () => <div className="text-right">{dict.common.actions}</div>,
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            nativeButton={false}
+            render={<Link href={`/transactions?userId=${row.original.id}`} />}
+          >
+            <ArrowLeftRight className="size-3.5" />
+            {dict.users.viewTransactions}
+          </Button>
           <UserKycDialog userId={row.original.id} />
           <UserNotifyDialog userId={row.original.id} />
           {row.original.restrictionLevel === null ? (
