@@ -54,6 +54,22 @@ export async function setUserActiveAction(
   return { ok: true };
 }
 
+export async function revokeDeviceAction(
+  userId: string,
+  deviceId: string,
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/users/${userId}/devices/${deviceId}`, {
+      method: "DELETE",
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/users");
+  revalidatePath(`/users/${userId}`);
+  return { ok: true };
+}
+
 export async function reverseTransactionAction(
   transactionId: string,
 ): Promise<MutationResult> {

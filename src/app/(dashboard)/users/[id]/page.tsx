@@ -15,6 +15,7 @@ import type { Dict } from "@/lib/i18n";
 import type {
   ActivityItem,
   AuditLog,
+  KnownDeviceRow,
   KycDocumentRow,
   Paginated,
   RiskLevel,
@@ -29,6 +30,7 @@ import { AuditLogsTable } from "../../audit-logs/audit-logs-table";
 import { UserNotifyDialog } from "../user-notify-dialog";
 import { UserRestrictDialog } from "../user-restrict-dialog";
 import { UserStatusToggle } from "../user-status-toggle";
+import { UserDevicesPanel } from "./user-devices-panel";
 import { UserKycPanel } from "./user-kyc-panel";
 import { UserTransactionsPanel } from "./user-transactions-panel";
 
@@ -46,15 +48,21 @@ export default async function UserProfilePage({
   const canManage =
     session?.role === "super_admin" || session?.role === "admin";
   const canViewFinancials = session?.role !== "support";
+  const canManageDevices =
+    session?.role === "super_admin" ||
+    session?.role === "admin" ||
+    session?.role === "support";
 
   let profile: UserProfile;
   let kycDocuments: KycDocumentRow[];
+  let devices: KnownDeviceRow[];
   let activity: Paginated<ActivityItem> | null;
   let auditLogs: Paginated<AuditLog> | null;
   try {
-    [profile, kycDocuments, activity, auditLogs] = await Promise.all([
+    [profile, kycDocuments, devices, activity, auditLogs] = await Promise.all([
       adminApi<UserProfile>(`/admin/users/${id}`),
       adminApi<KycDocumentRow[]>(`/admin/kyc/users/${id}`),
+      adminApi<KnownDeviceRow[]>(`/admin/users/${id}/devices`),
       canViewFinancials
         ? adminApi<Paginated<ActivityItem>>(
             `/admin/transactions?page=1&limit=50&userId=${id}`,
@@ -143,6 +151,7 @@ export default async function UserProfilePage({
             <TabsTrigger value="transactions">{t.tabTransactions}</TabsTrigger>
           ) : null}
           <TabsTrigger value="kyc">{t.tabKyc}</TabsTrigger>
+          <TabsTrigger value="devices">{t.tabDevices}</TabsTrigger>
           {canViewFinancials ? (
             <TabsTrigger value="activity">{t.tabActivity}</TabsTrigger>
           ) : null}
@@ -290,6 +299,14 @@ export default async function UserProfilePage({
 
         <TabsContent value="kyc">
           <UserKycPanel canManage={canManage} initialDocuments={kycDocuments} />
+        </TabsContent>
+
+        <TabsContent value="devices">
+          <UserDevicesPanel
+            userId={profile.id}
+            canManage={canManageDevices}
+            initialDevices={devices}
+          />
         </TabsContent>
 
         {canViewFinancials ? (
