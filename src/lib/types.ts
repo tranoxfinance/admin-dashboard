@@ -68,6 +68,16 @@ export interface KycDocumentRow {
 
 export type AppPlatform = "ios" | "android";
 
+export interface KnownDeviceRow {
+  id: string;
+  deviceId: string;
+  platform: AppPlatform | null;
+  userAgent: string | null;
+  lastIp: string | null;
+  firstSeenAt: string;
+  lastSeenAt: string;
+}
+
 export interface AppConfigRow {
   platform: AppPlatform;
   minimumVersion: string;
