@@ -74,12 +74,20 @@ export function UserDevicesPanel({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>{t.colPlatform}</TableHead>
-            <TableHead>{t.colLastIp}</TableHead>
-            <TableHead>{t.colFirstSeen}</TableHead>
-            <TableHead>{t.colLastSeen}</TableHead>
+            <TableHead className="whitespace-nowrap">
+              {t.colPlatform}
+            </TableHead>
+            <TableHead className="whitespace-nowrap">
+              {t.colLastIp}
+            </TableHead>
+            <TableHead className="whitespace-nowrap">
+              {t.colFirstSeen}
+            </TableHead>
+            <TableHead className="whitespace-nowrap">
+              {t.colLastSeen}
+            </TableHead>
             {canManage ? (
-              <TableHead className="text-right">
+              <TableHead className="w-px whitespace-nowrap text-right">
                 {dict.common.actions}
               </TableHead>
             ) : null}
@@ -93,15 +101,17 @@ export function UserDevicesPanel({
                   {device.platform ?? t.unknownPlatform}
                 </Badge>
               </TableCell>
-              <TableCell>{device.lastIp ?? "—"}</TableCell>
-              <TableCell>
+              <TableCell className="whitespace-nowrap">
+                {device.lastIp ?? "—"}
+              </TableCell>
+              <TableCell className="whitespace-nowrap">
                 {formatDate(device.firstSeenAt, dict.common.dateLocale)}
               </TableCell>
-              <TableCell>
+              <TableCell className="whitespace-nowrap">
                 {formatDate(device.lastSeenAt, dict.common.dateLocale)}
               </TableCell>
               {canManage ? (
-                <TableCell className="text-right">
+                <TableCell className="whitespace-nowrap text-right">
                   <Button
                     size="sm"
                     variant="ghost"
