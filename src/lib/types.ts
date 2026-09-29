@@ -66,6 +66,32 @@ export interface KycDocumentRow {
   createdAt: string;
 }
 
+export type EddStatus = "pending" | "approved" | "rejected";
+
+export interface EddSubmissionRow {
+  id: string;
+  userId: string;
+  userName: string | null;
+  userPhone: string | null;
+  userEmail: string | null;
+  userCountry: string | null;
+  kycTier: number | null;
+  occupation: string;
+  employer: string | null;
+  sourceOfFunds: string;
+  sourceOfFundsDetail: string | null;
+  expectedMonthlyVolume: string;
+  volumeCurrency: string;
+  purposeOfTransfers: string;
+  documentFilename: string;
+  status: EddStatus;
+  reviewNote: string | null;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  documentUrl?: string | null;
+}
+
 export type AppPlatform = "ios" | "android";
 
 export interface KnownDeviceRow {

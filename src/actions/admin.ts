@@ -9,6 +9,7 @@ import type {
   AdminNotificationRow,
   AppConfigRow,
   AppPlatform,
+  EddSubmissionRow,
   ArticleCategory,
   ArticleRow,
   ArticleStatus,
@@ -527,6 +528,37 @@ export async function updateJobAction(
 
 export interface ApplicationDetailResult extends MutationResult {
   application?: JobApplicationRow;
+}
+
+export interface EddDetailResult extends MutationResult {
+  submission?: EddSubmissionRow;
+}
+
+export async function getEddAction(id: string): Promise<EddDetailResult> {
+  try {
+    const submission = await adminApi<EddSubmissionRow>(
+      `/admin/kyc/edd/${id}`,
+    );
+    return { ok: true, submission };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export async function decideEddAction(
+  id: string,
+  payload: { decision: "approve" | "reject"; note?: string },
+): Promise<MutationResult> {
+  try {
+    await adminApi(`/admin/kyc/edd/${id}/decision`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    revalidatePath("/edd");
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
 }
 
 export async function getApplicationAction(
