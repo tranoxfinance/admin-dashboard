@@ -44,8 +44,31 @@ export function EddStatusBadge({
   return <Badge variant="destructive">{label}</Badge>;
 }
 
-export function formatVolume(amount: string, currency: string, locale: string) {
-  return `${Number(amount).toLocaleString(locale)} ${currency}`;
+export function formatVolume(
+  submission: Pick<
+    EddSubmissionRow,
+    | "expectedMonthlyVolume"
+    | "expectedMonthlyVolumeMin"
+    | "expectedMonthlyVolumeMax"
+    | "volumeCurrency"
+  >,
+  t: Dict["edd"],
+  locale: string,
+) {
+  const format = (amount: string) =>
+    `${Number(amount).toLocaleString(locale)} ${submission.volumeCurrency}`;
+  const min = submission.expectedMonthlyVolumeMin;
+  const max = submission.expectedMonthlyVolumeMax;
+  if (min == null) {
+    return format(submission.expectedMonthlyVolume);
+  }
+  if (max == null) {
+    return t.volumeAbove(format(min));
+  }
+  if (Number(min) === 0) {
+    return t.volumeUpTo(format(max));
+  }
+  return `${Number(min).toLocaleString(locale)} – ${format(max)}`;
 }
 
 function buildColumns(
@@ -78,11 +101,7 @@ function buildColumns(
       accessorKey: "expectedMonthlyVolume",
       header: dict.edd.colVolume,
       cell: ({ row }) =>
-        formatVolume(
-          row.original.expectedMonthlyVolume,
-          row.original.volumeCurrency,
-          dict.common.dateLocale,
-        ),
+        formatVolume(row.original, dict.edd, dict.common.dateLocale),
     },
     {
       accessorKey: "status",
