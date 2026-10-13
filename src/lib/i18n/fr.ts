@@ -655,6 +655,8 @@ export const fr: Dict = {
     colUser: "Utilisateur",
     colSource: "Source de fonds",
     colVolume: "Montant mensuel prévu",
+    volumeUpTo: (amount: string) => `Jusqu'à ${amount}`,
+    volumeAbove: (amount: string) => `Plus de ${amount}`,
     colSubmitted: "Soumis",
     view: "Examiner la soumission",
     filterAll: "Tous les statuts",

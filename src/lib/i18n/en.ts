@@ -642,6 +642,8 @@ export const en = {
     colUser: "User",
     colSource: "Source of funds",
     colVolume: "Expected monthly",
+    volumeUpTo: (amount: string) => `Up to ${amount}`,
+    volumeAbove: (amount: string) => `More than ${amount}`,
     colSubmitted: "Submitted",
     view: "Review submission",
     filterAll: "All statuses",

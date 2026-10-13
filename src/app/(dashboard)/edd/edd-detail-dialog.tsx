@@ -122,11 +122,7 @@ export function EddDetailDialog({
             />
             <Field
               label={t.colVolume}
-              value={formatVolume(
-                current.expectedMonthlyVolume,
-                current.volumeCurrency,
-                locale,
-              )}
+              value={formatVolume(current, t, locale)}
             />
           </div>
 
