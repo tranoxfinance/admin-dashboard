@@ -373,6 +373,8 @@ export const fr: Dict = {
     statusPending: "En attente",
     statusProcessing: "En traitement",
     statusOnHold: "En suspens",
+    statusExpired: "Expiré",
+    statusCancelled: "Annulé",
     colType: "Type",
     colAmount: "Montant",
     colInitiated: "Initié le",
