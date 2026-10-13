@@ -81,8 +81,8 @@ export interface EddSubmissionRow {
   sourceOfFunds: string;
   sourceOfFundsDetail: string | null;
   expectedMonthlyVolume: string;
-  expectedMonthlyVolumeMin: string | null;
-  expectedMonthlyVolumeMax: string | null;
+  expectedMonthlyVolumeMin?: string | null;
+  expectedMonthlyVolumeMax?: string | null;
   volumeCurrency: string;
   purposeOfTransfers: string;
   documentFilename: string;

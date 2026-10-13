@@ -59,10 +59,10 @@ export function formatVolume(
     `${Number(amount).toLocaleString(locale)} ${submission.volumeCurrency}`;
   const min = submission.expectedMonthlyVolumeMin;
   const max = submission.expectedMonthlyVolumeMax;
-  if (min === null) {
+  if (min == null) {
     return format(submission.expectedMonthlyVolume);
   }
-  if (max === null) {
+  if (max == null) {
     return t.volumeAbove(format(min));
   }
   if (Number(min) === 0) {
