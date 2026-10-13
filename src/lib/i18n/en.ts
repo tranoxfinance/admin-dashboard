@@ -360,6 +360,8 @@ export const en = {
     statusPending: "Pending",
     statusProcessing: "Processing",
     statusOnHold: "On hold",
+    statusExpired: "Expired",
+    statusCancelled: "Cancelled",
     colType: "Type",
     colAmount: "Amount",
     colInitiated: "Initiated",

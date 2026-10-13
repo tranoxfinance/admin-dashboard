@@ -58,6 +58,8 @@ function buildColumns(
     pending: dict.transactions.statusPending,
     processing: dict.transactions.statusProcessing,
     on_hold: dict.transactions.statusOnHold,
+    expired: dict.transactions.statusExpired,
+    cancelled: dict.transactions.statusCancelled,
   };
   const columns: ColumnDef<ActivityItem>[] = [
     {
