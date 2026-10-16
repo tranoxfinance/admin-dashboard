@@ -919,8 +919,10 @@ export const fr: Dict = {
     colAdmin: "Admin",
     colAction: "Action",
     colEntity: "Entité",
+    colIp: "Adresse IP",
+    colDevice: "Appareil",
     colWhen: "Quand",
-    search: "Rechercher par admin, action, entité…",
+    search: "Rechercher par admin, action, entité, IP…",
     empty: "Aucune action admin enregistrée pour le moment.",
   },
   auth: {
