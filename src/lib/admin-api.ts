@@ -1,7 +1,29 @@
 import "server-only";
+import { headers } from "next/headers";
 import { getAccessToken } from "./admin-session";
 
 const BASE_URL = process.env.ADMIN_API_BASE_URL ?? "http://127.0.0.1:3000";
+const FORWARD_SECRET = process.env.ADMIN_FORWARD_SECRET;
+
+async function clientHeaders(): Promise<Record<string, string>> {
+  if (!FORWARD_SECRET) {
+    return {};
+  }
+  try {
+    const incoming = await headers();
+    const ip =
+      incoming.get("x-real-ip") ??
+      incoming.get("x-forwarded-for")?.split(",")[0]?.trim();
+    const userAgent = incoming.get("user-agent");
+    return {
+      "x-tranox-forward-key": FORWARD_SECRET,
+      ...(ip ? { "x-tranox-client-ip": ip } : {}),
+      ...(userAgent ? { "x-tranox-client-ua": userAgent } : {}),
+    };
+  } catch {
+    return {};
+  }
+}
 
 export class AdminApiError extends Error {
   constructor(
@@ -33,6 +55,7 @@ export async function adminApiPublic<T>(
     ...init,
     headers: {
       "Content-Type": "application/json",
+      ...(await clientHeaders()),
       ...init?.headers,
     },
     cache: "no-store",
@@ -57,7 +80,7 @@ export async function adminApiForm<T>(
   }
   const response = await fetch(`${BASE_URL}${path}`, {
     method,
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${token}`, ...(await clientHeaders()) },
     body: formData,
     cache: "no-store",
   });
@@ -80,6 +103,7 @@ export async function adminApi<T>(
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      ...(await clientHeaders()),
       ...init?.headers,
     },
     cache: "no-store",
