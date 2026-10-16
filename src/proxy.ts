@@ -2,6 +2,22 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const BASE_URL = process.env.ADMIN_API_BASE_URL ?? "http://localhost:3000";
+const FORWARD_SECRET = process.env.ADMIN_FORWARD_SECRET;
+
+function clientHeaders(request: NextRequest): Record<string, string> {
+  if (!FORWARD_SECRET) {
+    return {};
+  }
+  const ip =
+    request.headers.get("x-real-ip") ??
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const userAgent = request.headers.get("user-agent");
+  return {
+    "x-tranox-forward-key": FORWARD_SECRET,
+    ...(ip ? { "x-tranox-client-ip": ip } : {}),
+    ...(userAgent ? { "x-tranox-client-ua": userAgent } : {}),
+  };
+}
 const ACCESS_COOKIE = "admin_access";
 const REFRESH_COOKIE = "admin_refresh";
 const REFRESH_MAX_AGE_SECONDS = 12 * 60 * 60;
@@ -68,7 +84,10 @@ export async function proxy(request: NextRequest) {
     try {
       const refreshResponse = await fetch(`${BASE_URL}/admin/auth/refresh`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...clientHeaders(request),
+        },
         body: JSON.stringify({ refreshToken }),
       });
       if (refreshResponse.ok) {
