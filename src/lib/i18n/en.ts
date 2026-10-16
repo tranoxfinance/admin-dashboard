@@ -903,8 +903,10 @@ export const en = {
     colAdmin: "Admin",
     colAction: "Action",
     colEntity: "Entity",
+    colIp: "IP address",
+    colDevice: "Device",
     colWhen: "When",
-    search: "Search by admin, action, entity…",
+    search: "Search by admin, action, entity, IP…",
     empty: "No admin actions recorded yet.",
   },
   auth: {

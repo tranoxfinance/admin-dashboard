@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { formatDate } from "@/lib/format";
+import { formatDate, summarizeUserAgent } from "@/lib/format";
 import type { AdminLogRow } from "@/lib/types";
 import type { Dict } from "@/lib/i18n";
 import { useDict } from "@/components/i18n-provider";
@@ -30,6 +30,28 @@ function buildColumns(dict: Dict): ColumnDef<AdminLogRow>[] {
         <span className="text-muted-foreground">
           {row.original.entityType ?? "—"}
           {row.original.entityId ? ` · ${row.original.entityId.slice(0, 8)}` : ""}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "ipAddress",
+      header: dict.adminLogs.colIp,
+      cell: ({ row }) => (
+        <span className="font-mono text-xs text-muted-foreground">
+          {row.original.ipAddress ?? "—"}
+        </span>
+      ),
+    },
+    {
+      id: "device",
+      header: dict.adminLogs.colDevice,
+      accessorFn: (row) => row.userAgent ?? "",
+      cell: ({ row }) => (
+        <span
+          className="text-muted-foreground"
+          title={row.original.userAgent ?? undefined}
+        >
+          {summarizeUserAgent(row.original.userAgent) ?? "—"}
         </span>
       ),
     },

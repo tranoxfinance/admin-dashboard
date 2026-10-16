@@ -29,3 +29,29 @@ export function formatVolumeSummary(
     .map((entry) => formatCurrency(entry.volume, entry.currency))
     .join(" · ");
 }
+
+const BROWSERS: [RegExp, string][] = [
+  [/Edg\//, "Edge"],
+  [/OPR\//, "Opera"],
+  [/SamsungBrowser\//, "Samsung Internet"],
+  [/Chrome\//, "Chrome"],
+  [/Firefox\//, "Firefox"],
+  [/Safari\//, "Safari"],
+  [/okhttp|Dart\//, "App"],
+];
+
+const SYSTEMS: [RegExp, string][] = [
+  [/Android/, "Android"],
+  [/iPhone|iPad|iOS/, "iOS"],
+  [/Windows/, "Windows"],
+  [/Mac OS X|Macintosh/, "macOS"],
+  [/Linux/, "Linux"],
+];
+
+export function summarizeUserAgent(userAgent: string | null): string | null {
+  if (!userAgent) return null;
+  const browser = BROWSERS.find(([pattern]) => pattern.test(userAgent))?.[1];
+  const system = SYSTEMS.find(([pattern]) => pattern.test(userAgent))?.[1];
+  if (!browser && !system) return userAgent.slice(0, 40);
+  return [browser, system].filter(Boolean).join(" · ");
+}

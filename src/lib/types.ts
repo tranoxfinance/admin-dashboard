@@ -437,6 +437,7 @@ export interface AdminLogRow {
   entityType: string | null;
   entityId: string | null;
   ipAddress: string | null;
+  userAgent: string | null;
   createdAt: string;
 }
 
