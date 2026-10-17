@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useTransition } from "react";
+import { useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import type { Dict } from "@/lib/i18n";
 import { useDict } from "@/components/i18n-provider";
 import type { FaqRow } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
 import { FaqDialog } from "./faq-dialog";
@@ -18,42 +19,40 @@ import { FaqDialog } from "./faq-dialog";
 function PublishedBadge({ faq, dict }: { faq: FaqRow; dict: Dict }) {
   if (faq.isPublished) {
     return (
-      <Badge className="bg-green text-white">{dict.faq.publishedBadge}</Badge>
+      <Badge variant="success">{dict.faq.publishedBadge}</Badge>
     );
   }
   return <Badge variant="secondary">{dict.faq.hiddenBadge}</Badge>;
 }
 
 function FaqRowActions({ faq }: { faq: FaqRow }) {
-  const [isPending, startTransition] = useTransition();
   const dict = useDict();
 
-  function handleDelete() {
-    if (!window.confirm(dict.faq.deleteConfirm)) {
-      return;
+  async function handleDelete() {
+    const result = await deleteFaqAction(faq.id);
+    if (result.ok) {
+      toast.success(dict.faq.deletedToast);
+      return true;
     }
-    startTransition(async () => {
-      const result = await deleteFaqAction(faq.id);
-      if (result.ok) {
-        toast.success(dict.faq.deletedToast);
-      } else {
-        toast.error(describeApiError(dict, result.error));
-      }
-    });
+    toast.error(describeApiError(dict, result.error));
+    return false;
   }
 
   return (
     <div className="flex items-center justify-end gap-2">
       <FaqDialog faq={faq} />
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label={dict.faq.delete}
-        disabled={isPending}
-        onClick={handleDelete}
-      >
-        <Trash2 className="size-3.5" />
-      </Button>
+      <ConfirmDialog
+        trigger={
+          <Button variant="ghost" size="icon-sm" aria-label={dict.faq.delete}>
+            <Trash2 className="size-3.5" />
+          </Button>
+        }
+        title={dict.faq.delete}
+        description={dict.faq.deleteConfirm}
+        confirmLabel={dict.faq.delete}
+        destructive
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }
