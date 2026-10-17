@@ -441,6 +441,8 @@ export const fr: Dict = {
   support: {
     title: "Support",
     backToConversations: "Toutes les conversations",
+    linkedTransaction: "Transaction liée",
+    viewUserTransactions: "Voir les transactions de l'utilisateur",
     subtitle: (shown: number, open: number) =>
       `${shown} conversation${shown === 1 ? "" : "s"} affichée${shown === 1 ? "" : "s"} · ${open} ticket${open === 1 ? "" : "s"} ouvert${open === 1 ? "" : "s"}`,
     tabConversations: "Conversations",
@@ -893,6 +895,9 @@ export const fr: Dict = {
     fieldSortOrder: "Ordre",
     sortOrderHint: "Les nombres les plus bas apparaissent en premier.",
     fieldPublished: "Publiée sur le site",
+    fieldCategory: "Catégorie du centre d'aide",
+    categoryGeneral: "Général",
+    categoryHint: "Regroupe la question dans le centre d'aide de l'application.",
     save: "Enregistrer",
     saving: "Enregistrement…",
     delete: "Supprimer",

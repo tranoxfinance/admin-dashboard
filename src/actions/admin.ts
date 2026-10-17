@@ -25,6 +25,7 @@ import type {
   ServiceStatusLevel,
   ServiceStatusRow,
   SupportMessage,
+  SupportTicketCategory,
 } from "@/lib/types";
 
 export interface MutationResult {
@@ -699,6 +700,7 @@ export interface FaqMutationResult extends MutationResult {
 export async function createFaqAction(payload: {
   question: string;
   answer: string;
+  category?: SupportTicketCategory | null;
   sortOrder?: number;
   isPublished?: boolean;
 }): Promise<FaqMutationResult> {
@@ -719,6 +721,7 @@ export async function updateFaqAction(
   changes: {
     question?: string;
     answer?: string;
+    category?: SupportTicketCategory | null;
     sortOrder?: number;
     isPublished?: boolean;
   },

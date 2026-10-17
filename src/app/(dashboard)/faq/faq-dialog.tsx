@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { createFaqAction, updateFaqAction } from "@/actions/admin";
 import { describeApiError } from "@/lib/i18n";
 import { useDict } from "@/components/i18n-provider";
-import type { FaqRow } from "@/lib/types";
+import type { FaqRow, SupportTicketCategory } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,10 +28,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const GENERAL = "general";
+
+const FAQ_CATEGORIES: SupportTicketCategory[] = [
+  "transfer",
+  "topup",
+  "withdrawal",
+  "kyc",
+  "account",
+  "other",
+];
+
 export function FaqDialog({ faq }: { faq?: FaqRow }) {
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState(faq?.question ?? "");
   const [answer, setAnswer] = useState(faq?.answer ?? "");
+  const [category, setCategory] = useState<string>(
+    faq?.category ?? GENERAL,
+  );
   const [sortOrder, setSortOrder] = useState(String(faq?.sortOrder ?? 0));
   const [isPublished, setIsPublished] = useState(faq?.isPublished ?? true);
   const [isPending, startTransition] = useTransition();
@@ -45,6 +59,8 @@ export function FaqDialog({ faq }: { faq?: FaqRow }) {
       const payload = {
         question: question.trim(),
         answer: answer.trim(),
+        category:
+          category === GENERAL ? null : (category as SupportTicketCategory),
         sortOrder: Number.parseInt(sortOrder, 10) || 0,
         isPublished,
       };
@@ -57,6 +73,7 @@ export function FaqDialog({ faq }: { faq?: FaqRow }) {
         if (!faq) {
           setQuestion("");
           setAnswer("");
+          setCategory(GENERAL);
           setSortOrder("0");
           setIsPublished(true);
         }
@@ -103,6 +120,28 @@ export function FaqDialog({ faq }: { faq?: FaqRow }) {
               onChange={(event) => setAnswer(event.target.value)}
               rows={5}
             />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>{t.fieldCategory}</Label>
+            <Select
+              value={category}
+              onValueChange={(value) => {
+                if (value) setCategory(value);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={GENERAL}>{t.categoryGeneral}</SelectItem>
+                {FAQ_CATEGORIES.map((key) => (
+                  <SelectItem key={key} value={key}>
+                    {dict.support.categories[key]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">{t.categoryHint}</p>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-2">

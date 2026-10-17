@@ -14,7 +14,7 @@ import {
   sendSupportReplyAction,
   translateTextsAction,
 } from "@/actions/admin";
-import { formatDate } from "@/lib/format";
+import { formatCurrency, formatDate } from "@/lib/format";
 import { describeApiError } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type {
@@ -264,9 +264,38 @@ export function SupportThread({
                   .join(" · ")
               : null}
             {isTicket ? <br /> : null}
+            {!isTicket && conversation.subject ? (
+              <>
+                {conversation.subject}
+                <br />
+              </>
+            ) : null}
             {user?.phone}
             {user?.email ? ` · ${user.email}` : ""}
           </p>
+          {detail.related ? (
+            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+              <span className="text-muted-foreground">
+                {dict.support.linkedTransaction}
+              </span>
+              <span className="font-medium">
+                {dict.support.categories[detail.related.type]} ·{" "}
+                {formatCurrency(detail.related.amount, detail.related.currency)}
+              </span>
+              <Badge variant="outline">{detail.related.status}</Badge>
+              <span className="text-xs text-muted-foreground">
+                {formatDate(detail.related.initiatedAt, dict.common.dateLocale)}
+              </span>
+              {user ? (
+                <Link
+                  href={`/transactions?userId=${user.id}`}
+                  className="text-xs text-primary underline-offset-4 hover:underline"
+                >
+                  {dict.support.viewUserTransactions}
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         <div className="flex items-center gap-2">
           <Badge variant={STATUS_VARIANT[conversation.status]}>

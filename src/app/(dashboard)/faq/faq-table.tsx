@@ -66,6 +66,11 @@ function buildColumns(dict: Dict, canManage: boolean): ColumnDef<FaqRow>[] {
       cell: ({ row }) => (
         <div className="flex flex-col">
           <span className="font-medium">{row.original.question}</span>
+          <span className="text-xs text-muted-foreground">
+            {row.original.category
+              ? dict.support.categories[row.original.category]
+              : dict.faq.categoryGeneral}
+          </span>
           <span className="line-clamp-1 text-xs text-muted-foreground">
             {row.original.answer}
           </span>
