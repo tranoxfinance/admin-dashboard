@@ -9,6 +9,7 @@ import { StatCard } from "@/components/overview/stat-card";
 import { Button } from "@/components/ui/button";
 import { JobsTable } from "./jobs-table";
 import { JobDialog } from "./job-dialog";
+import { CHART_COLORS } from "@/lib/chart-colors";
 
 export default async function CareersPage() {
   const session = await getSession();
@@ -62,19 +63,19 @@ export default async function CareersPage() {
           icon={Briefcase}
           label={dict.careers.statOpenRoles}
           value={openJobs.toLocaleString()}
-          color="#0d8fd2"
+          color={CHART_COLORS.blue}
         />
         <StatCard
           icon={Users}
           label={dict.careers.statApplications}
           value={applicationsPage.total.toLocaleString()}
-          color="#00407a"
+          color={CHART_COLORS.navy}
         />
         <StatCard
           icon={FileText}
           label={dict.careers.statPendingReview}
           value={pendingApplications.toLocaleString()}
-          color="#e9a028"
+          color={CHART_COLORS.gold}
         />
       </div>
 

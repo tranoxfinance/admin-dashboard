@@ -24,7 +24,7 @@ import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { TrendInsightCard } from "@/components/overview/trend-insight-card";
 import { RevenueTrendChart } from "@/components/overview/revenue-trend-chart";
 import { ActivityFeedCard } from "@/components/overview/activity-feed-card";
-import { CATEGORICAL_LIGHT, WARM_CATEGORICAL, WARM_RAMP } from "@/lib/chart-colors";
+import { CHART_COLORS, CATEGORICAL_LIGHT, WARM_CATEGORICAL, WARM_RAMP } from "@/lib/chart-colors";
 
 function deltaPercent(current: number, previous: number): number | null {
   if (previous === 0) {
@@ -41,11 +41,11 @@ function pickPrimary(
 }
 
 const STAT_COLORS = {
-  users: "#0d8fd2",
-  activeUsers: "#1baf7a",
-  newUsers: "#95c015",
-  volume: "#e9a028",
-  revenue: "#00407a",
+  users: CHART_COLORS.blue,
+  activeUsers: CHART_COLORS.green,
+  newUsers: CHART_COLORS.green,
+  volume: CHART_COLORS.gold,
+  revenue: CHART_COLORS.navy,
 };
 
 export default async function OverviewPage({
@@ -263,8 +263,8 @@ export default async function OverviewPage({
             <span
               className={
                 stats.openAmlFlags > 0
-                  ? "rounded-full bg-[#d03b3b]/10 px-2.5 py-1 text-xs font-medium text-[#d03b3b]"
-                  : "rounded-full bg-[#0ca30c]/10 px-2.5 py-1 text-xs font-medium text-[#0ca30c]"
+                  ? "rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive"
+                  : "rounded-full bg-success/12 px-2.5 py-1 text-xs font-medium text-success"
               }
             >
               {dict.overview.amlFlagCount(stats.openAmlFlags)}

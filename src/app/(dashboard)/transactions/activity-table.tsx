@@ -99,7 +99,7 @@ function buildColumns(
       cell: ({ row }) =>
         row.original.status === "on_hold" ? (
           <div className="flex flex-col gap-1">
-            <Badge className="w-fit bg-amber-500 text-white">
+            <Badge className="w-fit" variant="warning">
               {dict.transactions.statusOnHold}
             </Badge>
             {row.original.heldReason ? (
@@ -117,7 +117,7 @@ function buildColumns(
               {statusLabels[row.original.status] ?? row.original.status}
             </Badge>
             {row.original.payoutRetryAt ? (
-              <span className="text-xs text-amber-600 dark:text-amber-400">
+              <span className="text-xs text-warning">
                 {dict.transactions.retryScheduled(
                   formatDate(row.original.payoutRetryAt, dict.common.dateLocale),
                 )}

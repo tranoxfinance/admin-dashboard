@@ -19,7 +19,7 @@ import { PeriodFilters } from "@/components/period-filters";
 import { StatCard } from "@/components/overview/stat-card";
 import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { Button } from "@/components/ui/button";
-import { STATUS_COLORS } from "@/lib/chart-colors";
+import { CHART_COLORS, STATUS_COLORS } from "@/lib/chart-colors";
 import { ActivityLineChart } from "./activity-line-chart";
 import { ActivityStatusChart } from "./activity-status-chart";
 import { ActivityTable } from "./activity-table";
@@ -210,28 +210,28 @@ export default async function TransactionsPage({
               label={dict.common.transfers}
               value={transferCount.toLocaleString()}
               secondary={formatVolumeSummary(stats.totals.transfers, dict.common.noVolumeShort)}
-              color="#0d8fd2"
+              color={CHART_COLORS.blue}
             />
             <StatCard
               icon={PiggyBank}
               label={dict.common.deposits}
               value={topupCount.toLocaleString()}
               secondary={formatVolumeSummary(stats.totals.topups, dict.common.noVolumeShort)}
-              color="#95c015"
+              color={CHART_COLORS.green}
             />
             <StatCard
               icon={Banknote}
               label={dict.common.withdrawals}
               value={withdrawalCount.toLocaleString()}
               secondary={formatVolumeSummary(stats.totals.withdrawals, dict.common.noVolumeShort)}
-              color="#e9a028"
+              color={CHART_COLORS.gold}
             />
             <StatCard
               icon={PauseCircle}
               label={dict.transactions.heldForReview}
               value={held.total.toLocaleString()}
               secondary={dict.transactions.heldForReviewSubtitle}
-              color="#e9a028"
+              color={CHART_COLORS.gold}
             />
           </div>
 

@@ -7,6 +7,7 @@ import {
 import { useTheme } from "@/components/theme-provider";
 import { formatCurrency } from "@/lib/format";
 import { useMounted } from "@/lib/use-mounted";
+import { CATEGORICAL_DARK, CHART_COLORS } from "@/lib/chart-colors";
 
 const COMPACT = new Intl.NumberFormat("en", { notation: "compact" });
 
@@ -20,7 +21,7 @@ export function RevenueTrendChart({
   const { resolvedTheme } = useTheme();
   const mounted = useMounted();
   const isDark = mounted && resolvedTheme === "dark";
-  const color = isDark ? "#3987e5" : "#00407a";
+  const color = isDark ? CATEGORICAL_DARK[0] : CHART_COLORS.navy;
 
   return (
     <AreaTrendChart

@@ -10,7 +10,11 @@ import {
 } from "recharts";
 import { useTheme } from "@/components/theme-provider";
 import { useDict } from "@/components/i18n-provider";
-import { CATEGORICAL_DARK, CATEGORICAL_LIGHT } from "@/lib/chart-colors";
+import {
+  CATEGORICAL_DARK,
+  CATEGORICAL_LIGHT,
+  CHART_CHROME,
+} from "@/lib/chart-colors";
 import type { UserGrowthPoint } from "@/lib/types";
 import { useMounted } from "@/lib/use-mounted";
 
@@ -72,7 +76,7 @@ export function TrendInsightCard({
   const dict = useDict();
   const isDark = mounted && resolvedTheme === "dark";
   const color = isDark ? CATEGORICAL_DARK[0] : CATEGORICAL_LIGHT[0];
-  const tickColor = isDark ? "#7e91a8" : "#6b7d92";
+  const tickColor = isDark ? CHART_CHROME.dark.mutedInk : CHART_CHROME.light.mutedInk;
 
   const hasData = data.some((point) => point.count > 0);
   const tickInterval = Math.max(0, Math.ceil(data.length / 7) - 1);

@@ -36,7 +36,7 @@ function statusBadge(status: KycDocumentStatus, t: Dict["users"]["kycDialog"]) {
       return <Badge className="bg-green text-white">{t.statusApproved}</Badge>;
     case "in_review":
       return (
-        <Badge className="bg-amber-500 text-white">{t.statusInReview}</Badge>
+        <Badge variant="warning">{t.statusInReview}</Badge>
       );
     case "declined":
       return <Badge variant="destructive">{t.statusDeclined}</Badge>;

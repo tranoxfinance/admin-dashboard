@@ -15,12 +15,13 @@ import { BarList } from "@/components/charts/bar-list";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserActivityTable } from "./user-activity-table";
+import { CHART_COLORS } from "@/lib/chart-colors";
 
 const STAT_COLORS = {
-  active: "#0d8fd2",
-  engagement: "#95c015",
-  events: "#e9a028",
-  topAction: "#00407a",
+  active: CHART_COLORS.blue,
+  engagement: CHART_COLORS.green,
+  events: CHART_COLORS.gold,
+  topAction: CHART_COLORS.navy,
 };
 
 function deltaPercent(current: number, previous: number): number | null {

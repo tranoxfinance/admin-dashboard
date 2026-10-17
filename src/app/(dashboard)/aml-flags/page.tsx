@@ -10,6 +10,7 @@ import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { BarList } from "@/components/charts/bar-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AmlFlagsTable } from "./aml-flags-table";
+import { CHART_COLORS } from "@/lib/chart-colors";
 
 export default async function AmlFlagsPage() {
   const dict = await getDict();
@@ -24,19 +25,19 @@ export default async function AmlFlagsPage() {
     {
       status: "open",
       label: dict.amlFlags.statusOpen,
-      color: "#d03b3b",
+      color: CHART_COLORS.danger,
       icon: ShieldAlert,
     },
     {
       status: "reviewed",
       label: dict.amlFlags.statusReviewed,
-      color: "#0ca30c",
+      color: CHART_COLORS.green,
       icon: ShieldCheck,
     },
     {
       status: "dismissed",
       label: dict.amlFlags.statusDismissed,
-      color: "#898781",
+      color: CHART_COLORS.muted,
       icon: ShieldOff,
     },
   ] as const;
@@ -105,7 +106,7 @@ export default async function AmlFlagsPage() {
                 subtitle={dict.amlFlags.topReasonsSubtitle}
                 className="lg:col-span-2"
               >
-                <BarList items={reasonItems} color="#d03b3b" />
+                <BarList items={reasonItems} color={CHART_COLORS.danger} />
               </InsightCard>
             </div>
           ) : null}

@@ -11,6 +11,7 @@ import { StatCard } from "@/components/overview/stat-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RestrictionsTable } from "./restrictions-table";
 import { AppealsTable } from "./appeals-table";
+import { CHART_COLORS } from "@/lib/chart-colors";
 
 export default async function RestrictionsPage() {
   const dict = await getDict();
@@ -53,19 +54,19 @@ export default async function RestrictionsPage() {
           icon={ShieldBan}
           label={dict.restrictions.statRestricted}
           value={activeRestricted.toLocaleString()}
-          color="#e9a028"
+          color={CHART_COLORS.gold}
         />
         <StatCard
           icon={ShieldOff}
           label={dict.restrictions.statSuspended}
           value={activeSuspended.toLocaleString()}
-          color="#d03b3b"
+          color={CHART_COLORS.danger}
         />
         <StatCard
           icon={MessageSquareWarning}
           label={dict.restrictions.statPendingAppeals}
           value={pendingAppeals.toLocaleString()}
-          color="#0d8fd2"
+          color={CHART_COLORS.blue}
         />
       </div>
 

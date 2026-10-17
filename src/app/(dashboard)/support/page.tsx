@@ -17,6 +17,7 @@ import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { BarList } from "@/components/charts/bar-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SupportConversationsTable } from "./support-conversations-table";
+import { CHART_COLORS } from "@/lib/chart-colors";
 
 function buildHref(status: string, kind: string): string {
   const params = new URLSearchParams({ view: "conversations" });
@@ -67,20 +68,20 @@ export default async function SupportPage({
     {
       status: "pending_agent",
       label: dict.support.statusPendingAgent,
-      color: "#e9a028",
+      color: CHART_COLORS.gold,
     },
     {
       status: "active",
       label: dict.support.statusActiveWithAgent,
-      color: "#0d8fd2",
+      color: CHART_COLORS.blue,
     },
-    { status: "bot", label: dict.support.statusBot, color: "#5ba2ca" },
+    { status: "bot", label: dict.support.statusBot, color: CHART_COLORS.sky },
     {
       status: "resolved",
       label: dict.support.statusResolved,
-      color: "#0ca30c",
+      color: CHART_COLORS.green,
     },
-    { status: "closed", label: dict.support.statusClosed, color: "#898781" },
+    { status: "closed", label: dict.support.statusClosed, color: CHART_COLORS.muted },
   ];
   const status = params.status ?? "all";
   const kind = params.kind ?? "all";
@@ -158,21 +159,21 @@ export default async function SupportPage({
               label={dict.support.statNeedsAgent}
               value={countByStatus("pending_agent").toLocaleString()}
               secondary={dict.support.statNeedsAgentSecondary}
-              color="#e9a028"
+              color={CHART_COLORS.gold}
             />
             <StatCard
               icon={MessagesSquare}
               label={dict.support.statActive}
               value={countByStatus("active").toLocaleString()}
               secondary={dict.support.statActiveSecondary}
-              color="#0d8fd2"
+              color={CHART_COLORS.blue}
             />
             <StatCard
               icon={Bot}
               label={dict.support.statBot}
               value={countByStatus("bot").toLocaleString()}
               secondary={dict.support.statBotSecondary}
-              color="#5ba2ca"
+              color={CHART_COLORS.sky}
             />
             <StatCard
               icon={TicketCheck}
@@ -181,7 +182,7 @@ export default async function SupportPage({
               secondary={dict.support.statOpenTicketsSecondary(
                 tickets.length.toLocaleString(),
               )}
-              color="#00407a"
+              color={CHART_COLORS.navy}
             />
           </div>
 
@@ -200,7 +201,7 @@ export default async function SupportPage({
               subtitle={dict.support.ticketsByCategorySubtitle}
               className="lg:col-span-2"
             >
-              <BarList items={categoryItems} color="#0d8fd2" />
+              <BarList items={categoryItems} color={CHART_COLORS.blue} />
             </InsightCard>
           </div>
         </TabsContent>

@@ -66,8 +66,8 @@ export default async function TreasuryPage() {
                   className={cn(
                     "border-0",
                     short
-                      ? "bg-red-500/15 text-red-600"
-                      : "bg-emerald-500/15 text-emerald-700",
+                      ? "bg-destructive/10 text-destructive"
+                      : "bg-success/12 text-success",
                   )}
                 >
                   {short ? t.shortfall : t.covered}
@@ -93,7 +93,7 @@ export default async function TreasuryPage() {
                   <dd
                     className={cn(
                       "font-semibold tabular-nums",
-                      short ? "text-red-600" : "text-emerald-700",
+                      short ? "text-destructive" : "text-success",
                     )}
                   >
                     {difference > 0 ? "+" : ""}

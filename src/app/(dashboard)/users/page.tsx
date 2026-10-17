@@ -15,14 +15,14 @@ import { BarList } from "@/components/charts/bar-list";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { KYC_TIER_RAMP } from "@/lib/chart-colors";
+import { CHART_COLORS, KYC_TIER_RAMP } from "@/lib/chart-colors";
 import { UsersTable } from "./users-table";
 
 const STAT_COLORS = {
-  total: "#0d8fd2",
-  new: "#95c015",
-  verified: "#00407a",
-  markets: "#e9a028",
+  total: CHART_COLORS.blue,
+  new: CHART_COLORS.green,
+  verified: CHART_COLORS.navy,
+  markets: CHART_COLORS.gold,
 };
 
 function deltaPercent(current: number, previous: number): number | null {

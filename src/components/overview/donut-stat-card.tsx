@@ -83,7 +83,7 @@ export function DonutStatCard({
           <span className="font-heading text-2xl font-bold leading-none tracking-tight">
             {total.toLocaleString()}
           </span>
-          <span className="w-20 text-[10px] uppercase leading-tight tracking-wide text-muted-foreground">
+          <span className="w-20 text-2xs uppercase leading-tight tracking-wide text-muted-foreground">
             {resolvedCenterLabel}
           </span>
         </div>

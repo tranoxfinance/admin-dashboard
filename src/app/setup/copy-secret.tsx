@@ -32,7 +32,7 @@ export function CopySecret({ secret }: { secret: string }) {
     >
       <span className="break-all">{secret}</span>
       {copied ? (
-        <Check className="size-3.5 shrink-0 text-green-500" />
+        <Check className="size-3.5 shrink-0 text-success" />
       ) : (
         <Copy className="size-3.5 shrink-0" />
       )}

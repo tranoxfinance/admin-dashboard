@@ -82,7 +82,7 @@ function buildColumns(
         }
         if (user.restrictionLevel === "restricted") {
           return (
-            <Badge className="bg-amber-500 text-white">
+            <Badge variant="warning">
               {dict.users.statusRestricted}
             </Badge>
           );

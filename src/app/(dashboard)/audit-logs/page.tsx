@@ -8,6 +8,7 @@ import { InsightCard } from "@/components/insight-card";
 import { BarList } from "@/components/charts/bar-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuditLogsTable } from "./audit-logs-table";
+import { CHART_COLORS } from "@/lib/chart-colors";
 
 export default async function AuditLogsPage({
   searchParams,
@@ -65,7 +66,7 @@ export default async function AuditLogsPage({
               title={dict.auditLogs.mostFrequent}
               subtitle={dict.auditLogs.mostFrequentSubtitle(data.items.length)}
             >
-              <BarList items={actionItems} color="#00407a" />
+              <BarList items={actionItems} color={CHART_COLORS.navy} />
             </InsightCard>
           ) : (
             <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">

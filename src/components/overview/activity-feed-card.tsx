@@ -5,6 +5,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { useDict } from "@/components/i18n-provider";
 import type { Dict } from "@/lib/i18n";
 import type { ActivityItem } from "@/lib/types";
+import { CHART_COLORS } from "@/lib/chart-colors";
 
 const TYPE_META: Record<
   ActivityItem["type"],
@@ -15,15 +16,15 @@ const TYPE_META: Record<
 > = {
   topup: {
     icon: ArrowDownLeft,
-    gradient: "linear-gradient(90deg, #0ca30c, #7bd66f)",
+    gradient: `linear-gradient(90deg, ${CHART_COLORS.green}, ${CHART_COLORS.lime})`,
   },
   withdrawal: {
     icon: ArrowUpRight,
-    gradient: "linear-gradient(90deg, #d03b3b, #f5975e)",
+    gradient: `linear-gradient(90deg, ${CHART_COLORS.danger}, ${CHART_COLORS.coral})`,
   },
   transfer: {
     icon: ArrowLeftRight,
-    gradient: "linear-gradient(90deg, #00407a, #0d8fd2)",
+    gradient: `linear-gradient(90deg, ${CHART_COLORS.navy}, ${CHART_COLORS.blue})`,
   },
 };
 
@@ -70,7 +71,7 @@ export function ActivityFeedCard({ data }: { data: ActivityItem[] }) {
               <span className="text-sm font-semibold tabular-nums">
                 {formatCurrency(item.amount, item.currency)}
               </span>
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-2xs text-muted-foreground">
                 {formatDate(item.initiatedAt, dict.common.dateLocale)}
               </span>
             </div>

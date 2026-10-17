@@ -1,6 +1,7 @@
 "use client";
 
 import { useDict } from "@/components/i18n-provider";
+import { CHART_COLORS } from "@/lib/chart-colors";
 
 export interface BarListItem {
   label: string;
@@ -10,7 +11,7 @@ export interface BarListItem {
 
 export function BarList({
   items,
-  color = "#0d8fd2",
+  color = CHART_COLORS.blue,
   formatValue = (value: number) => value.toLocaleString(),
 }: {
   items: BarListItem[];
