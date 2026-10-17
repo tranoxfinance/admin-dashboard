@@ -18,6 +18,7 @@ import type {
   JobEmploymentType,
   JobOpeningRow,
   JobStatus,
+  KoraApiLog,
   KycDocumentRow,
   Paginated,
   ServiceName,
@@ -219,6 +220,24 @@ export async function getUserTransactionsAction(
   try {
     const data = await adminApi<Paginated<ActivityItem>>(
       `/admin/transactions?${query.toString()}`,
+    );
+    return { ok: true, data };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface KoraLogsResult extends MutationResult {
+  data?: KoraApiLog[];
+}
+
+export async function getKoraLogsAction(
+  kind: ActivityItem["type"],
+  id: string,
+): Promise<KoraLogsResult> {
+  try {
+    const data = await adminApi<KoraApiLog[]>(
+      `/admin/kora-logs/activity/${kind}/${encodeURIComponent(id)}`,
     );
     return { ok: true, data };
   } catch (error) {

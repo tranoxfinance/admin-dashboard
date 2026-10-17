@@ -9,6 +9,7 @@ import type { Dict } from "@/lib/i18n";
 import { useDict } from "@/components/i18n-provider";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
+import { ActivityDetailsDialog } from "./activity-details-dialog";
 import { HoldReviewActions } from "./hold-review-actions";
 import { ReverseTransactionButton } from "./reverse-transaction-button";
 
@@ -108,9 +109,27 @@ function buildColumns(
             ) : null}
           </div>
         ) : (
-          <Badge variant={STATUS_VARIANT[row.original.status] ?? "outline"}>
-            {statusLabels[row.original.status] ?? row.original.status}
-          </Badge>
+          <div className="flex flex-col gap-1">
+            <Badge
+              className="w-fit"
+              variant={STATUS_VARIANT[row.original.status] ?? "outline"}
+            >
+              {statusLabels[row.original.status] ?? row.original.status}
+            </Badge>
+            {row.original.payoutRetryAt ? (
+              <span className="text-xs text-amber-600 dark:text-amber-400">
+                {dict.transactions.retryScheduled(
+                  formatDate(row.original.payoutRetryAt, dict.common.dateLocale),
+                )}
+              </span>
+            ) : row.original.failureReason &&
+              (row.original.status === "failed" ||
+                row.original.status === "reversed") ? (
+              <span className="max-w-xs text-wrap text-xs text-muted-foreground">
+                {row.original.failureReason}
+              </span>
+            ) : null}
+          </div>
         ),
     },
     {
@@ -139,7 +158,7 @@ function buildColumns(
       id: "actions",
       header: () => <div className="text-right">{dict.common.actions}</div>,
       cell: ({ row }) => (
-        <div className="text-right">
+        <div className="flex items-center justify-end gap-2">
           {row.original.type === "transfer" &&
           row.original.status === "on_hold" ? (
             <HoldReviewActions transactionId={row.original.id} />
@@ -147,6 +166,7 @@ function buildColumns(
             row.original.status === "completed" ? (
             <ReverseTransactionButton transactionId={row.original.id} />
           ) : null}
+          <ActivityDetailsDialog item={row.original} />
         </div>
       ),
     });
