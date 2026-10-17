@@ -429,6 +429,34 @@ export interface AdminAccountRow {
   createdAt: string;
 }
 
+export interface TreasuryCurrencyPosition {
+  currency: string;
+  koraAvailable: string;
+  koraPending: string;
+  koraTotal: string;
+  customerAvailable: string;
+  customerLocked: string;
+  float: string;
+  expected: string;
+  difference: string;
+}
+
+export interface TreasuryFloatLot {
+  id: string;
+  currency: string;
+  amount: string;
+  remaining: string;
+  sourceTransactionId: string | null;
+  createdAt: string;
+}
+
+export interface TreasuryPosition {
+  checkedAt: string;
+  checkEnabled: boolean;
+  currencies: TreasuryCurrencyPosition[];
+  floatLots: TreasuryFloatLot[];
+}
+
 export interface AdminLogRow {
   id: string;
   adminId: string | null;
