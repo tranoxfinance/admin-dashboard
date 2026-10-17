@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CHART_COLORS, KYC_TIER_RAMP } from "@/lib/chart-colors";
 import { UsersTable } from "./users-table";
+import { PageHeader } from "@/components/page-header";
 
 const STAT_COLORS = {
   total: CHART_COLORS.blue,
@@ -97,31 +98,29 @@ export default async function UsersPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold">
-            {dict.users.title}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {dict.users.subtitle(
-              data.total.toLocaleString(),
-              marketItems.length,
-            )}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href="/users/activity" />}
-          >
-            <Activity className="size-3.5" />
-            {dict.users.viewActivity}
-          </Button>
-          <PeriodSelect paramName="period" value={period} />
-        </div>
-      </div>
+      <PageHeader
+        title={dict.users.title}
+        description={dict.users.subtitle(
+          data.total.toLocaleString(),
+          marketItems.length,
+        )}
+        actions={
+          <>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                nativeButton={false}
+                render={<Link href="/users/activity" />}
+              >
+                <Activity className="size-3.5" />
+                {dict.users.viewActivity}
+              </Button>
+              <PeriodSelect paramName="period" value={period} />
+            </div>
+          </>
+        }
+      />
 
       <Tabs defaultValue="analytics">
         <TabsList>
@@ -158,9 +157,7 @@ export default async function UsersPage({
               value={topMarket?.label ?? "—"}
               secondary={
                 topMarket
-                  ? dict.users.marketSecondary(
-                      topMarket.value.toLocaleString(),
-                    )
+                  ? dict.users.marketSecondary(topMarket.value.toLocaleString())
                   : undefined
               }
               color={STAT_COLORS.markets}

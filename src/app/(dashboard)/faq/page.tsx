@@ -5,6 +5,7 @@ import { getDict } from "@/lib/i18n/server";
 import type { FaqRow } from "@/lib/types";
 import { FaqsTable } from "./faq-table";
 import { FaqDialog } from "./faq-dialog";
+import { PageHeader } from "@/components/page-header";
 
 export default async function FaqPage() {
   const session = await getSession();
@@ -20,17 +21,11 @@ export default async function FaqPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold">
-            {dict.faq.title}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {dict.faq.subtitle(faqs.length, publishedCount)}
-          </p>
-        </div>
-        {canManage ? <FaqDialog /> : null}
-      </div>
+      <PageHeader
+        title={dict.faq.title}
+        description={dict.faq.subtitle(faqs.length, publishedCount)}
+        actions={<>{canManage ? <FaqDialog /> : null}</>}
+      />
 
       <FaqsTable data={faqs} canManage={canManage} />
     </div>

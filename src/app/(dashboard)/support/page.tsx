@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bot, MessagesSquare, TicketCheck, UserRoundSearch } from "lucide-react";
+import {
+  Bot,
+  MessagesSquare,
+  TicketCheck,
+  UserRoundSearch,
+} from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
@@ -18,6 +23,7 @@ import { BarList } from "@/components/charts/bar-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SupportConversationsTable } from "./support-conversations-table";
 import { CHART_COLORS } from "@/lib/chart-colors";
+import { PageHeader } from "@/components/page-header";
 
 function buildHref(status: string, kind: string): string {
   const params = new URLSearchParams({ view: "conversations" });
@@ -81,11 +87,16 @@ export default async function SupportPage({
       label: dict.support.statusResolved,
       color: CHART_COLORS.green,
     },
-    { status: "closed", label: dict.support.statusClosed, color: CHART_COLORS.muted },
+    {
+      status: "closed",
+      label: dict.support.statusClosed,
+      color: CHART_COLORS.muted,
+    },
   ];
   const status = params.status ?? "all";
   const kind = params.kind ?? "all";
-  const defaultTab = params.view === "conversations" ? "conversations" : "analytics";
+  const defaultTab =
+    params.view === "conversations" ? "conversations" : "analytics";
   const query = new URLSearchParams();
   if (status !== "all") {
     query.set("status", status);
@@ -116,11 +127,13 @@ export default async function SupportPage({
       (row.status === "pending_agent" || row.status === "active"),
   ).length;
 
-  const statusSegments = statusSegmentDefs.map((segment) => ({
-    label: segment.label,
-    value: countByStatus(segment.status),
-    color: segment.color,
-  })).filter((segment) => segment.value > 0);
+  const statusSegments = statusSegmentDefs
+    .map((segment) => ({
+      label: segment.label,
+      value: countByStatus(segment.status),
+      color: segment.color,
+    }))
+    .filter((segment) => segment.value > 0);
 
   const tickets = all.filter((row) => row.kind === "ticket");
   const categoryItems = (
@@ -135,14 +148,10 @@ export default async function SupportPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold">
-          {dict.support.title}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {dict.support.subtitle(conversations.length, openTickets)}
-        </p>
-      </div>
+      <PageHeader
+        title={dict.support.title}
+        description={dict.support.subtitle(conversations.length, openTickets)}
+      />
 
       <Tabs defaultValue={defaultTab}>
         <TabsList>

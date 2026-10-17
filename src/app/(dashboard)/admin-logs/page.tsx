@@ -4,6 +4,7 @@ import { getSession } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
 import type { AdminLogRow, Paginated } from "@/lib/types";
 import { AdminLogsTable } from "./admin-logs-table";
+import { PageHeader } from "@/components/page-header";
 
 export default async function AdminLogsPage() {
   const session = await getSession();
@@ -17,14 +18,10 @@ export default async function AdminLogsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold">
-          {dict.adminLogs.title}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {dict.adminLogs.subtitle(data.total.toLocaleString())}
-        </p>
-      </div>
+      <PageHeader
+        title={dict.adminLogs.title}
+        description={dict.adminLogs.subtitle(data.total.toLocaleString())}
+      />
 
       <AdminLogsTable data={data.items} />
     </div>
