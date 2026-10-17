@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { useDict } from "@/components/i18n-provider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Segmented, segmentClassName } from "@/components/segmented";
 
 export function PeriodFilters({ period }: { period: string }) {
   const router = useRouter();
@@ -40,23 +40,18 @@ export function PeriodFilters({ period }: { period: string }) {
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+      <Segmented>
         {presets.map((preset) => (
           <button
             key={preset.value}
             type="button"
             onClick={() => applyPreset(preset.value)}
-            className={cn(
-              "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-              period === preset.value
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
+            className={segmentClassName(period === preset.value)}
           >
             {preset.label}
           </button>
         ))}
-      </div>
+      </Segmented>
       <div className="flex items-center gap-2 border-l pl-3">
         <Input
           type="date"

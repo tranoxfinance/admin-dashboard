@@ -102,7 +102,7 @@ export function RichTextEditor({
         onBlur={() => onChange(editorRef.current?.innerHTML ?? "")}
         style={{ minHeight }}
         className={cn(
-          "prose-editor px-4 py-3 text-[15px] leading-relaxed outline-none",
+          "prose-editor px-4 py-3 text-base leading-relaxed outline-none",
           "[&_h1]:mb-2 [&_h1]:mt-4 [&_h1]:text-xl [&_h1]:font-bold [&_h1]:first:mt-0",
           "[&_h2]:mb-2 [&_h2]:mt-3 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:first:mt-0",
           "[&_p]:mb-2 [&_p]:last:mb-0",
