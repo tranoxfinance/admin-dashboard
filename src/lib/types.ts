@@ -404,10 +404,24 @@ export interface SupportConversationRow {
   subject: string | null;
   category: SupportTicketCategory | null;
   reference: string | null;
+  topic: string | null;
+  relatedType: SupportRelatedType | null;
+  relatedId: string | null;
   assignedAdminId: string | null;
   lastMessageAt: string | null;
   createdAt: string;
   user: SupportConversationUser | null;
+}
+
+export type SupportRelatedType = "transfer" | "topup" | "withdrawal";
+
+export interface SupportRelatedSummary {
+  type: SupportRelatedType;
+  id: string;
+  status: string;
+  amount: string;
+  currency: string;
+  initiatedAt: string;
 }
 
 export type SupportMessageSenderType = "user" | "bot" | "agent";
@@ -429,6 +443,9 @@ export interface SupportConversationDetail {
     subject: string | null;
     category: SupportTicketCategory | null;
     reference: string | null;
+    topic: string | null;
+    relatedType: SupportRelatedType | null;
+    relatedId: string | null;
     assignedAdminId: string | null;
     lastMessageAt: string | null;
     createdAt: string;
@@ -436,6 +453,7 @@ export interface SupportConversationDetail {
   user:
     | (SupportConversationUser & { email: string | null })
     | null;
+  related: SupportRelatedSummary | null;
   messages: SupportMessage[];
 }
 
@@ -564,6 +582,7 @@ export interface FaqRow {
   id: string;
   question: string;
   answer: string;
+  category: SupportTicketCategory | null;
   sortOrder: number;
   isPublished: boolean;
   createdAt: string;

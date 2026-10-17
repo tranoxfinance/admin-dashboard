@@ -428,6 +428,8 @@ export const en = {
   support: {
     title: "Support",
     backToConversations: "All conversations",
+    linkedTransaction: "Linked transaction",
+    viewUserTransactions: "View the user's transactions",
     subtitle: (shown: number, open: number) =>
       `${shown} conversation${shown === 1 ? "" : "s"} shown · ${open} open ticket${open === 1 ? "" : "s"}`,
     tabConversations: "Conversations",
@@ -878,6 +880,9 @@ export const en = {
     fieldSortOrder: "Order",
     sortOrderHint: "Lower numbers appear first.",
     fieldPublished: "Published on website",
+    fieldCategory: "Help centre category",
+    categoryGeneral: "General",
+    categoryHint: "Groups the question in the app's help centre.",
     save: "Save changes",
     saving: "Saving…",
     delete: "Delete",
