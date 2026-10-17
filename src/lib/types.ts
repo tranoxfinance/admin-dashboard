@@ -209,6 +209,26 @@ export interface ActivityItem {
   riskScore?: number | null;
   riskLevel?: RiskLevel | null;
   heldReason?: string | null;
+  failureReason?: string | null;
+  koraReference?: string | null;
+  conversionReference?: string | null;
+  payoutAttempts?: number;
+  payoutRetryAt?: string | null;
+}
+
+export interface KoraApiLog {
+  id: string;
+  method: string;
+  path: string;
+  reference: string | null;
+  attempt: number;
+  requestQuery: Record<string, unknown> | null;
+  requestBody: Record<string, unknown> | null;
+  responseStatus: number | null;
+  responseBody: Record<string, unknown> | null;
+  error: string | null;
+  durationMs: number;
+  createdAt: string;
 }
 
 export interface ActivityDailyPoint {
