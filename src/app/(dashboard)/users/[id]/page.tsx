@@ -119,7 +119,7 @@ export default async function UserProfilePage({
             ) : profile.isLocked ? (
               <Badge variant="destructive">{dict.users.statusLocked}</Badge>
             ) : profile.isActive ? (
-              <Badge className="bg-green text-white">
+              <Badge variant="success">
                 {dict.users.statusActive}
               </Badge>
             ) : profile.closedAt ? (

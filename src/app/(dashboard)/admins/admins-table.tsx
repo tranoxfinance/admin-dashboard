@@ -33,7 +33,7 @@ function buildColumns(
       header: dict.admins.colRole,
       cell: ({ row }) =>
         row.original.role === "super_admin" ? (
-          <Badge className="bg-primary text-primary-foreground">
+          <Badge>
             {dict.admins.roles[row.original.role]}
           </Badge>
         ) : (
@@ -55,7 +55,7 @@ function buildColumns(
       header: dict.common.status,
       cell: ({ row }) =>
         row.original.isActive ? (
-          <Badge className="bg-green text-white">
+          <Badge variant="success">
             {dict.admins.statusActive}
           </Badge>
         ) : (

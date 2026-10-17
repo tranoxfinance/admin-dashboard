@@ -33,7 +33,7 @@ import {
 function statusBadge(status: KycDocumentStatus, t: Dict["users"]["kycDialog"]) {
   switch (status) {
     case "approved":
-      return <Badge className="bg-green text-white">{t.statusApproved}</Badge>;
+      return <Badge variant="success">{t.statusApproved}</Badge>;
     case "in_review":
       return (
         <Badge variant="warning">{t.statusInReview}</Badge>

@@ -92,7 +92,7 @@ function buildColumns(
         }
         if (user.isActive) {
           return (
-            <Badge className="bg-green text-white">
+            <Badge variant="success">
               {dict.users.statusActive}
             </Badge>
           );

@@ -58,7 +58,7 @@ function buildColumns(dict: Dict): ColumnDef<AdminNotificationRow>[] {
       cell: ({ row }) => {
         const status = row.original.status;
         if (status === "sent") {
-          return <Badge className="bg-green text-white">{dict.notifications.statusSent}</Badge>;
+          return <Badge variant="success">{dict.notifications.statusSent}</Badge>;
         }
         if (status === "failed") {
           return <Badge variant="destructive">{dict.notifications.statusFailed}</Badge>;

@@ -9,7 +9,6 @@ import {
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
-import { cn } from "@/lib/utils";
 import type {
   SupportConversationKind,
   SupportConversationRow,
@@ -24,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SupportConversationsTable } from "./support-conversations-table";
 import { CHART_COLORS } from "@/lib/chart-colors";
 import { PageHeader } from "@/components/page-header";
+import { Segmented, segmentClassName } from "@/components/segmented";
 
 function buildHref(status: string, kind: string): string {
   const params = new URLSearchParams({ view: "conversations" });
@@ -217,38 +217,28 @@ export default async function SupportPage({
 
         <TabsContent value="conversations" className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-1 rounded-lg bg-muted p-1 w-fit">
+            <Segmented>
               {kindFilters.map((filter) => (
                 <Link
                   key={filter.value}
                   href={buildHref(status, filter.value)}
-                  className={cn(
-                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                    kind === filter.value
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
+                  className={segmentClassName(kind === filter.value)}
                 >
                   {filter.label}
                 </Link>
               ))}
-            </div>
-            <div className="flex items-center gap-1 rounded-lg bg-muted p-1 w-fit">
+            </Segmented>
+            <Segmented>
               {statusFilters.map((filter) => (
                 <Link
                   key={filter.value}
                   href={buildHref(filter.value, kind)}
-                  className={cn(
-                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                    status === filter.value
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
+                  className={segmentClassName(status === filter.value)}
                 >
                   {filter.label}
                 </Link>
               ))}
-            </div>
+            </Segmented>
           </div>
 
           <SupportConversationsTable data={conversations} />
