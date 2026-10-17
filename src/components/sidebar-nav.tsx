@@ -14,6 +14,7 @@ import {
   Inbox,
   Newspaper,
   ShieldAlert,
+  Landmark,
   ShieldBan,
   ScrollText,
   ShieldCheck,
@@ -149,6 +150,12 @@ function buildNavItems(dict: Dict): NavItem[] {
       label: dict.nav.appConfig,
       icon: Smartphone,
       roles: ["super_admin"],
+    },
+    {
+      href: "/treasury",
+      label: dict.nav.treasury,
+      icon: Landmark,
+      roles: OPS_ROLES,
     },
     {
       href: "/aml-flags",
