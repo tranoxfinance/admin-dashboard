@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUp, type LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { MiniSparkline } from "./mini-sparkline";
+import { CHART_COLORS } from "@/lib/chart-colors";
 
 export function StatCard({
   icon: Icon,
@@ -10,7 +11,7 @@ export function StatCard({
   secondary,
   delta,
   sparkline,
-  color = "#2a78d6",
+  color = CHART_COLORS.blue,
 }: {
   icon: LucideIcon;
   label: string;
@@ -33,7 +34,7 @@ export function StatCard({
           >
             <Icon className="size-4" />
           </span>
-          <span className="truncate text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <span className="truncate text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
             {label}
           </span>
         </div>
@@ -67,7 +68,7 @@ export function StatCard({
             <span
               className={cn(
                 "flex items-center gap-0.5 font-semibold",
-                isPositive ? "text-[#0ca30c]" : "text-[#d03b3b]",
+                isPositive ? "text-success" : "text-destructive",
               )}
             >
               {isPositive ? (

@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { ArrowLeftRight, Banknote, PauseCircle, PiggyBank, X } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Banknote,
+  PauseCircle,
+  PiggyBank,
+  X,
+} from "lucide-react";
 import { redirect } from "next/navigation";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
@@ -19,11 +25,12 @@ import { PeriodFilters } from "@/components/period-filters";
 import { StatCard } from "@/components/overview/stat-card";
 import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { Button } from "@/components/ui/button";
-import { STATUS_COLORS } from "@/lib/chart-colors";
+import { CHART_COLORS, STATUS_COLORS } from "@/lib/chart-colors";
 import { ActivityLineChart } from "./activity-line-chart";
 import { ActivityStatusChart } from "./activity-status-chart";
 import { ActivityTable } from "./activity-table";
 import { VolumeTrendChart } from "./volume-trend-chart";
+import { PageHeader } from "@/components/page-header";
 
 export default async function TransactionsPage({
   searchParams,
@@ -38,7 +45,11 @@ export default async function TransactionsPage({
   const params = await searchParams;
   const dict = await getDict();
   const session = await getSession();
-  if (session?.role === "support" || session?.role === "hr" || session?.role === "social_media") {
+  if (
+    session?.role === "support" ||
+    session?.role === "hr" ||
+    session?.role === "social_media"
+  ) {
     redirect("/");
   }
   const canManage = session?.role !== "viewer";
@@ -54,28 +65,26 @@ export default async function TransactionsPage({
       [user.firstName, user.lastName].filter(Boolean).join(" ") || user.phone;
     return (
       <div className="flex flex-col gap-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="font-heading text-2xl font-semibold">
-              {dict.transactions.filteredTitle(userName)}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {dict.transactions.userFilterSubtitle(
-                activity.total.toLocaleString(),
-                activity.total === 1,
-              )}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href="/transactions" />}
-          >
-            <X className="size-3.5" />
-            {dict.transactions.clearUserFilter}
-          </Button>
-        </div>
+        <PageHeader
+          title={dict.transactions.filteredTitle(userName)}
+          description={dict.transactions.userFilterSubtitle(
+            activity.total.toLocaleString(),
+            activity.total === 1,
+          )}
+          actions={
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                nativeButton={false}
+                render={<Link href="/transactions" />}
+              >
+                <X className="size-3.5" />
+                {dict.transactions.clearUserFilter}
+              </Button>
+            </>
+          }
+        />
         <ActivityTable
           data={activity.items}
           canManage={canManage}
@@ -132,7 +141,9 @@ export default async function TransactionsPage({
     adminApi<Paginated<ActivityItem>>(
       `/admin/transactions?${activityQuery.toString()}`,
     ),
-    adminApi<ActivityStats>(`/admin/transactions/stats?${statsQuery.toString()}`),
+    adminApi<ActivityStats>(
+      `/admin/transactions/stats?${statsQuery.toString()}`,
+    ),
     adminApi<OverviewStats>(`/admin/overview/stats?${statsQuery.toString()}`),
     adminApi<Paginated<ActivityItem>>(
       `/admin/transactions?${heldQuery.toString()}`,
@@ -152,42 +163,39 @@ export default async function TransactionsPage({
     0,
   );
 
-  const statusSegments = statusGroups.map((group) => ({
-    label: group.label,
-    value: stats.byType.reduce(
-      (sum, entry) =>
-        sum +
-        entry.statuses
-          .filter((row) => group.statuses.includes(row.status))
-          .reduce((inner, row) => inner + row.count, 0),
-      0,
-    ),
-    color: STATUS_COLORS[group.key],
-  })).filter((segment) => segment.value > 0);
+  const statusSegments = statusGroups
+    .map((group) => ({
+      label: group.label,
+      value: stats.byType.reduce(
+        (sum, entry) =>
+          sum +
+          entry.statuses
+            .filter((row) => group.statuses.includes(row.status))
+            .reduce((inner, row) => inner + row.count, 0),
+        0,
+      ),
+      color: STATUS_COLORS[group.key],
+    }))
+    .filter((segment) => segment.value > 0);
 
   const completedShare = (() => {
     const total = statusSegments.reduce((sum, s) => sum + s.value, 0);
     const completed =
-      statusSegments.find(
-        (s) => s.label === dict.transactions.statusCompleted,
-      )?.value ?? 0;
+      statusSegments.find((s) => s.label === dict.transactions.statusCompleted)
+        ?.value ?? 0;
     return total ? Math.round((completed / total) * 100) : 0;
   })();
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold">
-          {dict.transactions.title}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {dict.transactions.subtitle(
-            activity.total.toLocaleString(),
-            activity.total === 1,
-            completedShare,
-          )}
-        </p>
-      </div>
+      <PageHeader
+        title={dict.transactions.title}
+        description={dict.transactions.subtitle(
+          activity.total.toLocaleString(),
+          activity.total === 1,
+          completedShare,
+        )}
+      />
 
       <PeriodFilters period={period} />
 
@@ -209,29 +217,38 @@ export default async function TransactionsPage({
               icon={ArrowLeftRight}
               label={dict.common.transfers}
               value={transferCount.toLocaleString()}
-              secondary={formatVolumeSummary(stats.totals.transfers, dict.common.noVolumeShort)}
-              color="#0d8fd2"
+              secondary={formatVolumeSummary(
+                stats.totals.transfers,
+                dict.common.noVolumeShort,
+              )}
+              color={CHART_COLORS.blue}
             />
             <StatCard
               icon={PiggyBank}
               label={dict.common.deposits}
               value={topupCount.toLocaleString()}
-              secondary={formatVolumeSummary(stats.totals.topups, dict.common.noVolumeShort)}
-              color="#95c015"
+              secondary={formatVolumeSummary(
+                stats.totals.topups,
+                dict.common.noVolumeShort,
+              )}
+              color={CHART_COLORS.green}
             />
             <StatCard
               icon={Banknote}
               label={dict.common.withdrawals}
               value={withdrawalCount.toLocaleString()}
-              secondary={formatVolumeSummary(stats.totals.withdrawals, dict.common.noVolumeShort)}
-              color="#e9a028"
+              secondary={formatVolumeSummary(
+                stats.totals.withdrawals,
+                dict.common.noVolumeShort,
+              )}
+              color={CHART_COLORS.gold}
             />
             <StatCard
               icon={PauseCircle}
               label={dict.transactions.heldForReview}
               value={held.total.toLocaleString()}
               secondary={dict.transactions.heldForReviewSubtitle}
-              color="#e9a028"
+              color={CHART_COLORS.gold}
             />
           </div>
 

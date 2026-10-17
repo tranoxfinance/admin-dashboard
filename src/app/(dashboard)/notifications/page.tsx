@@ -5,11 +5,16 @@ import { getDict } from "@/lib/i18n/server";
 import type { AdminNotificationRow } from "@/lib/types";
 import { BroadcastComposer } from "./broadcast-composer";
 import { NotificationsHistoryTable } from "./notifications-history-table";
+import { PageHeader } from "@/components/page-header";
 
 export default async function NotificationsPage() {
   const dict = await getDict();
   const session = await getSession();
-  if (session?.role === "support" || session?.role === "hr" || session?.role === "social_media") {
+  if (
+    session?.role === "support" ||
+    session?.role === "hr" ||
+    session?.role === "social_media"
+  ) {
     redirect("/");
   }
   const canManage = session?.role !== "viewer";
@@ -21,14 +26,10 @@ export default async function NotificationsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold">
-          {dict.notifications.title}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {dict.notifications.subtitle}
-        </p>
-      </div>
+      <PageHeader
+        title={dict.notifications.title}
+        description={dict.notifications.subtitle}
+      />
 
       {canManage ? <BroadcastComposer /> : null}
 

@@ -52,7 +52,7 @@ function buildColumns(
             {dict.restrictions.levelSuspended}
           </Badge>
         ) : (
-          <Badge className="bg-amber-500 text-white">
+          <Badge variant="warning">
             {dict.restrictions.levelRestricted}
           </Badge>
         ),

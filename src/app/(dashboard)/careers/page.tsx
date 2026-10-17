@@ -9,6 +9,8 @@ import { StatCard } from "@/components/overview/stat-card";
 import { Button } from "@/components/ui/button";
 import { JobsTable } from "./jobs-table";
 import { JobDialog } from "./job-dialog";
+import { CHART_COLORS } from "@/lib/chart-colors";
+import { PageHeader } from "@/components/page-header";
 
 export default async function CareersPage() {
   const session = await getSession();
@@ -34,47 +36,45 @@ export default async function CareersPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold">
-            {dict.careers.title}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {dict.careers.subtitle(openJobs, pendingApplications)}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href="/careers/applications" />}
-          >
-            <Inbox className="size-3.5" />
-            {dict.careers.viewApplications}
-          </Button>
-          {canManage ? <JobDialog /> : null}
-        </div>
-      </div>
+      <PageHeader
+        title={dict.careers.title}
+        description={dict.careers.subtitle(openJobs, pendingApplications)}
+        actions={
+          <>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                nativeButton={false}
+                render={<Link href="/careers/applications" />}
+              >
+                <Inbox className="size-3.5" />
+                {dict.careers.viewApplications}
+              </Button>
+              {canManage ? <JobDialog /> : null}
+            </div>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
           icon={Briefcase}
           label={dict.careers.statOpenRoles}
           value={openJobs.toLocaleString()}
-          color="#0d8fd2"
+          color={CHART_COLORS.blue}
         />
         <StatCard
           icon={Users}
           label={dict.careers.statApplications}
           value={applicationsPage.total.toLocaleString()}
-          color="#00407a"
+          color={CHART_COLORS.navy}
         />
         <StatCard
           icon={FileText}
           label={dict.careers.statPendingReview}
           value={pendingApplications.toLocaleString()}
-          color="#e9a028"
+          color={CHART_COLORS.gold}
         />
       </div>
 

@@ -10,11 +10,17 @@ import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { BarList } from "@/components/charts/bar-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AmlFlagsTable } from "./aml-flags-table";
+import { CHART_COLORS } from "@/lib/chart-colors";
+import { PageHeader } from "@/components/page-header";
 
 export default async function AmlFlagsPage() {
   const dict = await getDict();
   const session = await getSession();
-  if (session?.role === "support" || session?.role === "hr" || session?.role === "social_media") {
+  if (
+    session?.role === "support" ||
+    session?.role === "hr" ||
+    session?.role === "social_media"
+  ) {
     redirect("/");
   }
   const canManage = session?.role !== "viewer";
@@ -24,19 +30,19 @@ export default async function AmlFlagsPage() {
     {
       status: "open",
       label: dict.amlFlags.statusOpen,
-      color: "#d03b3b",
+      color: CHART_COLORS.danger,
       icon: ShieldAlert,
     },
     {
       status: "reviewed",
       label: dict.amlFlags.statusReviewed,
-      color: "#0ca30c",
+      color: CHART_COLORS.green,
       icon: ShieldCheck,
     },
     {
       status: "dismissed",
       label: dict.amlFlags.statusDismissed,
-      color: "#898781",
+      color: CHART_COLORS.muted,
       icon: ShieldOff,
     },
   ] as const;
@@ -44,11 +50,13 @@ export default async function AmlFlagsPage() {
   const countByStatus = (status: AmlFlag["status"]) =>
     flags.filter((flag) => flag.status === status).length;
 
-  const statusSegments = statusMeta.map((meta) => ({
-    label: meta.label,
-    value: countByStatus(meta.status),
-    color: meta.color,
-  })).filter((segment) => segment.value > 0);
+  const statusSegments = statusMeta
+    .map((meta) => ({
+      label: meta.label,
+      value: countByStatus(meta.status),
+      color: meta.color,
+    }))
+    .filter((segment) => segment.value > 0);
 
   const reasonCounts = new Map<string, number>();
   for (const flag of flags) {
@@ -61,14 +69,13 @@ export default async function AmlFlagsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold">
-          {dict.amlFlags.title}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {dict.amlFlags.subtitle(flags.length, countByStatus("open"))}
-        </p>
-      </div>
+      <PageHeader
+        title={dict.amlFlags.title}
+        description={dict.amlFlags.subtitle(
+          flags.length,
+          countByStatus("open"),
+        )}
+      />
 
       <Tabs defaultValue="analytics">
         <TabsList>
@@ -105,7 +112,7 @@ export default async function AmlFlagsPage() {
                 subtitle={dict.amlFlags.topReasonsSubtitle}
                 className="lg:col-span-2"
               >
-                <BarList items={reasonItems} color="#d03b3b" />
+                <BarList items={reasonItems} color={CHART_COLORS.danger} />
               </InsightCard>
             </div>
           ) : null}

@@ -8,6 +8,8 @@ import { InsightCard } from "@/components/insight-card";
 import { BarList } from "@/components/charts/bar-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuditLogsTable } from "./audit-logs-table";
+import { CHART_COLORS } from "@/lib/chart-colors";
+import { PageHeader } from "@/components/page-header";
 
 export default async function AuditLogsPage({
   searchParams,
@@ -16,7 +18,11 @@ export default async function AuditLogsPage({
 }) {
   const params = await searchParams;
   const session = await getSession();
-  if (session?.role === "support" || session?.role === "hr" || session?.role === "social_media") {
+  if (
+    session?.role === "support" ||
+    session?.role === "hr" ||
+    session?.role === "social_media"
+  ) {
     redirect("/");
   }
   const dict = await getDict();
@@ -39,19 +45,17 @@ export default async function AuditLogsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold">
-          {dict.auditLogs.title}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {params.userId
+      <PageHeader
+        title={dict.auditLogs.title}
+        description={
+          params.userId
             ? dict.auditLogs.subtitleForUser(
                 data.total.toLocaleString(),
                 params.userId.slice(0, 8),
               )
-            : dict.auditLogs.subtitle(data.total.toLocaleString())}
-        </p>
-      </div>
+            : dict.auditLogs.subtitle(data.total.toLocaleString())
+        }
+      />
 
       <Tabs defaultValue={defaultTab}>
         <TabsList>
@@ -65,7 +69,7 @@ export default async function AuditLogsPage({
               title={dict.auditLogs.mostFrequent}
               subtitle={dict.auditLogs.mostFrequentSubtitle(data.items.length)}
             >
-              <BarList items={actionItems} color="#00407a" />
+              <BarList items={actionItems} color={CHART_COLORS.navy} />
             </InsightCard>
           ) : (
             <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">

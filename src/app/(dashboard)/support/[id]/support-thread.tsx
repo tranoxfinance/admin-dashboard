@@ -375,12 +375,12 @@ export function SupportThread({
                   {translated ?? message.body}
                 </p>
                 {translated !== undefined && translated !== message.body ? (
-                  <p className="mt-1 flex items-center gap-1 text-[11px] opacity-70">
+                  <p className="mt-1 flex items-center gap-1 text-2xs opacity-70">
                     <Languages className="size-3" />
                     {message.body}
                   </p>
                 ) : null}
-                <p className="mt-1 text-[11px] opacity-70">
+                <p className="mt-1 text-2xs opacity-70">
                   {senderLabels[message.senderType]} ·{" "}
                   {formatDate(message.createdAt, dict.common.dateLocale)}
                 </p>

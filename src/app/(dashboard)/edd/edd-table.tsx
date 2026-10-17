@@ -39,7 +39,7 @@ export function EddStatusBadge({
     return <Badge variant="secondary">{label}</Badge>;
   }
   if (status === "approved") {
-    return <Badge className="bg-green text-white">{label}</Badge>;
+    return <Badge variant="success">{label}</Badge>;
   }
   return <Badge variant="destructive">{label}</Badge>;
 }

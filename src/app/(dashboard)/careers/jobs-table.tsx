@@ -24,7 +24,7 @@ const JOB_STATUSES: JobStatus[] = ["draft", "open", "closed"];
 
 function StatusBadge({ status, dict }: { status: JobStatus; dict: Dict }) {
   if (status === "open") {
-    return <Badge className="bg-green text-white">{dict.careers.statuses.open}</Badge>;
+    return <Badge variant="success">{dict.careers.statuses.open}</Badge>;
   }
   if (status === "draft") {
     return <Badge variant="secondary">{dict.careers.statuses.draft}</Badge>;

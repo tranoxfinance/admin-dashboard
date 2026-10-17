@@ -40,10 +40,10 @@ export function ApplicationStatusBadge({
     return <Badge variant="secondary">{label}</Badge>;
   }
   if (status === "interview") {
-    return <Badge className="bg-primary text-primary-foreground">{label}</Badge>;
+    return <Badge>{label}</Badge>;
   }
   if (status === "hired") {
-    return <Badge className="bg-green text-white">{label}</Badge>;
+    return <Badge variant="success">{label}</Badge>;
   }
   return <Badge variant="destructive">{label}</Badge>;
 }

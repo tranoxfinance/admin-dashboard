@@ -33,6 +33,8 @@ import { UserStatusToggle } from "../user-status-toggle";
 import { UserDevicesPanel } from "./user-devices-panel";
 import { UserKycPanel } from "./user-kyc-panel";
 import { UserTransactionsPanel } from "./user-transactions-panel";
+import { CHART_COLORS } from "@/lib/chart-colors";
+import { PageHeader } from "@/components/page-header";
 
 export default async function UserProfilePage({
   params,
@@ -100,24 +102,24 @@ export default async function UserProfilePage({
             <ArrowLeft className="size-3.5" />
             {t.back}
           </Button>
-          <div>
-            <h1 className="font-heading text-2xl font-semibold">{name}</h1>
-            <p className="text-sm text-muted-foreground">
-              {profile.phone}
-              {profile.email ? ` · ${profile.email}` : ""}
-            </p>
-          </div>
+          <PageHeader
+            title={name}
+            description={
+              <>
+                {profile.phone}
+                {profile.email ? ` · ${profile.email}` : ""}
+              </>
+            }
+          />
           <div className="flex flex-wrap items-center gap-2">
             {profile.restrictionLevel === "suspended" ? (
               <Badge variant="destructive">{dict.users.statusSuspended}</Badge>
             ) : profile.restrictionLevel === "restricted" ? (
-              <Badge className="bg-amber-500 text-white">
-                {dict.users.statusRestricted}
-              </Badge>
+              <Badge variant="warning">{dict.users.statusRestricted}</Badge>
             ) : profile.isLocked ? (
               <Badge variant="destructive">{dict.users.statusLocked}</Badge>
             ) : profile.isActive ? (
-              <Badge className="bg-green text-white">
+              <Badge variant="success">
                 {dict.users.statusActive}
               </Badge>
             ) : profile.closedAt ? (
@@ -169,7 +171,7 @@ export default async function UserProfilePage({
               secondary={t.depositsCount(
                 profile.totals.deposits.reduce((sum, d) => sum + d.count, 0),
               )}
-              color="#95c015"
+              color={CHART_COLORS.green}
             />
             <StatCard
               icon={Banknote}
@@ -181,7 +183,7 @@ export default async function UserProfilePage({
               secondary={t.withdrawalsCount(
                 profile.totals.withdrawals.reduce((sum, w) => sum + w.count, 0),
               )}
-              color="#e9a028"
+              color={CHART_COLORS.gold}
             />
             <StatCard
               icon={ArrowLeftRight}
@@ -191,9 +193,12 @@ export default async function UserProfilePage({
                 dict.common.noVolumeShort,
               )}
               secondary={t.transfersCount(
-                profile.totals.transfersSent.reduce((sum, x) => sum + x.count, 0),
+                profile.totals.transfersSent.reduce(
+                  (sum, x) => sum + x.count,
+                  0,
+                ),
               )}
-              color="#0d8fd2"
+              color={CHART_COLORS.blue}
             />
             <StatCard
               icon={WalletIcon}
@@ -219,7 +224,7 @@ export default async function UserProfilePage({
                     )
                   : undefined
               }
-              color="#00407a"
+              color={CHART_COLORS.navy}
             />
           </div>
 

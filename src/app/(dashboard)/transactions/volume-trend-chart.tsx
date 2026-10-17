@@ -4,10 +4,11 @@ import { AreaTrendChart } from "@/components/charts/area-trend-chart";
 import { useDict } from "@/components/i18n-provider";
 import type { RevenueDailyPoint } from "@/lib/types";
 import { formatCurrency } from "@/lib/format";
+import { CHART_COLORS } from "@/lib/chart-colors";
 
 const CURRENCY_COLORS: Record<string, string> = {
-  NGN: "#0d8fd2",
-  XOF: "#95c015",
+  NGN: CHART_COLORS.blue,
+  XOF: CHART_COLORS.green,
 };
 
 function compactNumber(value: number): string {
@@ -32,7 +33,7 @@ export function VolumeTrendChart({ data }: { data: RevenueDailyPoint[] }) {
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
       {currencies.map((currency) => {
-        const color = CURRENCY_COLORS[currency] ?? "#5ba2ca";
+        const color = CURRENCY_COLORS[currency] ?? CHART_COLORS.sky;
         const points = data
           .filter((point) => point.currency === currency)
           .map((point) => ({ date: point.date, value: Number(point.volume) }));

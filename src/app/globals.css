@@ -39,6 +39,11 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
   --color-brand: #0d8fd2;
   --color-brand-bright: #8fcbfd;
   --color-navy: #00407a;
@@ -69,6 +74,9 @@
   --accent: #e5f4fc;
   --accent-foreground: #00407a;
   --destructive: oklch(0.577 0.245 27.325);
+  --success: #4f7a00;
+  --warning: #a8650a;
+  --info: #0d8fd2;
   --border: #e2e9f2;
   --input: #e2e9f2;
   --ring: #0d8fd2;
@@ -104,6 +112,9 @@
   --accent: #0f2a3d;
   --accent-foreground: #8fcbfd;
   --destructive: oklch(0.704 0.191 22.216);
+  --success: #a6d12a;
+  --warning: #f0b54a;
+  --info: #8fcbfd;
   --border: #1b2c45;
   --input: #1b2c45;
   --ring: #8fcbfd;

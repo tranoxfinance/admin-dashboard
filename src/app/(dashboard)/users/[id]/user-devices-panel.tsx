@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { ShieldOff } from "lucide-react";
 import { toast } from "sonner";
 import { revokeDeviceAction } from "@/actions/admin";
@@ -9,15 +9,8 @@ import { describeApiError } from "@/lib/i18n";
 import { useDict } from "@/components/i18n-provider";
 import type { KnownDeviceRow } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -40,25 +33,22 @@ export function UserDevicesPanel({
   const t = dict.users.devicesPanel;
   const [devices, setDevices] = useState(initialDevices);
   const [revoking, setRevoking] = useState<KnownDeviceRow | null>(null);
-  const [isPending, startTransition] = useTransition();
 
-  function confirmRevoke() {
+  async function confirmRevoke() {
     if (!revoking) {
-      return;
+      return false;
     }
     const deviceId = revoking.deviceId;
-    startTransition(async () => {
-      const result = await revokeDeviceAction(userId, deviceId);
-      if (result.ok) {
-        toast.success(t.revoked);
-        setDevices((current) =>
-          current.filter((device) => device.deviceId !== deviceId),
-        );
-        setRevoking(null);
-      } else {
-        toast.error(describeApiError(dict, result.error));
-      }
-    });
+    const result = await revokeDeviceAction(userId, deviceId);
+    if (result.ok) {
+      toast.success(t.revoked);
+      setDevices((current) =>
+        current.filter((device) => device.deviceId !== deviceId),
+      );
+      return true;
+    }
+    toast.error(describeApiError(dict, result.error));
+    return false;
   }
 
   if (devices.length === 0) {
@@ -128,29 +118,16 @@ export function UserDevicesPanel({
         </TableBody>
       </Table>
 
-      <Dialog
+      <ConfirmDialog
         open={revoking !== null}
-        onOpenChange={(next) => (!next ? setRevoking(null) : undefined)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t.revokeConfirmTitle}</DialogTitle>
-            <DialogDescription>{t.revokeConfirmDescription}</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRevoking(null)}>
-              {dict.common.cancel}
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={isPending}
-              onClick={confirmRevoke}
-            >
-              {isPending ? t.revoking : t.confirmRevoke}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onOpenChange={(next: boolean) => (!next ? setRevoking(null) : undefined)}
+        title={t.revokeConfirmTitle}
+        description={t.revokeConfirmDescription}
+        confirmLabel={t.confirmRevoke}
+        pendingLabel={t.revoking}
+        destructive
+        onConfirm={confirmRevoke}
+      />
     </>
   );
 }

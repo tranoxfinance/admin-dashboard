@@ -5,7 +5,11 @@ import { getSession } from "@/lib/admin-session";
 import { buildCategoryBreakdown, humanizeAction } from "@/lib/activity";
 import { resolveDateRange } from "@/lib/date-range";
 import { getDict } from "@/lib/i18n/server";
-import type { Paginated, UserActivityRow, UserActivityStats } from "@/lib/types";
+import type {
+  Paginated,
+  UserActivityRow,
+  UserActivityStats,
+} from "@/lib/types";
 import { InsightCard } from "@/components/insight-card";
 import { PeriodSelect } from "@/components/period-select";
 import { StatCard } from "@/components/overview/stat-card";
@@ -15,12 +19,14 @@ import { BarList } from "@/components/charts/bar-list";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserActivityTable } from "./user-activity-table";
+import { CHART_COLORS } from "@/lib/chart-colors";
+import { PageHeader } from "@/components/page-header";
 
 const STAT_COLORS = {
-  active: "#0d8fd2",
-  engagement: "#95c015",
-  events: "#e9a028",
-  topAction: "#00407a",
+  active: CHART_COLORS.blue,
+  engagement: CHART_COLORS.green,
+  events: CHART_COLORS.gold,
+  topAction: CHART_COLORS.navy,
 };
 
 function deltaPercent(current: number, previous: number): number | null {
@@ -85,17 +91,15 @@ export default async function UserActivityPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold">
-            {dict.userActivity.title}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {dict.userActivity.subtitle}
-          </p>
-        </div>
-        <PeriodSelect paramName="period" value={period} />
-      </div>
+      <PageHeader
+        title={dict.userActivity.title}
+        description={dict.userActivity.subtitle}
+        actions={
+          <>
+            <PeriodSelect paramName="period" value={period} />
+          </>
+        }
+      />
 
       <Tabs defaultValue="analytics">
         <TabsList>

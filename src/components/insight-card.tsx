@@ -18,7 +18,7 @@ export function InsightCard({
     <Card className={cn("rounded-2xl border-0 shadow-sm ring-0", className)}>
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <span className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
             {title}
           </span>
           {action}

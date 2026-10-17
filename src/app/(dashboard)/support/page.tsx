@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bot, MessagesSquare, TicketCheck, UserRoundSearch } from "lucide-react";
+import {
+  Bot,
+  MessagesSquare,
+  TicketCheck,
+  UserRoundSearch,
+} from "lucide-react";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
-import { cn } from "@/lib/utils";
 import type {
   SupportConversationKind,
   SupportConversationRow,
@@ -17,6 +21,9 @@ import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { BarList } from "@/components/charts/bar-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SupportConversationsTable } from "./support-conversations-table";
+import { CHART_COLORS } from "@/lib/chart-colors";
+import { PageHeader } from "@/components/page-header";
+import { Segmented, segmentClassName } from "@/components/segmented";
 
 function buildHref(status: string, kind: string): string {
   const params = new URLSearchParams({ view: "conversations" });
@@ -67,24 +74,29 @@ export default async function SupportPage({
     {
       status: "pending_agent",
       label: dict.support.statusPendingAgent,
-      color: "#e9a028",
+      color: CHART_COLORS.gold,
     },
     {
       status: "active",
       label: dict.support.statusActiveWithAgent,
-      color: "#0d8fd2",
+      color: CHART_COLORS.blue,
     },
-    { status: "bot", label: dict.support.statusBot, color: "#5ba2ca" },
+    { status: "bot", label: dict.support.statusBot, color: CHART_COLORS.sky },
     {
       status: "resolved",
       label: dict.support.statusResolved,
-      color: "#0ca30c",
+      color: CHART_COLORS.green,
     },
-    { status: "closed", label: dict.support.statusClosed, color: "#898781" },
+    {
+      status: "closed",
+      label: dict.support.statusClosed,
+      color: CHART_COLORS.muted,
+    },
   ];
   const status = params.status ?? "all";
   const kind = params.kind ?? "all";
-  const defaultTab = params.view === "conversations" ? "conversations" : "analytics";
+  const defaultTab =
+    params.view === "conversations" ? "conversations" : "analytics";
   const query = new URLSearchParams();
   if (status !== "all") {
     query.set("status", status);
@@ -115,11 +127,13 @@ export default async function SupportPage({
       (row.status === "pending_agent" || row.status === "active"),
   ).length;
 
-  const statusSegments = statusSegmentDefs.map((segment) => ({
-    label: segment.label,
-    value: countByStatus(segment.status),
-    color: segment.color,
-  })).filter((segment) => segment.value > 0);
+  const statusSegments = statusSegmentDefs
+    .map((segment) => ({
+      label: segment.label,
+      value: countByStatus(segment.status),
+      color: segment.color,
+    }))
+    .filter((segment) => segment.value > 0);
 
   const tickets = all.filter((row) => row.kind === "ticket");
   const categoryItems = (
@@ -134,14 +148,10 @@ export default async function SupportPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold">
-          {dict.support.title}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {dict.support.subtitle(conversations.length, openTickets)}
-        </p>
-      </div>
+      <PageHeader
+        title={dict.support.title}
+        description={dict.support.subtitle(conversations.length, openTickets)}
+      />
 
       <Tabs defaultValue={defaultTab}>
         <TabsList>
@@ -158,21 +168,21 @@ export default async function SupportPage({
               label={dict.support.statNeedsAgent}
               value={countByStatus("pending_agent").toLocaleString()}
               secondary={dict.support.statNeedsAgentSecondary}
-              color="#e9a028"
+              color={CHART_COLORS.gold}
             />
             <StatCard
               icon={MessagesSquare}
               label={dict.support.statActive}
               value={countByStatus("active").toLocaleString()}
               secondary={dict.support.statActiveSecondary}
-              color="#0d8fd2"
+              color={CHART_COLORS.blue}
             />
             <StatCard
               icon={Bot}
               label={dict.support.statBot}
               value={countByStatus("bot").toLocaleString()}
               secondary={dict.support.statBotSecondary}
-              color="#5ba2ca"
+              color={CHART_COLORS.sky}
             />
             <StatCard
               icon={TicketCheck}
@@ -181,7 +191,7 @@ export default async function SupportPage({
               secondary={dict.support.statOpenTicketsSecondary(
                 tickets.length.toLocaleString(),
               )}
-              color="#00407a"
+              color={CHART_COLORS.navy}
             />
           </div>
 
@@ -200,45 +210,35 @@ export default async function SupportPage({
               subtitle={dict.support.ticketsByCategorySubtitle}
               className="lg:col-span-2"
             >
-              <BarList items={categoryItems} color="#0d8fd2" />
+              <BarList items={categoryItems} color={CHART_COLORS.blue} />
             </InsightCard>
           </div>
         </TabsContent>
 
         <TabsContent value="conversations" className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-1 rounded-lg bg-muted p-1 w-fit">
+            <Segmented>
               {kindFilters.map((filter) => (
                 <Link
                   key={filter.value}
                   href={buildHref(status, filter.value)}
-                  className={cn(
-                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                    kind === filter.value
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
+                  className={segmentClassName(kind === filter.value)}
                 >
                   {filter.label}
                 </Link>
               ))}
-            </div>
-            <div className="flex items-center gap-1 rounded-lg bg-muted p-1 w-fit">
+            </Segmented>
+            <Segmented>
               {statusFilters.map((filter) => (
                 <Link
                   key={filter.value}
                   href={buildHref(filter.value, kind)}
-                  className={cn(
-                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                    status === filter.value
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
+                  className={segmentClassName(status === filter.value)}
                 >
                   {filter.label}
                 </Link>
               ))}
-            </div>
+            </Segmented>
           </div>
 
           <SupportConversationsTable data={conversations} />

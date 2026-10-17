@@ -5,6 +5,7 @@ import { getDict } from "@/lib/i18n/server";
 import type { AdminAccountRow } from "@/lib/types";
 import { AdminsTable } from "./admins-table";
 import { CreateAdminDialog } from "./create-admin-dialog";
+import { PageHeader } from "@/components/page-header";
 
 export default async function AdminsPage() {
   const session = await getSession();
@@ -16,17 +17,15 @@ export default async function AdminsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold">
-            {dict.admins.title}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {dict.admins.subtitle(admins.length)}
-          </p>
-        </div>
-        <CreateAdminDialog currentRole={session.role} />
-      </div>
+      <PageHeader
+        title={dict.admins.title}
+        description={dict.admins.subtitle(admins.length)}
+        actions={
+          <>
+            <CreateAdminDialog currentRole={session.role} />
+          </>
+        }
+      />
 
       <AdminsTable
         data={admins}

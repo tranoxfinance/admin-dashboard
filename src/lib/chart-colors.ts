@@ -1,43 +1,65 @@
-export const CATEGORICAL_LIGHT = ["#2a78d6", "#1baf7a", "#eda100"];
-export const CATEGORICAL_DARK = ["#3987e5", "#199e70", "#c98500"];
+export const CHART_COLORS = {
+  blue: "#0d8fd2",
+  navy: "#00407a",
+  sky: "#5ba2ca",
+  green: "#95c015",
+  gold: "#e9a028",
+  sand: "#f5cd6d",
+  lime: "#c4e06a",
+  coral: "#f08a5d",
+  danger: "#d64545",
+  muted: "#8a9bb0",
+};
 
-export const KYC_TIER_RAMP = ["#6da7ec", "#2a78d6", "#184f95"];
+export const CATEGORICAL_LIGHT = [
+  CHART_COLORS.blue,
+  CHART_COLORS.green,
+  CHART_COLORS.gold,
+];
+export const CATEGORICAL_DARK = ["#8fcbfd", "#a6d12a", "#f0b54a"];
+
+export const KYC_TIER_RAMP = ["#8fcbfd", CHART_COLORS.blue, CHART_COLORS.navy];
 
 export const ACTIVITY_CATEGORICAL = [
-  "#2a78d6",
-  "#1baf7a",
-  "#eda100",
-  "#d03b3b",
-  "#4a6fb5",
-  "#898781",
+  CHART_COLORS.blue,
+  CHART_COLORS.green,
+  CHART_COLORS.gold,
+  CHART_COLORS.danger,
+  CHART_COLORS.navy,
+  CHART_COLORS.muted,
 ];
 
-export const WARM_RAMP = ["#f5cd6d", "#e9a028", "#d03b3b"];
-export const WARM_CATEGORICAL = ["#d03b3b", "#e9a028", "#f5cd6d", "#f5975e"];
+export const WARM_RAMP = [CHART_COLORS.sand, CHART_COLORS.gold, CHART_COLORS.danger];
+export const WARM_CATEGORICAL = [
+  CHART_COLORS.danger,
+  CHART_COLORS.gold,
+  CHART_COLORS.sand,
+  CHART_COLORS.coral,
+];
 
 export const STATUS_COLORS: Record<string, string> = {
-  completed: "#0ca30c",
-  inProgress: "#fab219",
-  held: "#e9a028",
-  failed: "#d03b3b",
-  reversed: "#ec835a",
+  completed: CHART_COLORS.green,
+  inProgress: CHART_COLORS.sky,
+  held: CHART_COLORS.gold,
+  failed: CHART_COLORS.danger,
+  reversed: CHART_COLORS.coral,
 };
 
 export const RISK_LEVEL_COLORS: Record<"low" | "medium" | "high", string> = {
-  low: "#0ca30c",
-  medium: "#e9a028",
-  high: "#d03b3b",
+  low: CHART_COLORS.green,
+  medium: CHART_COLORS.gold,
+  high: CHART_COLORS.danger,
 };
 
 export const CHART_CHROME = {
   light: {
-    gridline: "#e1e0d9",
-    baseline: "#c3c2b7",
-    mutedInk: "#898781",
+    gridline: "#e2e9f2",
+    baseline: "#cbd6e4",
+    mutedInk: "#6b7d92",
   },
   dark: {
-    gridline: "#2c2c2a",
-    baseline: "#383835",
-    mutedInk: "#898781",
+    gridline: "#1b2c45",
+    baseline: "#29405f",
+    mutedInk: "#7e91a8",
   },
 };

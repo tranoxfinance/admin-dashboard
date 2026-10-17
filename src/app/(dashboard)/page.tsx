@@ -24,7 +24,13 @@ import { DonutStatCard } from "@/components/overview/donut-stat-card";
 import { TrendInsightCard } from "@/components/overview/trend-insight-card";
 import { RevenueTrendChart } from "@/components/overview/revenue-trend-chart";
 import { ActivityFeedCard } from "@/components/overview/activity-feed-card";
-import { CATEGORICAL_LIGHT, WARM_CATEGORICAL, WARM_RAMP } from "@/lib/chart-colors";
+import {
+  CHART_COLORS,
+  CATEGORICAL_LIGHT,
+  WARM_CATEGORICAL,
+  WARM_RAMP,
+} from "@/lib/chart-colors";
+import { PageHeader } from "@/components/page-header";
 
 function deltaPercent(current: number, previous: number): number | null {
   if (previous === 0) {
@@ -36,16 +42,18 @@ function deltaPercent(current: number, previous: number): number | null {
 function pickPrimary(
   totals: ActivityCurrencyTotal[],
 ): [ActivityCurrencyTotal | undefined, ActivityCurrencyTotal | undefined] {
-  const sorted = [...totals].sort((a, b) => Number(b.volume) - Number(a.volume));
+  const sorted = [...totals].sort(
+    (a, b) => Number(b.volume) - Number(a.volume),
+  );
   return [sorted[0], sorted[1]];
 }
 
 const STAT_COLORS = {
-  users: "#0d8fd2",
-  activeUsers: "#1baf7a",
-  newUsers: "#95c015",
-  volume: "#e9a028",
-  revenue: "#00407a",
+  users: CHART_COLORS.blue,
+  activeUsers: CHART_COLORS.green,
+  newUsers: CHART_COLORS.green,
+  volume: CHART_COLORS.gold,
+  revenue: CHART_COLORS.navy,
 };
 
 export default async function OverviewPage({
@@ -96,7 +104,10 @@ export default async function OverviewPage({
     ? deltaPercent(stats.activeUsers, stats.previousPeriod.activeUsers)
     : null;
   const transactionDelta = stats.previousPeriod
-    ? deltaPercent(stats.transactionCount, stats.previousPeriod.transactionCount)
+    ? deltaPercent(
+        stats.transactionCount,
+        stats.previousPeriod.transactionCount,
+      )
     : null;
 
   const [primaryVolume, secondaryVolume] = pickPrimary(
@@ -144,12 +155,15 @@ export default async function OverviewPage({
   ].map((entry) => ({
     label: entry.label,
     color: entry.color,
-    percent: activityTotal ? Math.round((entry.count / activityTotal) * 100) : 0,
+    percent: activityTotal
+      ? Math.round((entry.count / activityTotal) * 100)
+      : 0,
   }));
 
   const kycSegments = [0, 1, 2].map((tier) => ({
     label: dict.overview.tier(tier),
-    value: snapshot.kycDistribution.find((row) => row.tier === tier)?.count ?? 0,
+    value:
+      snapshot.kycDistribution.find((row) => row.tier === tier)?.count ?? 0,
     color: WARM_RAMP[tier],
   }));
 
@@ -169,17 +183,15 @@ export default async function OverviewPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold">
-            {dict.overview.title}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {dict.overview.subtitle}
-          </p>
-        </div>
-        <PeriodSelect paramName="period" value={period} />
-      </div>
+      <PageHeader
+        title={dict.overview.title}
+        description={dict.overview.subtitle}
+        actions={
+          <>
+            <PeriodSelect paramName="period" value={period} />
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <Link href="/users" className="block h-full">
@@ -263,8 +275,8 @@ export default async function OverviewPage({
             <span
               className={
                 stats.openAmlFlags > 0
-                  ? "rounded-full bg-[#d03b3b]/10 px-2.5 py-1 text-xs font-medium text-[#d03b3b]"
-                  : "rounded-full bg-[#0ca30c]/10 px-2.5 py-1 text-xs font-medium text-[#0ca30c]"
+                  ? "rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive"
+                  : "rounded-full bg-success/12 px-2.5 py-1 text-xs font-medium text-success"
               }
             >
               {dict.overview.amlFlagCount(stats.openAmlFlags)}

@@ -82,7 +82,7 @@ function buildColumns(
         }
         if (user.restrictionLevel === "restricted") {
           return (
-            <Badge className="bg-amber-500 text-white">
+            <Badge variant="warning">
               {dict.users.statusRestricted}
             </Badge>
           );
@@ -92,7 +92,7 @@ function buildColumns(
         }
         if (user.isActive) {
           return (
-            <Badge className="bg-green text-white">
+            <Badge variant="success">
               {dict.users.statusActive}
             </Badge>
           );

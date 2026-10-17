@@ -31,7 +31,7 @@ export function LanguageSwitcher() {
       title={locale === "en" ? "Français" : "English"}
       className="text-muted-foreground"
     >
-      <span className="flex items-center gap-1 text-[10px] font-bold uppercase">
+      <span className="flex items-center gap-1 text-2xs font-bold uppercase">
         <Languages className="size-3.5" />
         {locale === "en" ? "FR" : "EN"}
       </span>

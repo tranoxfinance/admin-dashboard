@@ -36,7 +36,7 @@ export function ArticleStatusBadge({
 }) {
   const label = dict.articles.statuses[status];
   if (status === "published") {
-    return <Badge className="bg-green text-white">{label}</Badge>;
+    return <Badge variant="success">{label}</Badge>;
   }
   if (status === "draft") {
     return <Badge variant="secondary">{label}</Badge>;

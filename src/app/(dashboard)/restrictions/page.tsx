@@ -3,19 +3,22 @@ import { redirect } from "next/navigation";
 import { adminApi } from "@/lib/admin-api";
 import { getSession } from "@/lib/admin-session";
 import { getDict } from "@/lib/i18n/server";
-import type {
-  AccountRestrictionRow,
-  RestrictionAppealRow,
-} from "@/lib/types";
+import type { AccountRestrictionRow, RestrictionAppealRow } from "@/lib/types";
 import { StatCard } from "@/components/overview/stat-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RestrictionsTable } from "./restrictions-table";
 import { AppealsTable } from "./appeals-table";
+import { CHART_COLORS } from "@/lib/chart-colors";
+import { PageHeader } from "@/components/page-header";
 
 export default async function RestrictionsPage() {
   const dict = await getDict();
   const session = await getSession();
-  if (session?.role === "support" || session?.role === "hr" || session?.role === "social_media") {
+  if (
+    session?.role === "support" ||
+    session?.role === "hr" ||
+    session?.role === "social_media"
+  ) {
     redirect("/");
   }
   const canManage = session?.role !== "viewer";
@@ -36,36 +39,32 @@ export default async function RestrictionsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold">
-          {dict.restrictions.title}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {dict.restrictions.subtitle(
-            activeRestricted + activeSuspended,
-            pendingAppeals,
-          )}
-        </p>
-      </div>
+      <PageHeader
+        title={dict.restrictions.title}
+        description={dict.restrictions.subtitle(
+          activeRestricted + activeSuspended,
+          pendingAppeals,
+        )}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
           icon={ShieldBan}
           label={dict.restrictions.statRestricted}
           value={activeRestricted.toLocaleString()}
-          color="#e9a028"
+          color={CHART_COLORS.gold}
         />
         <StatCard
           icon={ShieldOff}
           label={dict.restrictions.statSuspended}
           value={activeSuspended.toLocaleString()}
-          color="#d03b3b"
+          color={CHART_COLORS.danger}
         />
         <StatCard
           icon={MessageSquareWarning}
           label={dict.restrictions.statPendingAppeals}
           value={pendingAppeals.toLocaleString()}
-          color="#0d8fd2"
+          color={CHART_COLORS.blue}
         />
       </div>
 
