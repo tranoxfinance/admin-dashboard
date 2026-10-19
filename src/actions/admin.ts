@@ -10,6 +10,10 @@ import type {
   AppConfigRow,
   AppPlatform,
   EddSubmissionRow,
+  EmailCampaignCountry,
+  EmailCampaignDraft,
+  EmailCampaignLocale,
+  EmailCampaignRow,
   ArticleCategory,
   ArticleRow,
   ArticleStatus,
@@ -745,6 +749,83 @@ export async function deleteFaqAction(
     await adminApi<void>(`/admin/faqs/${faqId}`, { method: "DELETE" });
     revalidatePath("/faq");
     return { ok: true };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface EmailCampaignPreviewResult extends MutationResult {
+  html?: string;
+}
+
+export async function previewEmailCampaignAction(
+  draft: EmailCampaignDraft,
+): Promise<EmailCampaignPreviewResult> {
+  try {
+    const { html } = await adminApi<{ html: string }>(
+      "/admin/email-campaigns/preview",
+      { method: "POST", body: JSON.stringify(draft) },
+    );
+    return { ok: true, html };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface EmailCampaignAudienceResult extends MutationResult {
+  count?: number;
+}
+
+export async function countEmailCampaignAudienceAction(
+  locale: EmailCampaignLocale,
+  country?: EmailCampaignCountry,
+): Promise<EmailCampaignAudienceResult> {
+  const params = new URLSearchParams({ locale });
+  if (country) {
+    params.set("country", country);
+  }
+  try {
+    const { count } = await adminApi<{ count: number }>(
+      `/admin/email-campaigns/audience?${params.toString()}`,
+    );
+    return { ok: true, count };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface EmailCampaignTestResult extends MutationResult {
+  sentTo?: string;
+}
+
+export async function sendEmailCampaignTestAction(
+  draft: EmailCampaignDraft,
+): Promise<EmailCampaignTestResult> {
+  try {
+    const { sentTo } = await adminApi<{ sentTo: string }>(
+      "/admin/email-campaigns/test",
+      { method: "POST", body: JSON.stringify(draft) },
+    );
+    return { ok: true, sentTo };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface EmailCampaignSendResult extends MutationResult {
+  campaign?: EmailCampaignRow;
+}
+
+export async function sendEmailCampaignAction(
+  draft: EmailCampaignDraft,
+): Promise<EmailCampaignSendResult> {
+  try {
+    const campaign = await adminApi<EmailCampaignRow>(
+      "/admin/email-campaigns",
+      { method: "POST", body: JSON.stringify(draft) },
+    );
+    revalidatePath("/email-campaigns");
+    return { ok: true, campaign };
   } catch (error) {
     return { ok: false, error: describeError(error) };
   }

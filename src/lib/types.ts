@@ -588,3 +588,64 @@ export interface FaqRow {
   createdAt: string;
   updatedAt: string;
 }
+
+export type EmailCampaignLocale = "en" | "fr";
+export type EmailCampaignCountry = "NG" | "CI";
+
+export interface EmailCampaignAction {
+  label: string;
+  url: string;
+}
+
+export interface EmailCampaignImage {
+  url: string;
+  alt: string;
+  width: number;
+  height: number;
+}
+
+export interface EmailCampaignModule {
+  eyebrow: string;
+  title: string;
+  paragraphs: string[];
+  image?: EmailCampaignImage;
+  action?: EmailCampaignAction;
+}
+
+export interface EmailCampaignContent {
+  eyebrow: string;
+  headline: string;
+  headlineAccent?: string;
+  heroImage?: EmailCampaignImage;
+  sectionEyebrow?: string;
+  title: string;
+  titleAccent?: string;
+  paragraphs: string[];
+  bullets?: string[];
+  action?: EmailCampaignAction;
+  modules?: EmailCampaignModule[];
+  finePrint?: string;
+  preheader?: string;
+}
+
+export interface EmailCampaignDraft {
+  subject: string;
+  locale: EmailCampaignLocale;
+  country?: EmailCampaignCountry;
+  content: EmailCampaignContent;
+}
+
+export interface EmailCampaignRow {
+  id: string;
+  adminId: string;
+  subject: string;
+  content: EmailCampaignContent;
+  locale: EmailCampaignLocale;
+  audienceCountry: EmailCampaignCountry | null;
+  status: "queued" | "sending" | "sent" | "failed";
+  recipientCount: number;
+  sentCount: number;
+  failedCount: number;
+  createdAt: string;
+  completedAt: string | null;
+}

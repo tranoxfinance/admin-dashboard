@@ -21,6 +21,7 @@ import {
   UserCog,
   Headset,
   Bell,
+  Mail,
   Smartphone,
   ChevronDown,
   type LucideIcon,
@@ -112,6 +113,12 @@ function buildNavItems(dict: Dict): NavItem[] {
       label: dict.nav.notifications,
       icon: Bell,
       roles: OPS_ROLES,
+    },
+    {
+      href: "/email-campaigns",
+      label: dict.nav.emailCampaigns,
+      icon: Mail,
+      roles: CONTENT_ROLES,
     },
     {
       href: "/careers",
