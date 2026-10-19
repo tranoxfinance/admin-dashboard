@@ -583,11 +583,14 @@ export interface FaqRow {
   question: string;
   answer: string;
   category: SupportTicketCategory | null;
+  locale: FaqLocale;
   sortOrder: number;
   isPublished: boolean;
   createdAt: string;
   updatedAt: string;
 }
+
+export type FaqLocale = "en" | "fr";
 
 export type EmailCampaignLocale = "en" | "fr";
 export type EmailCampaignCountry = "NG" | "CI";

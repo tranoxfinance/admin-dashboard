@@ -20,6 +20,7 @@ import type {
   ArticleCategory,
   ArticleRow,
   ArticleStatus,
+  FaqLocale,
   FaqRow,
   JobApplicationRow,
   JobEmploymentType,
@@ -715,6 +716,7 @@ export async function createFaqAction(payload: {
   question: string;
   answer: string;
   category?: SupportTicketCategory | null;
+  locale?: FaqLocale;
   sortOrder?: number;
   isPublished?: boolean;
 }): Promise<FaqMutationResult> {
@@ -736,6 +738,7 @@ export async function updateFaqAction(
     question?: string;
     answer?: string;
     category?: SupportTicketCategory | null;
+    locale?: FaqLocale;
     sortOrder?: number;
     isPublished?: boolean;
   },
