@@ -1,22 +1,26 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { Languages, Plus, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import {
   countEmailCampaignAudienceAction,
   previewEmailCampaignAction,
   sendEmailCampaignAction,
   sendEmailCampaignTestAction,
+  translateTextsAction,
+  uploadEmailCampaignImageAction,
 } from "@/actions/admin";
 import { describeApiError } from "@/lib/i18n";
 import type {
   EmailCampaignAction,
+  EmailCampaignAudience,
   EmailCampaignContent,
   EmailCampaignCountry,
-  EmailCampaignDraft,
   EmailCampaignImage,
   EmailCampaignLocale,
+  EmailCampaignVersion,
+  EmailCampaignVersions,
 } from "@/lib/types";
 import { useDict } from "@/components/i18n-provider";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -36,8 +40,13 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 
 const ALL_COUNTRIES = "all";
+const LOCALES: EmailCampaignLocale[] = ["en", "fr"];
 const MAX_MODULES = 3;
 const PREVIEW_DELAY_MS = 700;
+const UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
+const UPLOAD_DIRECT_BYTES = 3.5 * 1024 * 1024;
+const UPLOAD_MAX_WIDTH = 2400;
+const UPLOAD_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 interface ModuleDraft {
   eyebrow: string;
@@ -70,6 +79,30 @@ interface Draft {
 
 type ImageSizes = Record<string, { width: number; height: number } | null>;
 
+const TRANSLATABLE_FIELDS = [
+  "subject",
+  "preheader",
+  "eyebrow",
+  "headline",
+  "headlineAccent",
+  "heroAlt",
+  "sectionEyebrow",
+  "title",
+  "titleAccent",
+  "text",
+  "bullets",
+  "actionLabel",
+  "finePrint",
+] as const;
+
+const TRANSLATABLE_MODULE_FIELDS = [
+  "eyebrow",
+  "title",
+  "text",
+  "imageAlt",
+  "actionLabel",
+] as const;
+
 const EMPTY_MODULE: ModuleDraft = {
   eyebrow: "",
   title: "",
@@ -97,6 +130,11 @@ const EMPTY_DRAFT: Draft = {
   actionUrl: "",
   finePrint: "",
   modules: [],
+};
+
+const EMPTY_DRAFTS: Record<EmailCampaignLocale, Draft> = {
+  en: EMPTY_DRAFT,
+  fr: EMPTY_DRAFT,
 };
 
 function paragraphsOf(text: string): string[] {
@@ -165,6 +203,10 @@ function toContent(draft: Draft, sizes: ImageSizes): EmailCampaignContent {
   };
 }
 
+function toVersion(draft: Draft, sizes: ImageSizes): EmailCampaignVersion {
+  return { subject: draft.subject.trim(), content: toContent(draft, sizes) };
+}
+
 function isComplete(draft: Draft): boolean {
   return Boolean(
     draft.subject.trim() &&
@@ -175,24 +217,35 @@ function isComplete(draft: Draft): boolean {
   );
 }
 
+function isBlank(draft: Draft): boolean {
+  return (
+    !draft.modules.length &&
+    Object.entries(draft).every(
+      ([key, value]) => key === "modules" || !String(value).trim(),
+    )
+  );
+}
+
 function useImageSizes(urls: string[]): ImageSizes {
   const [sizes, setSizes] = useState<ImageSizes>({});
   const key = urls.join("\n");
 
   useEffect(() => {
-    const pending = key.split("\n").filter((url) => url.startsWith("https://"));
-    const images = pending.map((url) => {
-      const image = new Image();
-      image.onload = () =>
-        setSizes((current) => ({
-          ...current,
-          [url]: { width: image.naturalWidth, height: image.naturalHeight },
-        }));
-      image.onerror = () =>
-        setSizes((current) => ({ ...current, [url]: null }));
-      image.src = url;
-      return image;
-    });
+    const images = key
+      .split("\n")
+      .filter((url) => url.startsWith("https://"))
+      .map((url) => {
+        const image = new Image();
+        image.onload = () =>
+          setSizes((current) => ({
+            ...current,
+            [url]: { width: image.naturalWidth, height: image.naturalHeight },
+          }));
+        image.onerror = () =>
+          setSizes((current) => ({ ...current, [url]: null }));
+        image.src = url;
+        return image;
+      });
     return () => {
       for (const image of images) {
         image.onload = null;
@@ -202,6 +255,27 @@ function useImageSizes(urls: string[]): ImageSizes {
   }, [key]);
 
   return sizes;
+}
+
+async function prepareUpload(file: File): Promise<Blob> {
+  if (file.size <= UPLOAD_DIRECT_BYTES) {
+    return file;
+  }
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, UPLOAD_MAX_WIDTH / bitmap.width);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  const type = file.type === "image/png" ? "image/png" : "image/jpeg";
+  return new Promise((resolve, reject) =>
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error("encode"))),
+      type,
+      0.9,
+    ),
+  );
 }
 
 function TextField({
@@ -272,76 +346,187 @@ function AreaField({
   );
 }
 
+function ImageUrlField({
+  id,
+  value,
+  onChange,
+  hint,
+  error,
+}: {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  hint?: string;
+  error?: string;
+}) {
+  const dict = useDict();
+  const t = dict.emailCampaigns;
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, startUpload] = useTransition();
+
+  function handleFile(file: File | undefined) {
+    if (!file) {
+      return;
+    }
+    if (!UPLOAD_TYPES.includes(file.type)) {
+      toast.error(dict.errors.EMAIL_IMAGE_INVALID);
+      return;
+    }
+    if (file.size > UPLOAD_MAX_BYTES) {
+      toast.error(t.uploadTooLarge);
+      return;
+    }
+    startUpload(async () => {
+      try {
+        const formData = new FormData();
+        formData.append("file", await prepareUpload(file), file.name);
+        const result = await uploadEmailCampaignImageAction(formData);
+        if (result.ok && result.image) {
+          onChange(result.image.url);
+        } else {
+          toast.error(describeApiError(dict, result.error));
+        }
+      } catch {
+        toast.error(dict.errors.EMAIL_IMAGE_INVALID);
+      }
+    });
+  }
+
+  return (
+    <div className="flex min-w-0 flex-col gap-2">
+      <Label htmlFor={id}>{t.imageUrl}</Label>
+      <div className="flex gap-2">
+        <Input
+          id={id}
+          value={value}
+          maxLength={500}
+          placeholder="https://"
+          aria-invalid={error ? true : undefined}
+          onChange={(event) => onChange(event.target.value)}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isUploading}
+          onClick={() => inputRef.current?.click()}
+        >
+          <Upload data-icon="inline-start" />
+          {isUploading ? t.uploading : t.upload}
+        </Button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept={UPLOAD_TYPES.join(",")}
+          className="hidden"
+          onChange={(event) => {
+            handleFile(event.target.files?.[0]);
+            event.target.value = "";
+          }}
+        />
+      </div>
+      {error ? (
+        <p className="text-xs text-destructive">{error}</p>
+      ) : hint ? (
+        <p className="text-xs text-muted-foreground">{hint}</p>
+      ) : null}
+    </div>
+  );
+}
+
 export function CampaignComposer({ canSend }: { canSend: boolean }) {
   const dict = useDict();
   const t = dict.emailCampaigns;
-  const [locale, setLocale] = useState<EmailCampaignLocale>("en");
   const [country, setCountry] = useState<EmailCampaignCountry | undefined>();
-  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
-  const [audienceCount, setAudienceCount] = useState<{
+  const [active, setActive] = useState<EmailCampaignLocale>("en");
+  const [drafts, setDrafts] =
+    useState<Record<EmailCampaignLocale, Draft>>(EMPTY_DRAFTS);
+  const [audienceState, setAudienceState] = useState<{
     key: string;
-    count: number;
+    counts: EmailCampaignAudience;
   } | null>(null);
-  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
-  const [previewFailed, setPreviewFailed] = useState(false);
+  const [previewState, setPreviewState] = useState<{
+    locale: EmailCampaignLocale;
+    html: string | null;
+    failed: boolean;
+  } | null>(null);
   const [isTesting, startTest] = useTransition();
+  const [isTranslating, startTranslate] = useTransition();
 
+  const draft = drafts[active];
+  const source: EmailCampaignLocale = active === "en" ? "fr" : "en";
   const imageUrls = useMemo(
     () =>
-      [draft.heroUrl, ...draft.modules.map((module) => module.imageUrl)]
+      LOCALES.flatMap((locale) => [
+        drafts[locale].heroUrl,
+        ...drafts[locale].modules.map((module) => module.imageUrl),
+      ])
         .map((url) => url.trim())
         .filter(Boolean),
-    [draft.heroUrl, draft.modules],
+    [drafts],
   );
   const sizes = useImageSizes(imageUrls);
-  const complete = isComplete(draft);
-  const payload = useMemo<EmailCampaignDraft>(
-    () => ({
-      subject: draft.subject.trim(),
-      locale,
-      country,
-      content: toContent(draft, sizes),
-    }),
-    [draft, sizes, locale, country],
+  const activeComplete = isComplete(draft);
+  const activeVersion = useMemo(() => toVersion(draft, sizes), [draft, sizes]);
+  const included = LOCALES.filter((locale) => !isBlank(drafts[locale]));
+  const allIncludedComplete = included.every((locale) =>
+    isComplete(drafts[locale]),
   );
 
-  const audienceKey = `${locale}:${country ?? ALL_COUNTRIES}`;
-  const audience =
-    audienceCount?.key === audienceKey ? audienceCount.count : null;
+  const audienceKey = country ?? ALL_COUNTRIES;
+  const counts =
+    audienceState?.key === audienceKey ? audienceState.counts : null;
+  const total = counts
+    ? included.reduce((sum, locale) => sum + counts[locale], 0)
+    : null;
+  const format = (value: number) =>
+    value.toLocaleString(dict.common.dateLocale);
 
   useEffect(() => {
     let cancelled = false;
-    countEmailCampaignAudienceAction(locale, country).then((result) => {
-      if (!cancelled && result.ok) {
-        setAudienceCount({ key: audienceKey, count: result.count ?? 0 });
+    countEmailCampaignAudienceAction(country).then((result) => {
+      if (!cancelled && result.ok && result.counts) {
+        setAudienceState({ key: audienceKey, counts: result.counts });
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [locale, country, audienceKey]);
+  }, [country, audienceKey]);
 
   useEffect(() => {
-    if (!complete) {
+    if (!activeComplete) {
       return;
     }
     let cancelled = false;
     const timer = setTimeout(() => {
-      previewEmailCampaignAction(payload).then((result) => {
+      previewEmailCampaignAction(active, activeVersion).then((result) => {
         if (cancelled) {
           return;
         }
-        setPreviewFailed(!result.ok);
-        if (result.ok && result.html) {
-          setPreviewHtml(result.html);
-        }
+        setPreviewState((current) => ({
+          locale: active,
+          html:
+            result.ok && result.html
+              ? result.html
+              : current?.locale === active
+                ? current.html
+                : null,
+          failed: !result.ok,
+        }));
       });
     }, PREVIEW_DELAY_MS);
     return () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [payload, complete]);
+  }, [active, activeVersion, activeComplete]);
+
+  function setDraft(updater: (current: Draft) => Draft) {
+    setDrafts((current) => ({
+      ...current,
+      [active]: updater(current[active]),
+    }));
+  }
 
   function update<K extends keyof Draft>(field: K, value: Draft[K]) {
     setDraft((current) => ({ ...current, [field]: value }));
@@ -366,9 +551,53 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
       : undefined;
   }
 
+  function handleTranslate() {
+    const from = drafts[source];
+    const texts: string[] = [];
+    const setters: ((value: string, target: Draft) => void)[] = [];
+    for (const field of TRANSLATABLE_FIELDS) {
+      if (from[field].trim()) {
+        texts.push(from[field]);
+        setters.push((value, target) => {
+          target[field] = value;
+        });
+      }
+    }
+    from.modules.forEach((module, index) => {
+      for (const field of TRANSLATABLE_MODULE_FIELDS) {
+        if (module[field].trim()) {
+          texts.push(module[field]);
+          setters.push((value, target) => {
+            target.modules[index][field] = value;
+          });
+        }
+      }
+    });
+    if (!texts.length) {
+      return;
+    }
+    const target = active;
+    startTranslate(async () => {
+      const result = await translateTextsAction(texts, target);
+      if (!result.ok || !result.translations) {
+        toast.error(describeApiError(dict, result.error));
+        return;
+      }
+      const next: Draft = {
+        ...from,
+        modules: from.modules.map((module) => ({ ...module })),
+      };
+      result.translations.forEach((value, index) =>
+        setters[index](value, next),
+      );
+      setDrafts((current) => ({ ...current, [target]: next }));
+      toast.success(t.translated);
+    });
+  }
+
   function handleTest() {
     startTest(async () => {
-      const result = await sendEmailCampaignTestAction(payload);
+      const result = await sendEmailCampaignTestAction(active, activeVersion);
       if (result.ok && result.sentTo) {
         toast.success(t.testSent(result.sentTo));
       } else {
@@ -378,19 +607,29 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
   }
 
   async function handleSend(): Promise<boolean> {
-    const result = await sendEmailCampaignAction(payload);
+    const versions: EmailCampaignVersions = {};
+    for (const locale of included) {
+      versions[locale] = toVersion(drafts[locale], sizes);
+    }
+    const result = await sendEmailCampaignAction({ country, versions });
     if (result.ok) {
       toast.success(t.queued);
-      setDraft(EMPTY_DRAFT);
-      setPreviewHtml(null);
+      setDrafts(EMPTY_DRAFTS);
+      setPreviewState(null);
       return true;
     }
     toast.error(describeApiError(dict, result.error));
     return false;
   }
 
-  const audienceLabel =
-    audience === null ? null : audience.toLocaleString(dict.common.dateLocale);
+  const sourceHasContent = !isBlank(drafts[source]);
+  const previewHtml =
+    activeComplete && previewState?.locale === active
+      ? previewState.html
+      : null;
+  const previewFailed = previewState?.locale === active && previewState.failed;
+  const canSubmit =
+    included.length > 0 && allIncludedComplete && Boolean(total);
 
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -399,59 +638,90 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
           <CardTitle>{t.audienceTitle}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
-          <div className="flex flex-wrap items-end gap-4">
-            <div className="flex flex-col gap-2">
-              <Label>{t.language}</Label>
-              <Segmented>
-                {(["en", "fr"] as const).map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={segmentClassName(locale === value)}
-                    aria-pressed={locale === value}
-                    onClick={() => setLocale(value)}
-                  >
-                    {value === "en" ? t.languageEn : t.languageFr}
-                  </button>
-                ))}
-              </Segmented>
-            </div>
-            <div className="flex min-w-48 flex-col gap-2">
-              <Label>{t.country}</Label>
-              <Select
-                value={country ?? ALL_COUNTRIES}
-                onValueChange={(value) =>
-                  setCountry(
-                    value === "NG" || value === "CI" ? value : undefined,
-                  )
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL_COUNTRIES}>{t.countryAll}</SelectItem>
-                  <SelectItem value="NG">{t.countryNg}</SelectItem>
-                  <SelectItem value="CI">{t.countryCi}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex flex-col gap-2 sm:max-w-xs">
+            <Label>{t.country}</Label>
+            <Select
+              value={country ?? ALL_COUNTRIES}
+              onValueChange={(value) =>
+                setCountry(value === "NG" || value === "CI" ? value : undefined)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_COUNTRIES}>{t.countryAll}</SelectItem>
+                <SelectItem value="NG">{t.countryNg}</SelectItem>
+                <SelectItem value="CI">{t.countryCi}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col gap-1">
             <p className="text-sm font-medium tabular-nums">
-              {audienceLabel === null
-                ? t.audienceLoading
-                : t.audienceCount(audienceLabel)}
+              {counts && total !== null
+                ? t.audienceCount(format(total))
+                : t.audienceLoading}
             </p>
+            {counts ? (
+              <p className="text-xs tabular-nums text-muted-foreground">
+                {t.audienceSplit(format(counts.en), format(counts.fr))}
+              </p>
+            ) : null}
             <p className="text-xs text-muted-foreground">{t.audienceHint}</p>
           </div>
 
           <Separator />
 
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Segmented>
+              {LOCALES.map((locale) => (
+                <button
+                  key={locale}
+                  type="button"
+                  className={segmentClassName(active === locale)}
+                  aria-pressed={active === locale}
+                  onClick={() => setActive(locale)}
+                >
+                  {locale === "en" ? t.versionEn : t.versionFr}
+                </button>
+              ))}
+            </Segmented>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!sourceHasContent || isTranslating}
+                onClick={handleTranslate}
+              >
+                <Languages data-icon="inline-start" />
+                {isTranslating
+                  ? t.translating
+                  : source === "en"
+                    ? t.translateFromEn
+                    : t.translateFromFr}
+              </Button>
+              {!isBlank(draft) ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDraft(() => EMPTY_DRAFT)}
+                >
+                  {t.clearVersion}
+                </Button>
+              ) : null}
+            </div>
+          </div>
+          <p className="-mt-3 text-xs text-muted-foreground">
+            {active === "en" ? t.versionHintEn : t.versionHintFr}
+          </p>
+          {!isBlank(draft) && !activeComplete ? (
+            <p className="-mt-3 text-xs text-warning">{t.versionIncomplete}</p>
+          ) : null}
+
           <section className="flex flex-col gap-4">
             <h3 className="text-sm font-semibold">{t.emailTitle}</h3>
             <TextField
-              id="campaign-subject"
+              id={`campaign-${active}-subject`}
               label={t.subject}
               value={draft.subject}
               maxLength={200}
@@ -459,7 +729,7 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
               onChange={(value) => update("subject", value)}
             />
             <TextField
-              id="campaign-preheader"
+              id={`campaign-${active}-preheader`}
               label={t.preheader}
               value={draft.preheader}
               maxLength={150}
@@ -473,7 +743,7 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
           <section className="flex flex-col gap-4">
             <h3 className="text-sm font-semibold">{t.heroTitle}</h3>
             <TextField
-              id="campaign-eyebrow"
+              id={`campaign-${active}-eyebrow`}
               label={t.eyebrow}
               value={draft.eyebrow}
               maxLength={40}
@@ -482,38 +752,34 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
             />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <TextField
-                id="campaign-headline"
+                id={`campaign-${active}-headline`}
                 label={t.headline}
                 value={draft.headline}
                 maxLength={80}
                 onChange={(value) => update("headline", value)}
               />
               <TextField
-                id="campaign-headline-accent"
+                id={`campaign-${active}-headline-accent`}
                 label={t.headlineAccent}
                 value={draft.headlineAccent}
                 maxLength={80}
                 onChange={(value) => update("headlineAccent", value)}
               />
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <TextField
-                id="campaign-hero-url"
-                label={t.imageUrl}
-                value={draft.heroUrl}
-                maxLength={500}
-                hint={t.imageHint}
-                error={imageError(draft.heroUrl)}
-                onChange={(value) => update("heroUrl", value)}
-              />
-              <TextField
-                id="campaign-hero-alt"
-                label={t.imageAlt}
-                value={draft.heroAlt}
-                maxLength={200}
-                onChange={(value) => update("heroAlt", value)}
-              />
-            </div>
+            <ImageUrlField
+              id={`campaign-${active}-hero-url`}
+              value={draft.heroUrl}
+              hint={t.imageHint}
+              error={imageError(draft.heroUrl)}
+              onChange={(value) => update("heroUrl", value)}
+            />
+            <TextField
+              id={`campaign-${active}-hero-alt`}
+              label={t.imageAlt}
+              value={draft.heroAlt}
+              maxLength={200}
+              onChange={(value) => update("heroAlt", value)}
+            />
           </section>
 
           <Separator />
@@ -521,7 +787,7 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
           <section className="flex flex-col gap-4">
             <h3 className="text-sm font-semibold">{t.bodyTitle}</h3>
             <TextField
-              id="campaign-section-eyebrow"
+              id={`campaign-${active}-section-eyebrow`}
               label={t.sectionEyebrow}
               value={draft.sectionEyebrow}
               maxLength={40}
@@ -529,14 +795,14 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
             />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <TextField
-                id="campaign-title"
+                id={`campaign-${active}-title`}
                 label={t.messageTitle}
                 value={draft.title}
                 maxLength={120}
                 onChange={(value) => update("title", value)}
               />
               <TextField
-                id="campaign-title-accent"
+                id={`campaign-${active}-title-accent`}
                 label={t.messageTitleAccent}
                 value={draft.titleAccent}
                 maxLength={80}
@@ -544,7 +810,7 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
               />
             </div>
             <AreaField
-              id="campaign-text"
+              id={`campaign-${active}-text`}
               label={t.paragraphs}
               value={draft.text}
               maxLength={4000}
@@ -552,7 +818,7 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
               onChange={(value) => update("text", value)}
             />
             <AreaField
-              id="campaign-bullets"
+              id={`campaign-${active}-bullets`}
               label={t.bullets}
               value={draft.bullets}
               maxLength={1200}
@@ -561,14 +827,14 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
             />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <TextField
-                id="campaign-action-label"
+                id={`campaign-${active}-action-label`}
                 label={t.actionLabel}
                 value={draft.actionLabel}
                 maxLength={40}
                 onChange={(value) => update("actionLabel", value)}
               />
               <TextField
-                id="campaign-action-url"
+                id={`campaign-${active}-action-url`}
                 label={t.actionUrl}
                 value={draft.actionUrl}
                 maxLength={500}
@@ -612,14 +878,14 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <TextField
-                    id={`campaign-module-${index}-eyebrow`}
+                    id={`campaign-${active}-module-${index}-eyebrow`}
                     label={t.sectionEyebrow}
                     value={module.eyebrow}
                     maxLength={40}
                     onChange={(value) => updateModule(index, "eyebrow", value)}
                   />
                   <TextField
-                    id={`campaign-module-${index}-title`}
+                    id={`campaign-${active}-module-${index}-title`}
                     label={t.messageTitle}
                     value={module.title}
                     maxLength={120}
@@ -627,31 +893,29 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
                   />
                 </div>
                 <AreaField
-                  id={`campaign-module-${index}-text`}
+                  id={`campaign-${active}-module-${index}-text`}
                   label={t.paragraphs}
                   value={module.text}
                   maxLength={2400}
                   hint={t.paragraphsHint}
                   onChange={(value) => updateModule(index, "text", value)}
                 />
+                <ImageUrlField
+                  id={`campaign-${active}-module-${index}-image`}
+                  value={module.imageUrl}
+                  error={imageError(module.imageUrl)}
+                  onChange={(value) => updateModule(index, "imageUrl", value)}
+                />
+                <TextField
+                  id={`campaign-${active}-module-${index}-alt`}
+                  label={t.imageAlt}
+                  value={module.imageAlt}
+                  maxLength={200}
+                  onChange={(value) => updateModule(index, "imageAlt", value)}
+                />
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <TextField
-                    id={`campaign-module-${index}-image`}
-                    label={t.imageUrl}
-                    value={module.imageUrl}
-                    maxLength={500}
-                    error={imageError(module.imageUrl)}
-                    onChange={(value) => updateModule(index, "imageUrl", value)}
-                  />
-                  <TextField
-                    id={`campaign-module-${index}-alt`}
-                    label={t.imageAlt}
-                    value={module.imageAlt}
-                    maxLength={200}
-                    onChange={(value) => updateModule(index, "imageAlt", value)}
-                  />
-                  <TextField
-                    id={`campaign-module-${index}-action-label`}
+                    id={`campaign-${active}-module-${index}-action-label`}
                     label={t.actionLabel}
                     value={module.actionLabel}
                     maxLength={40}
@@ -660,7 +924,7 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
                     }
                   />
                   <TextField
-                    id={`campaign-module-${index}-action-url`}
+                    id={`campaign-${active}-module-${index}-action-url`}
                     label={t.actionUrl}
                     value={module.actionUrl}
                     maxLength={500}
@@ -691,7 +955,7 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
           <Separator />
 
           <AreaField
-            id="campaign-fine-print"
+            id={`campaign-${active}-fine-print`}
             label={t.finePrint}
             value={draft.finePrint}
             maxLength={500}
@@ -701,7 +965,7 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
-              disabled={!complete || isTesting}
+              disabled={!activeComplete || isTesting}
               onClick={handleTest}
             >
               {isTesting ? t.sending : t.sendTest}
@@ -709,14 +973,22 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
             {canSend ? (
               <ConfirmDialog
                 trigger={
-                  <Button disabled={!complete || !audience}>
-                    {audienceLabel && audience
-                      ? t.send(audienceLabel)
-                      : t.sendDisabled}
+                  <Button disabled={!canSubmit}>
+                    {total ? t.send(format(total)) : t.sendDisabled}
                   </Button>
                 }
-                title={t.confirmTitle(audienceLabel ?? "0")}
-                description={t.confirmDescription}
+                title={t.confirmTitle(format(total ?? 0))}
+                description={
+                  <>
+                    {counts
+                      ? t.audienceSplit(
+                          format(included.includes("en") ? counts.en : 0),
+                          format(included.includes("fr") ? counts.fr : 0),
+                        )
+                      : null}
+                    . {t.confirmDescription}
+                  </>
+                }
                 confirmLabel={t.confirmSend}
                 pendingLabel={t.sending}
                 destructive
@@ -729,10 +1001,12 @@ export function CampaignComposer({ canSend }: { canSend: boolean }) {
 
       <Card className="min-w-0 xl:sticky xl:top-6 xl:self-start">
         <CardHeader>
-          <CardTitle>{t.previewTitle}</CardTitle>
+          <CardTitle>
+            {t.previewTitle} · {active === "en" ? t.versionEn : t.versionFr}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          {complete && previewHtml ? (
+          {previewHtml ? (
             <div className="flex flex-col gap-2">
               {previewFailed ? (
                 <p className="text-xs text-destructive">{t.previewError}</p>

@@ -19,7 +19,8 @@ function buildColumns(dict: Dict): ColumnDef<EmailCampaignRow>[] {
         <div className="flex flex-col">
           <span className="font-medium">{row.original.subject}</span>
           <span className="max-w-xs truncate text-xs text-muted-foreground">
-            {row.original.content.headline}
+            {(row.original.versions.en ?? row.original.versions.fr)?.content
+              .headline ?? ""}
           </span>
         </div>
       ),
@@ -27,12 +28,15 @@ function buildColumns(dict: Dict): ColumnDef<EmailCampaignRow>[] {
     {
       id: "audience",
       header: t.colAudience,
-      accessorFn: (row) => `${row.locale} ${row.audienceCountry ?? ""}`,
+      accessorFn: (row) =>
+        `${row.locales.join(" ")} ${row.audienceCountry ?? ""}`,
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
-          <Badge variant="outline">
-            {row.original.locale === "fr" ? t.languageFr : t.languageEn}
-          </Badge>
+          {row.original.locales.map((locale) => (
+            <Badge key={locale} variant="outline">
+              {locale === "fr" ? t.languageFr : t.languageEn}
+            </Badge>
+          ))}
           <Badge variant="outline">
             {row.original.audienceCountry === "NG"
               ? t.countryNg
