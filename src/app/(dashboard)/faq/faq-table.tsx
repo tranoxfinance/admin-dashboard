@@ -77,6 +77,17 @@ function buildColumns(dict: Dict, canManage: boolean): ColumnDef<FaqRow>[] {
       ),
     },
     {
+      accessorKey: "locale",
+      header: dict.faq.colLanguage,
+      cell: ({ row }) => (
+        <Badge variant="outline">
+          {row.original.locale === "fr"
+            ? dict.faq.languageFr
+            : dict.faq.languageEn}
+        </Badge>
+      ),
+    },
+    {
       accessorKey: "sortOrder",
       header: dict.faq.colOrder,
       cell: ({ row }) => row.original.sortOrder,

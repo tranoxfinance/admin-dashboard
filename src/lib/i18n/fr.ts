@@ -985,7 +985,12 @@ export const fr: Dict = {
     addFaq: "Ajouter une FAQ",
     editFaq: "Modifier la FAQ",
     faqDialogDescription:
-      "Les entrées publiées apparaissent dans l'ordre sur la section FAQ du site.",
+      "Les entrées publiées apparaissent dans l'ordre dans le centre d'aide de l'application et sur le site, dans leur langue.",
+    fieldLanguage: "Langue",
+    languageEn: "Anglais",
+    languageFr: "Français",
+    languageHint: "Les clients voient les FAQ dans la langue de leur application ou du site.",
+    colLanguage: "Langue",
     fieldQuestion: "Question",
     fieldAnswer: "Réponse",
     fieldSortOrder: "Ordre",

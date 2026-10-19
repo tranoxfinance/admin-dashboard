@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { createFaqAction, updateFaqAction } from "@/actions/admin";
 import { describeApiError } from "@/lib/i18n";
 import { useDict } from "@/components/i18n-provider";
-import type { FaqRow, SupportTicketCategory } from "@/lib/types";
+import type { FaqLocale, FaqRow, SupportTicketCategory } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -46,6 +46,7 @@ export function FaqDialog({ faq }: { faq?: FaqRow }) {
   const [category, setCategory] = useState<string>(
     faq?.category ?? GENERAL,
   );
+  const [locale, setLocale] = useState<FaqLocale>(faq?.locale ?? "en");
   const [sortOrder, setSortOrder] = useState(String(faq?.sortOrder ?? 0));
   const [isPublished, setIsPublished] = useState(faq?.isPublished ?? true);
   const [isPending, startTransition] = useTransition();
@@ -61,6 +62,7 @@ export function FaqDialog({ faq }: { faq?: FaqRow }) {
         answer: answer.trim(),
         category:
           category === GENERAL ? null : (category as SupportTicketCategory),
+        locale,
         sortOrder: Number.parseInt(sortOrder, 10) || 0,
         isPublished,
       };
@@ -74,6 +76,7 @@ export function FaqDialog({ faq }: { faq?: FaqRow }) {
           setQuestion("");
           setAnswer("");
           setCategory(GENERAL);
+          setLocale("en");
           setSortOrder("0");
           setIsPublished(true);
         }
@@ -104,6 +107,24 @@ export function FaqDialog({ faq }: { faq?: FaqRow }) {
           <DialogDescription>{t.faqDialogDescription}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <Label>{t.fieldLanguage}</Label>
+            <Select
+              value={locale}
+              onValueChange={(value) => {
+                if (value === "en" || value === "fr") setLocale(value);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">{t.languageEn}</SelectItem>
+                <SelectItem value="fr">{t.languageFr}</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">{t.languageHint}</p>
+          </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="faq-question">{t.fieldQuestion}</Label>
             <Input

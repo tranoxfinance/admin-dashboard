@@ -969,7 +969,12 @@ export const en = {
     addFaq: "Add FAQ",
     editFaq: "Edit FAQ",
     faqDialogDescription:
-      "Published entries appear in order on the website FAQ section.",
+      "Published entries appear in order in the app's help centre and on the website, in their language.",
+    fieldLanguage: "Language",
+    languageEn: "English",
+    languageFr: "French",
+    languageHint: "Customers see the FAQs in their app or website language.",
+    colLanguage: "Language",
     fieldQuestion: "Question",
     fieldAnswer: "Answer",
     fieldSortOrder: "Order",
