@@ -31,6 +31,8 @@ export const en = {
     dateRangeTo: "to",
   },
   errors: {
+    CAMPAIGN_CONTENT_MISSING: "Write at least one language version before sending.",
+    EMAIL_IMAGE_INVALID: "Upload a JPG, PNG or WebP image under 10 MB.",
     CAMPAIGN_AUDIENCE_EMPTY: "No customers match this audience yet.",
     EMAIL_SEND_FAILED: "The email could not be sent. Try again in a moment.",
     ADMIN_INVALID_CREDENTIALS: "Incorrect email or password.",
@@ -654,6 +656,23 @@ export const en = {
     subtitle:
       "Write product news, preview it and send it to customers who get product emails.",
     audienceTitle: "Audience",
+    versionEn: "English version",
+    versionFr: "French version",
+    versionHintEn:
+      "Customers who use the app in English get this version. Leave it empty to skip them.",
+    versionHintFr:
+      "Customers who use the app in French get this version. Leave it empty to skip them.",
+    versionIncomplete: "Finish or clear this version before sending.",
+    clearVersion: "Clear this version",
+    translateFromEn: "Translate from English",
+    translateFromFr: "Translate from French",
+    translating: "Translating…",
+    translated: "Translated. Check the wording before sending.",
+    upload: "Upload",
+    uploading: "Uploading…",
+    uploadTooLarge: "Choose an image under 10 MB.",
+    audienceSplit: (en: string, fr: string) =>
+      `${en} in English, ${fr} in French`,
     language: "Language",
     languageEn: "English",
     languageFr: "French",

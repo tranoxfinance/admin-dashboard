@@ -10,10 +10,13 @@ import type {
   AppConfigRow,
   AppPlatform,
   EddSubmissionRow,
+  EmailCampaignAudience,
   EmailCampaignCountry,
-  EmailCampaignDraft,
+  EmailCampaignImageUpload,
   EmailCampaignLocale,
   EmailCampaignRow,
+  EmailCampaignVersion,
+  EmailCampaignVersions,
   ArticleCategory,
   ArticleRow,
   ArticleStatus,
@@ -215,7 +218,12 @@ export interface UserTransactionsResult extends MutationResult {
 
 export async function getUserTransactionsAction(
   userId: string,
-  filters: { type?: string; status?: string; dateFrom?: string; dateTo?: string },
+  filters: {
+    type?: string;
+    status?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  },
 ): Promise<UserTransactionsResult> {
   const query = new URLSearchParams({ page: "1", limit: "50", userId });
   if (filters.type) query.set("type", filters.type);
@@ -409,7 +417,11 @@ export interface SendNotificationResult extends MutationResult {
 
 export async function sendUserNotificationAction(
   userId: string,
-  payload: { title: string; body: string; channels: AdminNotificationChannel[] },
+  payload: {
+    title: string;
+    body: string;
+    channels: AdminNotificationChannel[];
+  },
 ): Promise<SendNotificationResult> {
   try {
     const notification = await adminApi<AdminNotificationRow>(
@@ -560,9 +572,7 @@ export interface EddDetailResult extends MutationResult {
 
 export async function getEddAction(id: string): Promise<EddDetailResult> {
   try {
-    const submission = await adminApi<EddSubmissionRow>(
-      `/admin/kyc/edd/${id}`,
-    );
+    const submission = await adminApi<EddSubmissionRow>(`/admin/kyc/edd/${id}`);
     return { ok: true, submission };
   } catch (error) {
     return { ok: false, error: describeError(error) };
@@ -742,9 +752,7 @@ export async function updateFaqAction(
   }
 }
 
-export async function deleteFaqAction(
-  faqId: string,
-): Promise<MutationResult> {
+export async function deleteFaqAction(faqId: string): Promise<MutationResult> {
   try {
     await adminApi<void>(`/admin/faqs/${faqId}`, { method: "DELETE" });
     revalidatePath("/faq");
@@ -759,12 +767,13 @@ export interface EmailCampaignPreviewResult extends MutationResult {
 }
 
 export async function previewEmailCampaignAction(
-  draft: EmailCampaignDraft,
+  locale: EmailCampaignLocale,
+  version: EmailCampaignVersion,
 ): Promise<EmailCampaignPreviewResult> {
   try {
     const { html } = await adminApi<{ html: string }>(
       "/admin/email-campaigns/preview",
-      { method: "POST", body: JSON.stringify(draft) },
+      { method: "POST", body: JSON.stringify({ locale, ...version }) },
     );
     return { ok: true, html };
   } catch (error) {
@@ -773,22 +782,20 @@ export async function previewEmailCampaignAction(
 }
 
 export interface EmailCampaignAudienceResult extends MutationResult {
-  count?: number;
+  counts?: EmailCampaignAudience;
 }
 
 export async function countEmailCampaignAudienceAction(
-  locale: EmailCampaignLocale,
   country?: EmailCampaignCountry,
 ): Promise<EmailCampaignAudienceResult> {
-  const params = new URLSearchParams({ locale });
-  if (country) {
-    params.set("country", country);
-  }
+  const query = country
+    ? `?${new URLSearchParams({ country }).toString()}`
+    : "";
   try {
-    const { count } = await adminApi<{ count: number }>(
-      `/admin/email-campaigns/audience?${params.toString()}`,
+    const counts = await adminApi<EmailCampaignAudience>(
+      `/admin/email-campaigns/audience${query}`,
     );
-    return { ok: true, count };
+    return { ok: true, counts };
   } catch (error) {
     return { ok: false, error: describeError(error) };
   }
@@ -799,12 +806,13 @@ export interface EmailCampaignTestResult extends MutationResult {
 }
 
 export async function sendEmailCampaignTestAction(
-  draft: EmailCampaignDraft,
+  locale: EmailCampaignLocale,
+  version: EmailCampaignVersion,
 ): Promise<EmailCampaignTestResult> {
   try {
     const { sentTo } = await adminApi<{ sentTo: string }>(
       "/admin/email-campaigns/test",
-      { method: "POST", body: JSON.stringify(draft) },
+      { method: "POST", body: JSON.stringify({ locale, ...version }) },
     );
     return { ok: true, sentTo };
   } catch (error) {
@@ -816,16 +824,36 @@ export interface EmailCampaignSendResult extends MutationResult {
   campaign?: EmailCampaignRow;
 }
 
-export async function sendEmailCampaignAction(
-  draft: EmailCampaignDraft,
-): Promise<EmailCampaignSendResult> {
+export async function sendEmailCampaignAction(payload: {
+  country?: EmailCampaignCountry;
+  versions: EmailCampaignVersions;
+}): Promise<EmailCampaignSendResult> {
   try {
     const campaign = await adminApi<EmailCampaignRow>(
       "/admin/email-campaigns",
-      { method: "POST", body: JSON.stringify(draft) },
+      { method: "POST", body: JSON.stringify(payload) },
     );
     revalidatePath("/email-campaigns");
     return { ok: true, campaign };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface EmailCampaignImageResult extends MutationResult {
+  image?: EmailCampaignImageUpload;
+}
+
+export async function uploadEmailCampaignImageAction(
+  formData: FormData,
+): Promise<EmailCampaignImageResult> {
+  try {
+    const image = await adminApiForm<EmailCampaignImageUpload>(
+      "/admin/email-campaigns/images",
+      "POST",
+      formData,
+    );
+    return { ok: true, image };
   } catch (error) {
     return { ok: false, error: describeError(error) };
   }

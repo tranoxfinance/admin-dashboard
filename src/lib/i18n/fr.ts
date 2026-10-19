@@ -33,6 +33,8 @@ export const fr: Dict = {
     dateRangeTo: "au",
   },
   errors: {
+    CAMPAIGN_CONTENT_MISSING: "Rédigez au moins une version avant l'envoi.",
+    EMAIL_IMAGE_INVALID: "Importez une image JPG, PNG ou WebP de moins de 10 Mo.",
     CAMPAIGN_AUDIENCE_EMPTY: "Aucun client ne correspond encore à cette audience.",
     EMAIL_SEND_FAILED: "L'e-mail n'a pas pu être envoyé. Réessayez dans un instant.",
     ADMIN_INVALID_CREDENTIALS: "Email ou mot de passe incorrect.",
@@ -667,6 +669,23 @@ export const fr: Dict = {
     subtitle:
       "Rédigez les actualités produit, prévisualisez-les et envoyez-les aux clients abonnés.",
     audienceTitle: "Audience",
+    versionEn: "Version anglaise",
+    versionFr: "Version française",
+    versionHintEn:
+      "Les clients qui utilisent l'application en anglais reçoivent cette version. Laissez-la vide pour les exclure.",
+    versionHintFr:
+      "Les clients qui utilisent l'application en français reçoivent cette version. Laissez-la vide pour les exclure.",
+    versionIncomplete: "Terminez ou videz cette version avant l'envoi.",
+    clearVersion: "Vider cette version",
+    translateFromEn: "Traduire depuis l'anglais",
+    translateFromFr: "Traduire depuis le français",
+    translating: "Traduction…",
+    translated: "Traduit. Relisez le texte avant l'envoi.",
+    upload: "Importer",
+    uploading: "Import…",
+    uploadTooLarge: "Choisissez une image de moins de 10 Mo.",
+    audienceSplit: (en: string, fr: string) =>
+      `${en} en anglais, ${fr} en français`,
     language: "Langue",
     languageEn: "Anglais",
     languageFr: "Français",

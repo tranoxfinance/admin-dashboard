@@ -628,19 +628,29 @@ export interface EmailCampaignContent {
   preheader?: string;
 }
 
-export interface EmailCampaignDraft {
+export interface EmailCampaignVersion {
   subject: string;
-  locale: EmailCampaignLocale;
-  country?: EmailCampaignCountry;
   content: EmailCampaignContent;
+}
+
+export type EmailCampaignVersions = Partial<
+  Record<EmailCampaignLocale, EmailCampaignVersion>
+>;
+
+export type EmailCampaignAudience = Record<EmailCampaignLocale, number>;
+
+export interface EmailCampaignImageUpload {
+  url: string;
+  width: number;
+  height: number;
 }
 
 export interface EmailCampaignRow {
   id: string;
   adminId: string;
   subject: string;
-  content: EmailCampaignContent;
-  locale: EmailCampaignLocale;
+  versions: EmailCampaignVersions;
+  locales: EmailCampaignLocale[];
   audienceCountry: EmailCampaignCountry | null;
   status: "queued" | "sending" | "sent" | "failed";
   recipientCount: number;
