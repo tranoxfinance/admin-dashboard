@@ -57,7 +57,7 @@ export function DonutStatCard({
 
   return (
     <div className="flex flex-col items-center gap-5">
-      <div className="relative size-40 shrink-0">
+      <div className="relative size-44 shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -66,8 +66,8 @@ export function DonutStatCard({
               nameKey="label"
               startAngle={210}
               endAngle={-30}
-              innerRadius={52}
-              outerRadius={72}
+              innerRadius={60}
+              outerRadius={82}
               cornerRadius={8}
               paddingAngle={segments.length > 1 ? 3 : 0}
               stroke="none"
@@ -83,7 +83,7 @@ export function DonutStatCard({
           <span className="font-heading text-2xl font-bold leading-none tracking-tight">
             {total.toLocaleString()}
           </span>
-          <span className="w-20 text-2xs uppercase leading-tight tracking-wide text-muted-foreground">
+          <span className="max-w-26 text-2xs uppercase leading-tight tracking-wide break-words text-muted-foreground">
             {resolvedCenterLabel}
           </span>
         </div>
