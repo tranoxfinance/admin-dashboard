@@ -7,6 +7,9 @@ function parts(...values: string[]): string {
 export const en = {
   common: {
     dateLocale: "en-US",
+    previous: "Previous",
+    next: "Next",
+    pageOf: (page: number, pages: number) => `Page ${page} of ${pages}`,
     actions: "Actions",
     search: "Search…",
     noResults: "No results.",
@@ -1022,9 +1025,6 @@ export const en = {
     allCategories: "All categories",
     allSeverities: "All severities",
     loadFailed: "Couldn't load alerts",
-    previous: "Previous",
-    next: "Next",
-    pageOf: (page: number, pages: number) => `Page ${page} of ${pages}`,
     aCustomer: "A customer",
     categories: {
       support: "Support",

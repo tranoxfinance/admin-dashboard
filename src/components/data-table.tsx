@@ -31,6 +31,7 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string;
   emptyMessage?: string;
   onRowClick?: (row: TData) => void;
+  pageSize?: number;
 }
 
 export function DataTable<TData, TValue>({
@@ -39,6 +40,7 @@ export function DataTable<TData, TValue>({
   searchPlaceholder,
   emptyMessage,
   onRowClick,
+  pageSize = 10,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -54,7 +56,7 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize: 10 } },
+    initialState: { pagination: { pageSize } },
   });
 
   const rows = table.getRowModel().rows;

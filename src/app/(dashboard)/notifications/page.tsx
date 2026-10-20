@@ -6,9 +6,18 @@ import type { AdminNotificationRow } from "@/lib/types";
 import { BroadcastComposer } from "./broadcast-composer";
 import { NotificationsHistoryTable } from "./notifications-history-table";
 import { PageHeader } from "@/components/page-header";
+import { ServerPagination } from "@/components/server-pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export default async function NotificationsPage() {
+const PAGE_SIZE = 20;
+
+export default async function NotificationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; tab?: string }>;
+}) {
+  const params = await searchParams;
+  const page = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1);
   const dict = await getDict();
   const session = await getSession();
   if (
@@ -19,11 +28,13 @@ export default async function NotificationsPage() {
     redirect("/");
   }
   const canManage = session?.role !== "viewer";
-  const { items } = await adminApi<{
+  const { items, total } = await adminApi<{
     items: AdminNotificationRow[];
     total: number;
     page: number;
-  }>("/admin/notifications");
+  }>(`/admin/notifications?page=${page}&limit=${PAGE_SIZE}`);
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const showHistory = !canManage || params.tab === "history";
 
   return (
     <div className="flex flex-col gap-6">
@@ -32,7 +43,7 @@ export default async function NotificationsPage() {
         description={dict.notifications.subtitle}
       />
 
-      <Tabs defaultValue={canManage ? "compose" : "history"}>
+      <Tabs defaultValue={showHistory ? "history" : "compose"}>
         <TabsList>
           {canManage ? (
             <TabsTrigger value="compose">{dict.nav.notifications}</TabsTrigger>
@@ -48,8 +59,14 @@ export default async function NotificationsPage() {
           </TabsContent>
         ) : null}
 
-        <TabsContent value="history">
+        <TabsContent value="history" className="flex flex-col gap-4">
           <NotificationsHistoryTable data={items} />
+          <ServerPagination
+            dict={dict}
+            page={page}
+            pageCount={pageCount}
+            hrefFor={(target) => `/notifications?tab=history&page=${target}`}
+          />
         </TabsContent>
       </Tabs>
     </div>

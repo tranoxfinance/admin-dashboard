@@ -100,6 +100,7 @@ export function CampaignsHistoryTable({ data }: { data: EmailCampaignRow[] }) {
     <DataTable
       columns={columns}
       data={data}
+      pageSize={20}
       searchPlaceholder={dict.emailCampaigns.colSubject}
       emptyMessage={dict.emailCampaigns.empty}
     />
