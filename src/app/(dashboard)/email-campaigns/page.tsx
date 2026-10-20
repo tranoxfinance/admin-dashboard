@@ -6,6 +6,7 @@ import type { EmailCampaignRow, Paginated } from "@/lib/types";
 import { CampaignComposer } from "./campaign-composer";
 import { CampaignsHistoryTable } from "./campaigns-history-table";
 import { PageHeader } from "@/components/page-header";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function EmailCampaignsPage() {
   const dict = await getDict();
@@ -28,14 +29,28 @@ export default async function EmailCampaignsPage() {
         description={dict.emailCampaigns.subtitle}
       />
 
-      {canDraft ? <CampaignComposer canSend={canSend} /> : null}
+      <Tabs defaultValue={canDraft ? "compose" : "history"}>
+        <TabsList>
+          {canDraft ? (
+            <TabsTrigger value="compose">
+              {dict.nav.emailCampaigns}
+            </TabsTrigger>
+          ) : null}
+          <TabsTrigger value="history">
+            {dict.emailCampaigns.historyTitle}
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">
-          {dict.emailCampaigns.historyTitle}
-        </h2>
-        <CampaignsHistoryTable data={items} />
-      </div>
+        {canDraft ? (
+          <TabsContent value="compose">
+            <CampaignComposer canSend={canSend} />
+          </TabsContent>
+        ) : null}
+
+        <TabsContent value="history">
+          <CampaignsHistoryTable data={items} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
