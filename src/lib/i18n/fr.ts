@@ -792,7 +792,7 @@ export const fr: Dict = {
     updatedAt: "Dernière mise à jour",
     serviceStatusTitle: "Statut des services",
     serviceStatusSubtitle:
-      "Signalez qu'une fonctionnalité est dégradée ou indisponible. Les utilisateurs verront un avis non bloquant uniquement sur l'écran concerné — le reste de l'application continue de fonctionner.",
+      "Dégradé affiche un avertissement sur l'écran concerné sans empêcher de continuer. Indisponible bloque aussi les nouvelles demandes pour cette fonctionnalité jusqu'à son retour à Opérationnel. Le reste de l'application continue de fonctionner.",
     serviceTransfers: "Transferts",
     serviceTopups: "Recharges",
     serviceWithdrawals: "Retraits",
