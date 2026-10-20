@@ -6,6 +6,7 @@ import type { AdminNotificationRow } from "@/lib/types";
 import { BroadcastComposer } from "./broadcast-composer";
 import { NotificationsHistoryTable } from "./notifications-history-table";
 import { PageHeader } from "@/components/page-header";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function NotificationsPage() {
   const dict = await getDict();
@@ -31,14 +32,26 @@ export default async function NotificationsPage() {
         description={dict.notifications.subtitle}
       />
 
-      {canManage ? <BroadcastComposer /> : null}
+      <Tabs defaultValue={canManage ? "compose" : "history"}>
+        <TabsList>
+          {canManage ? (
+            <TabsTrigger value="compose">{dict.nav.notifications}</TabsTrigger>
+          ) : null}
+          <TabsTrigger value="history">
+            {dict.notifications.historyTitle}
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">
-          {dict.notifications.historyTitle}
-        </h2>
-        <NotificationsHistoryTable data={items} />
-      </div>
+        {canManage ? (
+          <TabsContent value="compose">
+            <BroadcastComposer />
+          </TabsContent>
+        ) : null}
+
+        <TabsContent value="history">
+          <NotificationsHistoryTable data={items} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
