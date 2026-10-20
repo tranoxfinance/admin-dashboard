@@ -7,9 +7,8 @@ import { CampaignComposer } from "./campaign-composer";
 import { CampaignsHistoryTable } from "./campaigns-history-table";
 import { PageHeader } from "@/components/page-header";
 import { ServerPagination } from "@/components/server-pagination";
+import { PAGE_SIZE } from "@/lib/pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const PAGE_SIZE = 20;
 
 export default async function EmailCampaignsPage({
   searchParams,

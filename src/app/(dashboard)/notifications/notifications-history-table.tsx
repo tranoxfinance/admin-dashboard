@@ -85,7 +85,6 @@ export function NotificationsHistoryTable({
     <DataTable
       columns={columns}
       data={data}
-      pageSize={20}
       searchPlaceholder={dict.notifications.titleLabel}
       emptyMessage={dict.notifications.empty}
     />

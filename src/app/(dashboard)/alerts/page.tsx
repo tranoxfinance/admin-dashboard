@@ -12,10 +12,9 @@ import type {
 import { PageHeader } from "@/components/page-header";
 import { Segmented, segmentClassName } from "@/components/segmented";
 import { ServerPagination } from "@/components/server-pagination";
+import { PAGE_SIZE } from "@/lib/pagination";
 import { AlertsList } from "./alerts-list";
 import { MarkAllReadButton } from "./mark-all-read-button";
-
-const PAGE_SIZE = 25;
 
 const CATEGORIES: AdminAlertCategory[] = [
   "support",
