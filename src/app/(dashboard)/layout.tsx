@@ -20,13 +20,15 @@ export default async function DashboardLayout({
     <div className="flex h-screen overflow-hidden bg-muted/30">
       <Sidebar email={session.email} role={role} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b bg-sidebar px-4 md:hidden">
-          <Image src="/tranox-logo.svg" alt="Tranox" width={96} height={24} className="h-6 w-auto" />
+        <header className="flex h-14 shrink-0 items-center justify-between border-b bg-sidebar px-4 md:justify-end md:px-8">
+          <Image src="/tranox-logo.svg" alt="Tranox" width={96} height={24} className="h-6 w-auto md:hidden" />
           <div className="flex items-center gap-1">
             {role !== "hr" && role !== "social_media" ? (
               <AlertsBell align="end" />
             ) : null}
-            <LogoutButton />
+            <div className="md:hidden">
+              <LogoutButton />
+            </div>
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
