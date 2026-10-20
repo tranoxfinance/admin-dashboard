@@ -6,9 +6,18 @@ import type { EmailCampaignRow, Paginated } from "@/lib/types";
 import { CampaignComposer } from "./campaign-composer";
 import { CampaignsHistoryTable } from "./campaigns-history-table";
 import { PageHeader } from "@/components/page-header";
+import { ServerPagination } from "@/components/server-pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export default async function EmailCampaignsPage() {
+const PAGE_SIZE = 20;
+
+export default async function EmailCampaignsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; tab?: string }>;
+}) {
+  const params = await searchParams;
+  const page = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1);
   const dict = await getDict();
   const session = await getSession();
   const role = session?.role;
@@ -18,9 +27,11 @@ export default async function EmailCampaignsPage() {
   const canDraft =
     role === "super_admin" || role === "admin" || role === "social_media";
   const canSend = role === "super_admin" || role === "admin";
-  const { items } = await adminApi<Paginated<EmailCampaignRow>>(
-    "/admin/email-campaigns",
+  const { items, total } = await adminApi<Paginated<EmailCampaignRow>>(
+    `/admin/email-campaigns?page=${page}&limit=${PAGE_SIZE}`,
   );
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const showHistory = !canDraft || params.tab === "history";
 
   return (
     <div className="flex flex-col gap-6">
@@ -29,7 +40,7 @@ export default async function EmailCampaignsPage() {
         description={dict.emailCampaigns.subtitle}
       />
 
-      <Tabs defaultValue={canDraft ? "compose" : "history"}>
+      <Tabs defaultValue={showHistory ? "history" : "compose"}>
         <TabsList>
           {canDraft ? (
             <TabsTrigger value="compose">
@@ -47,8 +58,14 @@ export default async function EmailCampaignsPage() {
           </TabsContent>
         ) : null}
 
-        <TabsContent value="history">
+        <TabsContent value="history" className="flex flex-col gap-4">
           <CampaignsHistoryTable data={items} />
+          <ServerPagination
+            dict={dict}
+            page={page}
+            pageCount={pageCount}
+            hrefFor={(target) => `/email-campaigns?tab=history&page=${target}`}
+          />
         </TabsContent>
       </Tabs>
     </div>
