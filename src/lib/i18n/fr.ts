@@ -8,6 +8,9 @@ function parts(...values: string[]): string {
 export const fr: Dict = {
   common: {
     dateLocale: "fr-FR",
+    previous: "Précédent",
+    next: "Suivant",
+    pageOf: (page: number, pages: number) => `Page ${page} sur ${pages}`,
     actions: "Actions",
     search: "Rechercher…",
     noResults: "Aucun résultat.",
@@ -1038,9 +1041,6 @@ export const fr: Dict = {
     allCategories: "Toutes les catégories",
     allSeverities: "Tous les niveaux",
     loadFailed: "Impossible de charger les alertes",
-    previous: "Précédent",
-    next: "Suivant",
-    pageOf: (page: number, pages: number) => `Page ${page} sur ${pages}`,
     aCustomer: "Un client",
     categories: {
       support: "Support",

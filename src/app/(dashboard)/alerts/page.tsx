@@ -11,6 +11,7 @@ import type {
 } from "@/lib/types";
 import { PageHeader } from "@/components/page-header";
 import { Segmented, segmentClassName } from "@/components/segmented";
+import { ServerPagination } from "@/components/server-pagination";
 import { AlertsList } from "./alerts-list";
 import { MarkAllReadButton } from "./mark-all-read-button";
 
@@ -147,31 +148,12 @@ export default async function AlertsPage({
         emptyLabel={filtered ? dict.alerts.emptyFiltered : dict.alerts.empty}
       />
 
-      {pages > 1 ? (
-        <div className="flex items-center justify-between gap-3 text-sm">
-          <span className="text-muted-foreground">
-            {dict.alerts.pageOf(filters.page, pages)}
-          </span>
-          <div className="flex gap-2">
-            {filters.page > 1 ? (
-              <Link
-                href={buildHref(filters, { page: filters.page - 1 })}
-                className="rounded-md border px-3 py-1.5 font-medium hover:bg-muted"
-              >
-                {dict.alerts.previous}
-              </Link>
-            ) : null}
-            {filters.page < pages ? (
-              <Link
-                href={buildHref(filters, { page: filters.page + 1 })}
-                className="rounded-md border px-3 py-1.5 font-medium hover:bg-muted"
-              >
-                {dict.alerts.next}
-              </Link>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
+      <ServerPagination
+        dict={dict}
+        page={filters.page}
+        pageCount={pages}
+        hrefFor={(page) => buildHref(filters, { page })}
+      />
     </div>
   );
 }
