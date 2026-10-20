@@ -1,3 +1,9 @@
+import type { AdminAlertView } from "@/lib/types";
+
+function parts(...values: string[]): string {
+  return values.filter(Boolean).join(" · ");
+}
+
 export const en = {
   common: {
     dateLocale: "en-US",
@@ -95,6 +101,7 @@ export const en = {
     backToOverview: "Back to overview",
   },
   nav: {
+    alerts: "Alerts",
     overview: "Overview",
     users: "Users",
     all: "All",
@@ -997,6 +1004,123 @@ export const en = {
     deletedToast: "FAQ entry deleted",
     publishedBadge: "Published",
     hiddenBadge: "Hidden",
+  },
+  alerts: {
+    title: "Alerts",
+    subtitle: (unread: number) =>
+      unread === 0
+        ? "You're all caught up"
+        : `${unread} unread alert${unread === 1 ? "" : "s"}`,
+    bell: "Alerts",
+    bellUnread: (unread: number) => `Alerts, ${unread} unread`,
+    markAllRead: "Mark all as read",
+    viewAll: "View all alerts",
+    empty: "No alerts yet",
+    emptyFiltered: "No alerts match these filters",
+    unreadOnly: "Unread",
+    all: "All",
+    allCategories: "All categories",
+    allSeverities: "All severities",
+    loadFailed: "Couldn't load alerts",
+    previous: "Previous",
+    next: "Next",
+    pageOf: (page: number, pages: number) => `Page ${page} of ${pages}`,
+    aCustomer: "A customer",
+    categories: {
+      support: "Support",
+      transactions: "Transactions",
+      compliance: "Compliance",
+      operations: "Operations",
+    },
+    severities: {
+      info: "Info",
+      warning: "Warning",
+      critical: "Critical",
+    },
+    types: {
+      "support.needs_agent": {
+        title: (v: AdminAlertView) => `${v.customer} needs an agent`,
+        body: (v: AdminAlertView) => v.subject || "Waiting in the support queue",
+      },
+      "support.new_ticket": {
+        title: (v: AdminAlertView) => `New ticket from ${v.customer}`,
+        body: (v: AdminAlertView) => parts(v.reference, v.subject),
+      },
+      "support.customer_replied": {
+        title: (v: AdminAlertView) => `${v.customer} replied`,
+        body: (v: AdminAlertView) =>
+          parts("In a conversation assigned to you", v.subject),
+      },
+      "support.waiting_long": {
+        title: (v: AdminAlertView) =>
+          `${v.customer} has waited ${v.hours}h for an agent`,
+        body: () => "No agent has picked up this conversation yet",
+      },
+      "transfer.failed": {
+        title: (v: AdminAlertView) => `Transfer failed for ${v.customer}`,
+        body: (v: AdminAlertView) => parts(v.amount, v.reason),
+      },
+      "transfer.on_hold": {
+        title: () => "Transfer held for review",
+        body: (v: AdminAlertView) => parts(v.customer, v.amount),
+      },
+      "withdrawal.failed": {
+        title: (v: AdminAlertView) => `Withdrawal failed for ${v.customer}`,
+        body: (v: AdminAlertView) => parts(v.amount, v.reason),
+      },
+      "payout.retrying": {
+        title: (v: AdminAlertView) =>
+          `Payout retry ${v.attempt} for ${v.customer}`,
+        body: (v: AdminAlertView) => parts(v.amount, v.reason),
+      },
+      "payout.stuck": {
+        title: (v: AdminAlertView) =>
+          `${v.kind === "withdrawal" ? "Withdrawal" : "Transfer"} processing for ${v.minutes} min`,
+        body: (v: AdminAlertView) => parts(v.customer, v.amount, v.reference),
+      },
+      "payout.failure_burst": {
+        title: (v: AdminAlertView) =>
+          `${v.count} payouts failed on ${v.operator}`,
+        body: (v: AdminAlertView) =>
+          `In the last ${v.minutes} minutes. Check this operator with Kora.`,
+      },
+      "aml.flag": {
+        title: () => "New AML flag",
+        body: (v: AdminAlertView) => v.reason,
+      },
+      "account.restricted": {
+        title: (v: AdminAlertView) =>
+          `${v.customer} was automatically ${v.level === "suspended" ? "suspended" : "restricted"}`,
+        body: (v: AdminAlertView) => parts(v.reference, v.reason),
+      },
+      "appeal.submitted": {
+        title: (v: AdminAlertView) => `${v.customer} appealed a restriction`,
+        body: (v: AdminAlertView) => v.reference,
+      },
+      "edd.submitted": {
+        title: (v: AdminAlertView) => `${v.customer} submitted due diligence`,
+        body: () => "Ready for review",
+      },
+      "kyc.review": {
+        title: () => "Identity check needs review",
+        body: (v: AdminAlertView) =>
+          `${v.customer}'s verification is in manual review on Didit`,
+      },
+      "treasury.shortfall": {
+        title: () => "Treasury shortfall",
+        body: (v: AdminAlertView) =>
+          `Kora holds less than customers are owed: ${v.detail}`,
+      },
+      "kora.errors": {
+        title: () => "Kora is returning errors",
+        body: (v: AdminAlertView) =>
+          `${v.count} server errors in the last ${v.minutes} minutes`,
+      },
+      "sms.credit": {
+        title: () => "SMS credit problem",
+        body: (v: AdminAlertView) => v.detail,
+      },
+    },
   },
   admins: {
     title: "Admins",

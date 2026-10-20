@@ -662,3 +662,58 @@ export interface EmailCampaignRow {
   createdAt: string;
   completedAt: string | null;
 }
+
+export type AdminAlertCategory =
+  | "support"
+  | "transactions"
+  | "compliance"
+  | "operations";
+
+export type AdminAlertSeverity = "info" | "warning" | "critical";
+
+export type AdminAlertType =
+  | "support.needs_agent"
+  | "support.new_ticket"
+  | "support.customer_replied"
+  | "support.waiting_long"
+  | "transfer.failed"
+  | "transfer.on_hold"
+  | "withdrawal.failed"
+  | "payout.retrying"
+  | "payout.stuck"
+  | "payout.failure_burst"
+  | "aml.flag"
+  | "account.restricted"
+  | "appeal.submitted"
+  | "edd.submitted"
+  | "kyc.review"
+  | "treasury.shortfall"
+  | "kora.errors"
+  | "sms.credit";
+
+export interface AdminAlert {
+  id: string;
+  type: AdminAlertType;
+  category: AdminAlertCategory;
+  severity: AdminAlertSeverity;
+  params: Record<string, string | number | null>;
+  link: string | null;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface AdminAlertView {
+  customer: string;
+  amount: string;
+  reason: string;
+  reference: string;
+  subject: string;
+  operator: string;
+  level: string;
+  detail: string;
+  kind: string;
+  count: number;
+  minutes: number;
+  hours: number;
+  attempt: number;
+}
