@@ -21,6 +21,7 @@ import {
   UserCog,
   Headset,
   Bell,
+  BellRing,
   Mail,
   Smartphone,
   ChevronDown,
@@ -64,6 +65,12 @@ const FAQ_ROLES: AdminRole[] = [
 function buildNavItems(dict: Dict): NavItem[] {
   return [
     { href: "/", label: dict.nav.overview, icon: LayoutDashboard, roles: OPS_ROLES },
+    {
+      href: "/alerts",
+      label: dict.nav.alerts,
+      icon: BellRing,
+      roles: OPS_AND_SUPPORT_ROLES,
+    },
     {
       href: "/users",
       label: dict.nav.users,
