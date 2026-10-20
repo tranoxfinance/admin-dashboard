@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import type { AdminRole } from "@/lib/admin-session";
+import { AlertsBell } from "@/components/alerts-bell";
 import { useDict } from "@/components/i18n-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { LogoutButton } from "@/components/logout-button";
@@ -16,6 +17,7 @@ import { useLocalStorageBoolean } from "@/lib/use-local-storage-boolean";
 const STORAGE_KEY = "admin-sidebar-collapsed";
 
 export function Sidebar({ email, role }: { email: string; role: AdminRole }) {
+  const showAlerts = role !== "hr" && role !== "social_media";
   const [collapsed, setCollapsed] = useLocalStorageBoolean(STORAGE_KEY, false);
   const dict = useDict();
 
@@ -39,24 +41,33 @@ export function Sidebar({ email, role }: { email: string; role: AdminRole }) {
         )}
       >
         {collapsed ? null : (
-          <Image src="/tranox-logo.svg" alt="Tranox" width={96} height={24} className="h-6 w-auto" />
+          <Image
+            src="/tranox-logo.svg"
+            alt="Tranox"
+            width={96}
+            height={24}
+            className="h-6 w-auto"
+          />
         )}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onClick={toggle}
-          aria-label={
-            collapsed ? dict.nav.expandSidebar : dict.nav.collapseSidebar
-          }
-          className="text-muted-foreground"
-        >
-          {collapsed ? (
-            <PanelLeftOpen className="size-4" />
-          ) : (
-            <PanelLeftClose className="size-4" />
-          )}
-        </Button>
+        <div className="flex items-center gap-1">
+          {showAlerts && !collapsed ? <AlertsBell /> : null}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={toggle}
+            aria-label={
+              collapsed ? dict.nav.expandSidebar : dict.nav.collapseSidebar
+            }
+            className="text-muted-foreground"
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="size-4" />
+            ) : (
+              <PanelLeftClose className="size-4" />
+            )}
+          </Button>
+        </div>
       </div>
       <SidebarNav collapsed={collapsed} role={role} />
       <div
@@ -75,6 +86,7 @@ export function Sidebar({ email, role }: { email: string; role: AdminRole }) {
             {email}
           </p>
         )}
+        {showAlerts && collapsed ? <AlertsBell side="right" /> : null}
         <LanguageSwitcher />
         <ThemeToggle />
         <LogoutButton />

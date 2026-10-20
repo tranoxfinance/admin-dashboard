@@ -4,6 +4,9 @@ import { revalidatePath } from "next/cache";
 import { adminApi, adminApiForm, AdminApiError } from "@/lib/admin-api";
 import type {
   ActivityItem,
+  AdminAlert,
+  AdminAlertCategory,
+  AdminAlertSeverity,
   AdminAccountRow,
   AdminNotificationChannel,
   AdminNotificationRow,
@@ -860,4 +863,72 @@ export async function uploadEmailCampaignImageAction(
   } catch (error) {
     return { ok: false, error: describeError(error) };
   }
+}
+
+export interface AlertsResult extends MutationResult {
+  data?: Paginated<AdminAlert>;
+}
+
+export async function getAlertsAction(filters: {
+  page?: number;
+  limit?: number;
+  category?: AdminAlertCategory;
+  severity?: AdminAlertSeverity;
+  unread?: boolean;
+}): Promise<AlertsResult> {
+  const query = new URLSearchParams({
+    page: String(filters.page ?? 1),
+    limit: String(filters.limit ?? 20),
+  });
+  if (filters.category) query.set("category", filters.category);
+  if (filters.severity) query.set("severity", filters.severity);
+  if (filters.unread) query.set("unread", "true");
+  try {
+    const data = await adminApi<Paginated<AdminAlert>>(
+      `/admin/alerts?${query.toString()}`,
+    );
+    return { ok: true, data };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export interface UnreadAlertsResult extends MutationResult {
+  count?: number;
+}
+
+export async function getUnreadAlertCountAction(): Promise<UnreadAlertsResult> {
+  try {
+    const result = await adminApi<{ count: number }>(
+      "/admin/alerts/unread-count",
+    );
+    return { ok: true, count: result.count };
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+}
+
+export async function markAlertsReadAction(
+  ids: string[],
+): Promise<MutationResult> {
+  try {
+    await adminApi("/admin/alerts/read", {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/alerts");
+  return { ok: true };
+}
+
+export async function markAllAlertsReadAction(): Promise<MutationResult> {
+  try {
+    await adminApi("/admin/alerts/read-all", { method: "POST" });
+  } catch (error) {
+    return { ok: false, error: describeError(error) };
+  }
+  revalidatePath("/alerts");
+  return { ok: true };
 }

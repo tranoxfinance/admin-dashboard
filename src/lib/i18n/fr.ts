@@ -1,4 +1,9 @@
+import type { AdminAlertView } from "@/lib/types";
 import type { Dict } from "./en";
+
+function parts(...values: string[]): string {
+  return values.filter(Boolean).join(" · ");
+}
 
 export const fr: Dict = {
   common: {
@@ -105,6 +110,7 @@ export const fr: Dict = {
     backToOverview: "Retour à l'aperçu",
   },
   nav: {
+    alerts: "Alertes",
     overview: "Vue d'ensemble",
     users: "Utilisateurs",
     all: "Tous",
@@ -1013,6 +1019,127 @@ export const fr: Dict = {
     deletedToast: "Entrée FAQ supprimée",
     publishedBadge: "Publiée",
     hiddenBadge: "Masquée",
+  },
+  alerts: {
+    title: "Alertes",
+    subtitle: (unread: number) =>
+      unread === 0
+        ? "Vous êtes à jour"
+        : `${unread} alerte${unread === 1 ? "" : "s"} non lue${unread === 1 ? "" : "s"}`,
+    bell: "Alertes",
+    bellUnread: (unread: number) =>
+      `Alertes, ${unread} non lue${unread === 1 ? "" : "s"}`,
+    markAllRead: "Tout marquer comme lu",
+    viewAll: "Voir toutes les alertes",
+    empty: "Aucune alerte pour le moment",
+    emptyFiltered: "Aucune alerte ne correspond à ces filtres",
+    unreadOnly: "Non lues",
+    all: "Toutes",
+    allCategories: "Toutes les catégories",
+    allSeverities: "Tous les niveaux",
+    loadFailed: "Impossible de charger les alertes",
+    previous: "Précédent",
+    next: "Suivant",
+    pageOf: (page: number, pages: number) => `Page ${page} sur ${pages}`,
+    aCustomer: "Un client",
+    categories: {
+      support: "Support",
+      transactions: "Transactions",
+      compliance: "Conformité",
+      operations: "Opérations",
+    },
+    severities: {
+      info: "Info",
+      warning: "Attention",
+      critical: "Critique",
+    },
+    types: {
+      "support.needs_agent": {
+        title: (v: AdminAlertView) => `${v.customer} attend un agent`,
+        body: (v: AdminAlertView) =>
+          v.subject || "En attente dans la file du support",
+      },
+      "support.new_ticket": {
+        title: (v: AdminAlertView) => `Nouveau ticket de ${v.customer}`,
+        body: (v: AdminAlertView) => parts(v.reference, v.subject),
+      },
+      "support.customer_replied": {
+        title: (v: AdminAlertView) => `${v.customer} a répondu`,
+        body: (v: AdminAlertView) =>
+          parts("Dans une conversation qui vous est assignée", v.subject),
+      },
+      "support.waiting_long": {
+        title: (v: AdminAlertView) =>
+          `${v.customer} attend un agent depuis ${v.hours} h`,
+        body: () => "Aucun agent n'a encore pris cette conversation",
+      },
+      "transfer.failed": {
+        title: (v: AdminAlertView) => `Échec du transfert de ${v.customer}`,
+        body: (v: AdminAlertView) => parts(v.amount, v.reason),
+      },
+      "transfer.on_hold": {
+        title: () => "Transfert bloqué pour vérification",
+        body: (v: AdminAlertView) => parts(v.customer, v.amount),
+      },
+      "withdrawal.failed": {
+        title: (v: AdminAlertView) => `Échec du retrait de ${v.customer}`,
+        body: (v: AdminAlertView) => parts(v.amount, v.reason),
+      },
+      "payout.retrying": {
+        title: (v: AdminAlertView) =>
+          `Nouvelle tentative ${v.attempt} de paiement pour ${v.customer}`,
+        body: (v: AdminAlertView) => parts(v.amount, v.reason),
+      },
+      "payout.stuck": {
+        title: (v: AdminAlertView) =>
+          `${v.kind === "withdrawal" ? "Retrait" : "Transfert"} en cours depuis ${v.minutes} min`,
+        body: (v: AdminAlertView) => parts(v.customer, v.amount, v.reference),
+      },
+      "payout.failure_burst": {
+        title: (v: AdminAlertView) =>
+          `${v.count} paiements échoués sur ${v.operator}`,
+        body: (v: AdminAlertView) =>
+          `Au cours des ${v.minutes} dernières minutes. Vérifiez cet opérateur avec Kora.`,
+      },
+      "aml.flag": {
+        title: () => "Nouveau signalement AML",
+        body: (v: AdminAlertView) => v.reason,
+      },
+      "account.restricted": {
+        title: (v: AdminAlertView) =>
+          `${v.customer} a été automatiquement ${v.level === "suspended" ? "suspendu" : "restreint"}`,
+        body: (v: AdminAlertView) => parts(v.reference, v.reason),
+      },
+      "appeal.submitted": {
+        title: (v: AdminAlertView) =>
+          `${v.customer} a fait appel d'une restriction`,
+        body: (v: AdminAlertView) => v.reference,
+      },
+      "edd.submitted": {
+        title: (v: AdminAlertView) =>
+          `${v.customer} a soumis une diligence renforcée`,
+        body: () => "Prête pour examen",
+      },
+      "kyc.review": {
+        title: () => "Vérification d'identité à examiner",
+        body: (v: AdminAlertView) =>
+          `La vérification de ${v.customer} est en examen manuel sur Didit`,
+      },
+      "treasury.shortfall": {
+        title: () => "Déficit de trésorerie",
+        body: (v: AdminAlertView) =>
+          `Kora détient moins que ce qui est dû aux clients : ${v.detail}`,
+      },
+      "kora.errors": {
+        title: () => "Kora renvoie des erreurs",
+        body: (v: AdminAlertView) =>
+          `${v.count} erreurs serveur au cours des ${v.minutes} dernières minutes`,
+      },
+      "sms.credit": {
+        title: () => "Problème de crédit SMS",
+        body: (v: AdminAlertView) => v.detail,
+      },
+    },
   },
   admins: {
     title: "Administrateurs",
