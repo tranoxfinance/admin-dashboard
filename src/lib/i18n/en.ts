@@ -779,7 +779,7 @@ export const en = {
     updatedAt: "Last updated",
     serviceStatusTitle: "Service Status",
     serviceStatusSubtitle:
-      "Flag a specific feature as degraded or down. Users see a dismissible notice only on that feature's screen — the rest of the app keeps working.",
+      "Degraded shows a warning on that feature's screen and still lets users continue. Down also blocks new requests for that feature until you set it back to Operational. The rest of the app keeps working.",
     serviceTransfers: "Transfers",
     serviceTopups: "Top-ups",
     serviceWithdrawals: "Withdrawals",
