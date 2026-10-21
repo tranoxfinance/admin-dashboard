@@ -13,7 +13,7 @@ function count(value: string | number | null | undefined): number {
 
 export function alertView(dict: Dict, alert: AdminAlert): AdminAlertView {
   const params = alert.params;
-  const amount = text(params.amount);
+  const amount = text(params.amount ?? params.needed);
   const currency = text(params.currency);
   return {
     customer: text(params.customer) || dict.alerts.aCustomer,
@@ -25,6 +25,7 @@ export function alertView(dict: Dict, alert: AdminAlert): AdminAlertView {
     level: text(params.level),
     detail: text(params.detail ?? params.shortfall),
     kind: text(params.kind),
+    currency,
     count: count(params.failures ?? params.errors),
     minutes: count(params.minutes),
     hours: count(params.hours),

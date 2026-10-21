@@ -682,6 +682,7 @@ export type AdminAlertType =
   | "payout.retrying"
   | "payout.stuck"
   | "payout.failure_burst"
+  | "payout.liquidity"
   | "aml.flag"
   | "account.restricted"
   | "appeal.submitted"
@@ -712,6 +713,7 @@ export interface AdminAlertView {
   level: string;
   detail: string;
   kind: string;
+  currency: string;
   count: number;
   minutes: number;
   hours: number;
