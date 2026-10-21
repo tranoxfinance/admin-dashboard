@@ -1101,6 +1101,12 @@ export const fr: Dict = {
         body: (v: AdminAlertView) =>
           `Au cours des ${v.minutes} dernières minutes. Vérifiez cet opérateur avec Kora.`,
       },
+      "payout.liquidity": {
+        title: (v: AdminAlertView) =>
+          `Transferts refusés : solde ${v.currency} insuffisant chez Kora`,
+        body: (v: AdminAlertView) =>
+          `Un paiement de ${v.amount} n'a pas pu être couvert. Approvisionnez le float ${v.currency} sur Kora.`,
+      },
       "aml.flag": {
         title: () => "Nouveau signalement AML",
         body: (v: AdminAlertView) => v.reason,

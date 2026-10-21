@@ -1084,6 +1084,12 @@ export const en = {
         body: (v: AdminAlertView) =>
           `In the last ${v.minutes} minutes. Check this operator with Kora.`,
       },
+      "payout.liquidity": {
+        title: (v: AdminAlertView) =>
+          `Transfers refused: not enough ${v.currency} at Kora`,
+        body: (v: AdminAlertView) =>
+          `A payout of ${v.amount} could not be covered. Top up the ${v.currency} float on Kora.`,
+      },
       "aml.flag": {
         title: () => "New AML flag",
         body: (v: AdminAlertView) => v.reason,
