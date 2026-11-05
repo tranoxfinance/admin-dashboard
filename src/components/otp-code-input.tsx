@@ -1,24 +1,34 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 export function OtpCodeInput({
   name,
+  label,
   length = 6,
   value,
   onChange,
   autoFocus,
   disabled,
+  hasError,
 }: {
   name: string;
+  label: string;
   length?: number;
   value: string;
   onChange: (value: string) => void;
   autoFocus?: boolean;
   disabled?: boolean;
+  hasError?: boolean;
 }) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    if (hasError && !disabled) {
+      inputRefs.current[0]?.focus();
+    }
+  }, [hasError, disabled]);
 
   function setDigit(index: number, digit: string) {
     const next = value.split("");
@@ -89,6 +99,9 @@ export function OtpCodeInput({
           ref={(el) => {
             inputRefs.current[index] = el;
           }}
+          id={index === 0 ? name : undefined}
+          aria-label={`${label} ${index + 1} / ${length}`}
+          aria-invalid={hasError || undefined}
           type="text"
           inputMode="numeric"
           autoComplete={index === 0 ? "one-time-code" : "off"}
@@ -102,6 +115,7 @@ export function OtpCodeInput({
           className={cn(
             "h-12 w-full rounded-lg border border-input bg-transparent text-center text-lg font-semibold outline-none transition-colors",
             "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+            "aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20",
             "disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50",
             "dark:bg-input/30 dark:disabled:bg-input/80",
           )}

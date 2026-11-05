@@ -1,40 +1,19 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
 import { verifyMfaAction } from "@/actions/auth";
 import { describeApiError } from "@/lib/i18n";
 import { useDict } from "@/components/i18n-provider";
 import { AuthCard } from "@/components/auth-card";
 import { Label } from "@/components/ui/label";
 import { OtpCodeInput } from "@/components/otp-code-input";
+import { useOtpCodeForm } from "@/components/use-otp-code-form";
 import { SubmitButton } from "@/components/submit-button";
 import { FormError } from "@/components/form-error";
 
 export default function VerifyMfaPage() {
-  const [state, action, isPending] = useActionState(verifyMfaAction, {});
-  const [code, setCode] = useState("");
-  const [lastError, setLastError] = useState(state.error);
-  const formRef = useRef<HTMLFormElement>(null);
-  const submittedRef = useRef(false);
+  const { action, code, setCode, error, formRef, hasError, isPending } =
+    useOtpCodeForm(verifyMfaAction);
   const dict = useDict();
-
-  if (state.error !== lastError) {
-    setLastError(state.error);
-    if (state.error) {
-      setCode("");
-    }
-  }
-
-  useEffect(() => {
-    if (code.length < 6) {
-      submittedRef.current = false;
-      return;
-    }
-    if (!isPending && !submittedRef.current) {
-      submittedRef.current = true;
-      formRef.current?.requestSubmit();
-    }
-  }, [code, isPending]);
 
   return (
     <AuthCard
@@ -46,14 +25,16 @@ export default function VerifyMfaPage() {
           <Label htmlFor="code">{dict.auth.verificationCode}</Label>
           <OtpCodeInput
             name="code"
+            label={dict.auth.verificationCode}
             value={code}
             onChange={setCode}
             autoFocus
             disabled={isPending}
+            hasError={hasError}
           />
         </div>
         <FormError
-          message={state.error ? describeApiError(dict, state.error) : undefined}
+          message={error ? describeApiError(dict, error) : undefined}
         />
         <SubmitButton pendingText={dict.auth.verifying}>
           {dict.auth.verify}
